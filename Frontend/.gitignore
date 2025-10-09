@@ -1,0 +1,77 @@
+# =========================
+# Android / Gradle
+# =========================
+.gradle/
+build/
+*/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Archivos de configuración local de Gradle
+local.properties
+
+# Archivos de registro
+*.log
+
+# =========================
+# Android Studio / IntelliJ
+# =========================
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+captures/
+.navigation/
+.cache/
+caches/
+
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# =========================
+# Android
+# =========================
+# Archivos generados por Android
+.gradle/
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+
+# =========================
+# Kotlin / Java
+# =========================
+*.class
+*.jar
+*.war
+*.ear
+
+# =========================
+# NDK / C++
+# =========================
+obj/
+*.o
+*.so
+
+# Archivos temporales de IDE
+*.swp
+*.tmp
+*.bak
+
+# Configuración de usuarios
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/gradle.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+
+
+# Claves o configuraciones locales
+.env
+*.keystore
+*.jks
+*.properties
