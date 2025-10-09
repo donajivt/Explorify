@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "dgSpecHash": "dHjOGRADjc8=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\publicaciones-api\\Publications.API.Web\\Publications.API.Web.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\range\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.8\\microsoft.aspnetcore.openapi.9.0.8.nupkg.sha512",
+    "C:\\Users\\range\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1900",
+      "level": "Warning",
+      "message": "Error al obtener los datos de vulnerabilidad del paquete: No se puede cargar el índice de servicio del origen https://api.nuget.org/v3/index.json.",
+      "projectPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\publicaciones-api\\Publications.API.Web\\Publications.API.Web.csproj",
+      "warningLevel": 1,
+      "filePath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\publicaciones-api\\Publications.API.Web\\Publications.API.Web.csproj",
+      "targetGraphs": []
+    }
+  ]
+}

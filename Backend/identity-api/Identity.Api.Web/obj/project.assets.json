@@ -1,0 +1,215 @@
+{
+  "version": 3,
+  "targets": {
+    "net9.0": {
+      "Microsoft.AspNetCore.OpenApi/9.0.8": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.OpenApi": "1.6.17"
+        },
+        "compile": {
+          "lib/net9.0/Microsoft.AspNetCore.OpenApi.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.AspNetCore.OpenApi.dll": {
+            "related": ".xml"
+          }
+        },
+        "frameworkReferences": [
+          "Microsoft.AspNetCore.App"
+        ]
+      },
+      "Microsoft.OpenApi/1.6.17": {
+        "type": "package",
+        "compile": {
+          "lib/netstandard2.0/Microsoft.OpenApi.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/netstandard2.0/Microsoft.OpenApi.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
+      "Identity.Api.Application/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "Identity.API.Domain": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Identity.Api.Application.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Identity.Api.Application.dll": {}
+        }
+      },
+      "Identity.API.Domain/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/Identity.API.Domain.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Identity.API.Domain.dll": {}
+        }
+      },
+      "Identity.Api.Infraestructure/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "Identity.Api.Application": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Identity.Api.Infraestructure.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Identity.Api.Infraestructure.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "Microsoft.AspNetCore.OpenApi/9.0.8": {
+      "sha512": "BwF9sQCKmvu93C/pmKxJjPhF5fFB23MEcgTsGL+7W3wKLYawS4lyFSL5/qh00IJzuADLf+1SmvxMaphbyZYqQQ==",
+      "type": "package",
+      "path": "microsoft.aspnetcore.openapi/9.0.8",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "PACKAGE.md",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net9.0/Microsoft.AspNetCore.OpenApi.dll",
+        "lib/net9.0/Microsoft.AspNetCore.OpenApi.xml",
+        "microsoft.aspnetcore.openapi.9.0.8.nupkg.sha512",
+        "microsoft.aspnetcore.openapi.nuspec"
+      ]
+    },
+    "Microsoft.OpenApi/1.6.17": {
+      "sha512": "Le+kehlmrlQfuDFUt1zZ2dVwrhFQtKREdKBo+rexOwaCoYP0/qpgT9tLxCsZjsgR5Itk1UKPcbgO+FyaNid/bA==",
+      "type": "package",
+      "path": "microsoft.openapi/1.6.17",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "README.md",
+        "lib/netstandard2.0/Microsoft.OpenApi.dll",
+        "lib/netstandard2.0/Microsoft.OpenApi.pdb",
+        "lib/netstandard2.0/Microsoft.OpenApi.xml",
+        "microsoft.openapi.1.6.17.nupkg.sha512",
+        "microsoft.openapi.nuspec"
+      ]
+    },
+    "Identity.Api.Application/1.0.0": {
+      "type": "project",
+      "path": "../Identity.Api.Application/Identity.Api.Application.csproj",
+      "msbuildProject": "../Identity.Api.Application/Identity.Api.Application.csproj"
+    },
+    "Identity.API.Domain/1.0.0": {
+      "type": "project",
+      "path": "../Identity.API.Domain/Identity.API.Domain.csproj",
+      "msbuildProject": "../Identity.API.Domain/Identity.API.Domain.csproj"
+    },
+    "Identity.Api.Infraestructure/1.0.0": {
+      "type": "project",
+      "path": "../Identity.Api.Infraestructure/Identity.Api.Infraestructure.csproj",
+      "msbuildProject": "../Identity.Api.Infraestructure/Identity.Api.Infraestructure.csproj"
+    }
+  },
+  "projectFileDependencyGroups": {
+    "net9.0": [
+      "Identity.Api.Application >= 1.0.0",
+      "Identity.Api.Infraestructure >= 1.0.0",
+      "Microsoft.AspNetCore.OpenApi >= 9.0.8"
+    ]
+  },
+  "packageFolders": {
+    "C:\\Users\\range\\.nuget\\packages\\": {},
+    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+  },
+  "project": {
+    "version": "1.0.0",
+    "restore": {
+      "projectUniqueName": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Web\\Identity.Api.Web.csproj",
+      "projectName": "Identity.Api.Web",
+      "projectPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Web\\Identity.Api.Web.csproj",
+      "packagesPath": "C:\\Users\\range\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Web\\obj\\",
+      "projectStyle": "PackageReference",
+      "fallbackFolders": [
+        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+      ],
+      "configFilePaths": [
+        "C:\\Users\\range\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+      ],
+      "originalTargetFrameworks": [
+        "net9.0"
+      ],
+      "sources": {
+        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+        "https://api.nuget.org/v3/index.json": {}
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "projectReferences": {
+            "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Application\\Identity.Api.Application.csproj": {
+              "projectPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Application\\Identity.Api.Application.csproj"
+            },
+            "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Infraestructure\\Identity.Api.Infraestructure.csproj": {
+              "projectPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Infraestructure\\Identity.Api.Infraestructure.csproj"
+            }
+          }
+        }
+      },
+      "warningProperties": {
+        "warnAsError": [
+          "NU1605"
+        ]
+      },
+      "restoreAuditProperties": {
+        "enableAudit": "true",
+        "auditLevel": "low",
+        "auditMode": "direct"
+      },
+      "SdkAnalysisLevel": "9.0.300"
+    },
+    "frameworks": {
+      "net9.0": {
+        "targetAlias": "net9.0",
+        "dependencies": {
+          "Microsoft.AspNetCore.OpenApi": {
+            "target": "Package",
+            "version": "[9.0.8, )"
+          }
+        },
+        "imports": [
+          "net461",
+          "net462",
+          "net47",
+          "net471",
+          "net472",
+          "net48",
+          "net481"
+        ],
+        "assetTargetFallback": true,
+        "warn": true,
+        "frameworkReferences": {
+          "Microsoft.AspNetCore.App": {
+            "privateAssets": "none"
+          },
+          "Microsoft.NETCore.App": {
+            "privateAssets": "all"
+          }
+        },
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+      }
+    }
+  }
+}

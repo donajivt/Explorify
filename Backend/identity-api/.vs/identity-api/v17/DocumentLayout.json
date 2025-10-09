@@ -1,0 +1,249 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{F57A7480-54BF-4F4F-8E6E-25794D0F1297}|Identity.Api.Infraestructure\\Identity.Api.Infraestructure.csproj|c:\\users\\range\\desktop\\explorify\\explorify\\backend\\explorify\\identity.api.infraestructure\\identity.api.infraestructure.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{F57A7480-54BF-4F4F-8E6E-25794D0F1297}|Identity.Api.Infraestructure\\Identity.Api.Infraestructure.csproj|solutionrelative:identity.api.infraestructure\\identity.api.infraestructure.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B5554EEE-BC70-4B3B-A402-D6B7B3C6AB9B}|Identity.Api.Application\\Identity.Api.Application.csproj|c:\\users\\range\\desktop\\explorify\\explorify\\backend\\explorify\\identity.api.application\\dtos\\loginrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B5554EEE-BC70-4B3B-A402-D6B7B3C6AB9B}|Identity.Api.Application\\Identity.Api.Application.csproj|solutionrelative:identity.api.application\\dtos\\loginrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B5554EEE-BC70-4B3B-A402-D6B7B3C6AB9B}|Identity.Api.Application\\Identity.Api.Application.csproj|c:\\users\\range\\desktop\\explorify\\explorify\\backend\\explorify\\identity.api.application\\dtos\\registerrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B5554EEE-BC70-4B3B-A402-D6B7B3C6AB9B}|Identity.Api.Application\\Identity.Api.Application.csproj|solutionrelative:identity.api.application\\dtos\\registerrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B5554EEE-BC70-4B3B-A402-D6B7B3C6AB9B}|Identity.Api.Application\\Identity.Api.Application.csproj|c:\\users\\range\\desktop\\explorify\\explorify\\backend\\explorify\\identity.api.application\\dtos\\userdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B5554EEE-BC70-4B3B-A402-D6B7B3C6AB9B}|Identity.Api.Application\\Identity.Api.Application.csproj|solutionrelative:identity.api.application\\dtos\\userdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B5554EEE-BC70-4B3B-A402-D6B7B3C6AB9B}|Identity.Api.Application\\Identity.Api.Application.csproj|c:\\users\\range\\desktop\\explorify\\explorify\\backend\\explorify\\identity.api.application\\contracts\\ijwttokengenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B5554EEE-BC70-4B3B-A402-D6B7B3C6AB9B}|Identity.Api.Application\\Identity.Api.Application.csproj|solutionrelative:identity.api.application\\contracts\\ijwttokengenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B5554EEE-BC70-4B3B-A402-D6B7B3C6AB9B}|Identity.Api.Application\\Identity.Api.Application.csproj|c:\\users\\range\\desktop\\explorify\\explorify\\backend\\explorify\\identity.api.application\\contracts\\iemailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{B5554EEE-BC70-4B3B-A402-D6B7B3C6AB9B}|Identity.Api.Application\\Identity.Api.Application.csproj|solutionrelative:identity.api.application\\contracts\\iemailservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4EB6E0D0-7445-4CBA-B3B9-3CF37BD78488}|Identity.API.Domain\\Identity.API.Domain.csproj|c:\\users\\range\\desktop\\explorify\\explorify\\backend\\explorify\\identity.api.domain\\interfaces\\iunitofwork.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4EB6E0D0-7445-4CBA-B3B9-3CF37BD78488}|Identity.API.Domain\\Identity.API.Domain.csproj|solutionrelative:identity.api.domain\\interfaces\\iunitofwork.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4EB6E0D0-7445-4CBA-B3B9-3CF37BD78488}|Identity.API.Domain\\Identity.API.Domain.csproj|c:\\users\\range\\desktop\\explorify\\explorify\\backend\\explorify\\identity.api.domain\\interfaces\\iuserrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4EB6E0D0-7445-4CBA-B3B9-3CF37BD78488}|Identity.API.Domain\\Identity.API.Domain.csproj|solutionrelative:identity.api.domain\\interfaces\\iuserrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4EB6E0D0-7445-4CBA-B3B9-3CF37BD78488}|Identity.API.Domain\\Identity.API.Domain.csproj|c:\\users\\range\\desktop\\explorify\\explorify\\backend\\explorify\\identity.api.domain\\exceptions\\invalidcredentialsexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4EB6E0D0-7445-4CBA-B3B9-3CF37BD78488}|Identity.API.Domain\\Identity.API.Domain.csproj|solutionrelative:identity.api.domain\\exceptions\\invalidcredentialsexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4EB6E0D0-7445-4CBA-B3B9-3CF37BD78488}|Identity.API.Domain\\Identity.API.Domain.csproj|c:\\users\\range\\desktop\\explorify\\explorify\\backend\\explorify\\identity.api.domain\\exceptions\\usernotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4EB6E0D0-7445-4CBA-B3B9-3CF37BD78488}|Identity.API.Domain\\Identity.API.Domain.csproj|solutionrelative:identity.api.domain\\exceptions\\usernotfoundexception.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4EB6E0D0-7445-4CBA-B3B9-3CF37BD78488}|Identity.API.Domain\\Identity.API.Domain.csproj|c:\\users\\range\\desktop\\explorify\\explorify\\backend\\explorify\\identity.api.domain\\enums\\roletype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4EB6E0D0-7445-4CBA-B3B9-3CF37BD78488}|Identity.API.Domain\\Identity.API.Domain.csproj|solutionrelative:identity.api.domain\\enums\\roletype.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4EB6E0D0-7445-4CBA-B3B9-3CF37BD78488}|Identity.API.Domain\\Identity.API.Domain.csproj|c:\\users\\range\\desktop\\explorify\\explorify\\backend\\explorify\\identity.api.domain\\entities\\userrole.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4EB6E0D0-7445-4CBA-B3B9-3CF37BD78488}|Identity.API.Domain\\Identity.API.Domain.csproj|solutionrelative:identity.api.domain\\entities\\userrole.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4EB6E0D0-7445-4CBA-B3B9-3CF37BD78488}|Identity.API.Domain\\Identity.API.Domain.csproj|c:\\users\\range\\desktop\\explorify\\explorify\\backend\\explorify\\identity.api.domain\\entities\\role.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4EB6E0D0-7445-4CBA-B3B9-3CF37BD78488}|Identity.API.Domain\\Identity.API.Domain.csproj|solutionrelative:identity.api.domain\\entities\\role.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{4EB6E0D0-7445-4CBA-B3B9-3CF37BD78488}|Identity.API.Domain\\Identity.API.Domain.csproj|c:\\users\\range\\desktop\\explorify\\explorify\\backend\\explorify\\identity.api.domain\\entities\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{4EB6E0D0-7445-4CBA-B3B9-3CF37BD78488}|Identity.API.Domain\\Identity.API.Domain.csproj|solutionrelative:identity.api.domain\\entities\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Identity.Api.Infraestructure.csproj",
+              "DocumentMoniker": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Infraestructure\\Identity.Api.Infraestructure.csproj",
+              "RelativeDocumentMoniker": "Identity.Api.Infraestructure\\Identity.Api.Infraestructure.csproj",
+              "ToolTip": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Infraestructure\\Identity.Api.Infraestructure.csproj",
+              "RelativeToolTip": "Identity.Api.Infraestructure\\Identity.Api.Infraestructure.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2025-10-09T15:10:40.929Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "LoginRequestDto.cs",
+              "DocumentMoniker": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Application\\DTOs\\LoginRequestDto.cs",
+              "RelativeDocumentMoniker": "Identity.Api.Application\\DTOs\\LoginRequestDto.cs",
+              "ToolTip": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Application\\DTOs\\LoginRequestDto.cs",
+              "RelativeToolTip": "Identity.Api.Application\\DTOs\\LoginRequestDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-09T15:18:08.439Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "RegisterRequestDto.cs",
+              "DocumentMoniker": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Application\\DTOs\\RegisterRequestDto.cs",
+              "RelativeDocumentMoniker": "Identity.Api.Application\\DTOs\\RegisterRequestDto.cs",
+              "ToolTip": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Application\\DTOs\\RegisterRequestDto.cs",
+              "RelativeToolTip": "Identity.Api.Application\\DTOs\\RegisterRequestDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-09T15:17:54.163Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "UserDto.cs",
+              "DocumentMoniker": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Application\\DTOs\\UserDto.cs",
+              "RelativeDocumentMoniker": "Identity.Api.Application\\DTOs\\UserDto.cs",
+              "ToolTip": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Application\\DTOs\\UserDto.cs",
+              "RelativeToolTip": "Identity.Api.Application\\DTOs\\UserDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-09T15:17:35.869Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "IJwtTokenGenerator.cs",
+              "DocumentMoniker": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Application\\Contracts\\IJwtTokenGenerator.cs",
+              "RelativeDocumentMoniker": "Identity.Api.Application\\Contracts\\IJwtTokenGenerator.cs",
+              "ToolTip": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Application\\Contracts\\IJwtTokenGenerator.cs",
+              "RelativeToolTip": "Identity.Api.Application\\Contracts\\IJwtTokenGenerator.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-09T15:17:10.173Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "IEmailService.cs",
+              "DocumentMoniker": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Application\\Contracts\\IEmailService.cs",
+              "RelativeDocumentMoniker": "Identity.Api.Application\\Contracts\\IEmailService.cs",
+              "ToolTip": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Application\\Contracts\\IEmailService.cs",
+              "RelativeToolTip": "Identity.Api.Application\\Contracts\\IEmailService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-09T15:16:53.449Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "IUnitOfWork.cs",
+              "DocumentMoniker": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\Interfaces\\IUnitOfWork.cs",
+              "RelativeDocumentMoniker": "Identity.API.Domain\\Interfaces\\IUnitOfWork.cs",
+              "ToolTip": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\Interfaces\\IUnitOfWork.cs",
+              "RelativeToolTip": "Identity.API.Domain\\Interfaces\\IUnitOfWork.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-09T15:16:07.43Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "IUserRepository.cs",
+              "DocumentMoniker": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\Interfaces\\IUserRepository.cs",
+              "RelativeDocumentMoniker": "Identity.API.Domain\\Interfaces\\IUserRepository.cs",
+              "ToolTip": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\Interfaces\\IUserRepository.cs",
+              "RelativeToolTip": "Identity.API.Domain\\Interfaces\\IUserRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-09T15:15:49.173Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "InvalidCredentialsException.cs",
+              "DocumentMoniker": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\Exceptions\\InvalidCredentialsException.cs",
+              "RelativeDocumentMoniker": "Identity.API.Domain\\Exceptions\\InvalidCredentialsException.cs",
+              "ToolTip": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\Exceptions\\InvalidCredentialsException.cs",
+              "RelativeToolTip": "Identity.API.Domain\\Exceptions\\InvalidCredentialsException.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-09T15:15:35.118Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "UserNotFoundException.cs",
+              "DocumentMoniker": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\Exceptions\\UserNotFoundException.cs",
+              "RelativeDocumentMoniker": "Identity.API.Domain\\Exceptions\\UserNotFoundException.cs",
+              "ToolTip": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\Exceptions\\UserNotFoundException.cs",
+              "RelativeToolTip": "Identity.API.Domain\\Exceptions\\UserNotFoundException.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-09T15:15:25.118Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "RoleType.cs",
+              "DocumentMoniker": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\Enums\\RoleType.cs",
+              "RelativeDocumentMoniker": "Identity.API.Domain\\Enums\\RoleType.cs",
+              "ToolTip": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\Enums\\RoleType.cs",
+              "RelativeToolTip": "Identity.API.Domain\\Enums\\RoleType.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-09T15:15:10.239Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "UserRole.cs",
+              "DocumentMoniker": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\Entities\\UserRole.cs",
+              "RelativeDocumentMoniker": "Identity.API.Domain\\Entities\\UserRole.cs",
+              "ToolTip": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\Entities\\UserRole.cs",
+              "RelativeToolTip": "Identity.API.Domain\\Entities\\UserRole.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-09T15:14:56.907Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "Role.cs",
+              "DocumentMoniker": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\Entities\\Role.cs",
+              "RelativeDocumentMoniker": "Identity.API.Domain\\Entities\\Role.cs",
+              "ToolTip": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\Entities\\Role.cs",
+              "RelativeToolTip": "Identity.API.Domain\\Entities\\Role.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-09T15:14:45.642Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "User.cs",
+              "DocumentMoniker": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\Entities\\User.cs",
+              "RelativeDocumentMoniker": "Identity.API.Domain\\Entities\\User.cs",
+              "ToolTip": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\Entities\\User.cs",
+              "RelativeToolTip": "Identity.API.Domain\\Entities\\User.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-09T15:14:36.505Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
