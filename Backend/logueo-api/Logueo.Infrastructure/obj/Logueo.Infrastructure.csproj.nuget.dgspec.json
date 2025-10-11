@@ -1,0 +1,239 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Users\\Luis Carreto\\Documents\\Proyecto\\Api.Login\\Backend\\logueo-api\\Logueo.Infrastructure\\Logueo.Infrastructure.csproj": {}
+  },
+  "projects": {
+    "C:\\Users\\Luis Carreto\\Documents\\Proyecto\\Api.Login\\Backend\\logueo-api\\Logueo.Application\\Logueo.Application.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Luis Carreto\\Documents\\Proyecto\\Api.Login\\Backend\\logueo-api\\Logueo.Application\\Logueo.Application.csproj",
+        "projectName": "Logueo.Application",
+        "projectPath": "C:\\Users\\Luis Carreto\\Documents\\Proyecto\\Api.Login\\Backend\\logueo-api\\Logueo.Application\\Logueo.Application.csproj",
+        "packagesPath": "C:\\Users\\Luis Carreto\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Luis Carreto\\Documents\\Proyecto\\Api.Login\\Backend\\logueo-api\\Logueo.Application\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Luis Carreto\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\Users\\Luis Carreto\\Documents\\Proyecto\\Api.Login\\Backend\\logueo-api\\Logueo.Domain\\Logueo.Domain.csproj": {
+                "projectPath": "C:\\Users\\Luis Carreto\\Documents\\Proyecto\\Api.Login\\Backend\\logueo-api\\Logueo.Domain\\Logueo.Domain.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\Luis Carreto\\Documents\\Proyecto\\Api.Login\\Backend\\logueo-api\\Logueo.Domain\\Logueo.Domain.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Luis Carreto\\Documents\\Proyecto\\Api.Login\\Backend\\logueo-api\\Logueo.Domain\\Logueo.Domain.csproj",
+        "projectName": "Logueo.Domain",
+        "projectPath": "C:\\Users\\Luis Carreto\\Documents\\Proyecto\\Api.Login\\Backend\\logueo-api\\Logueo.Domain\\Logueo.Domain.csproj",
+        "packagesPath": "C:\\Users\\Luis Carreto\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Luis Carreto\\Documents\\Proyecto\\Api.Login\\Backend\\logueo-api\\Logueo.Domain\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Luis Carreto\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\Luis Carreto\\Documents\\Proyecto\\Api.Login\\Backend\\logueo-api\\Logueo.Infrastructure\\Logueo.Infrastructure.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\Luis Carreto\\Documents\\Proyecto\\Api.Login\\Backend\\logueo-api\\Logueo.Infrastructure\\Logueo.Infrastructure.csproj",
+        "projectName": "Logueo.Infrastructure",
+        "projectPath": "C:\\Users\\Luis Carreto\\Documents\\Proyecto\\Api.Login\\Backend\\logueo-api\\Logueo.Infrastructure\\Logueo.Infrastructure.csproj",
+        "packagesPath": "C:\\Users\\Luis Carreto\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Luis Carreto\\Documents\\Proyecto\\Api.Login\\Backend\\logueo-api\\Logueo.Infrastructure\\obj\\",
+        "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
+        "configFilePaths": [
+          "C:\\Users\\Luis Carreto\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "C:\\Users\\Luis Carreto\\Documents\\Proyecto\\Api.Login\\Backend\\logueo-api\\Logueo.Application\\Logueo.Application.csproj": {
+                "projectPath": "C:\\Users\\Luis Carreto\\Documents\\Proyecto\\Api.Login\\Backend\\logueo-api\\Logueo.Application\\Logueo.Application.csproj"
+              },
+              "C:\\Users\\Luis Carreto\\Documents\\Proyecto\\Api.Login\\Backend\\logueo-api\\Logueo.Domain\\Logueo.Domain.csproj": {
+                "projectPath": "C:\\Users\\Luis Carreto\\Documents\\Proyecto\\Api.Login\\Backend\\logueo-api\\Logueo.Domain\\Logueo.Domain.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "BCrypt.Net-Next": {
+              "target": "Package",
+              "version": "[4.0.3, )"
+            },
+            "Microsoft.Extensions.Configuration.Abstractions": {
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Microsoft.Extensions.Configuration.Binder": {
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "MongoDB.Driver": {
+              "target": "Package",
+              "version": "[3.5.0, )"
+            },
+            "System.IdentityModel.Tokens.Jwt": {
+              "target": "Package",
+              "version": "[8.14.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
