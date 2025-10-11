@@ -1,9 +1,0 @@
-# Visual Studio
-**/.vs/
-**/bin/
-**/obj/
-**/TestResults/
-*.user
-*.suo
-*.userosscache
-*.sln.docstates
