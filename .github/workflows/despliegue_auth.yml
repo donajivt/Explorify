@@ -180,6 +180,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ${{ env.PROJECT_PATH }}
+          file: ${{ env.PROJECT_PATH }}/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
