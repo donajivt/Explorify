@@ -1,0 +1,57 @@
+# Directorios de build y binarios
+**/bin/
+**/obj/
+**/out/
+**/publish/
+
+# Archivos de usuario de Visual Studio
+**/*.user
+**/*.suo
+**/.vs/
+**/.vscode/
+
+# Archivos de configuración local
+**/appsettings.Development.json
+**/appsettings.*.json
+!**/appsettings.json
+
+# NuGet packages
+**/*.nupkg
+**/packages/
+
+# Archivos de pruebas
+**/TestResults/
+**/*.trx
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Docker
+**/Dockerfile*
+**/docker-compose*
+**/.dockerignore
+
+# CI/CD
+.github/
+*.yml
+*.yaml
+
+# Documentación
+**/README.md
+**/LICENSE
+**/CHANGELOG.md
+
+# Archivos temporales
+**/tmp/
+**/temp/
+**/*.tmp
+**/*.log
+**/*.cache
+
+# Node modules (si existen)
+**/node_modules/
+
+# macOS
+.DS_Store
