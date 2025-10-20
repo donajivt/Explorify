@@ -60,7 +60,11 @@ fun RegisterScreen(navController: NavController) {
             value = name,
             onValueChange = { name = it },
             label = { Text("Nombre completo") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedTextColor = Color.Gray,
+                focusedTextColor = Color.DarkGray
+            )
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -69,7 +73,11 @@ fun RegisterScreen(navController: NavController) {
             value = email,
             onValueChange = { email = it },
             label = { Text("Correo electrónico") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedTextColor = Color.Gray,
+                focusedTextColor = Color.DarkGray
+            )
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -79,7 +87,11 @@ fun RegisterScreen(navController: NavController) {
             onValueChange = { password = it },
             label = { Text("Contraseña") },
             visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedTextColor = Color.Gray,
+                focusedTextColor = Color.DarkGray
+            )
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -105,12 +117,16 @@ fun RegisterScreen(navController: NavController) {
         // Hipervínculo para ir a Register
         TextButton(onClick = {
             navController.navigate("login")
-        }) {
+        },
+            colors = ButtonDefaults.textButtonColors(
+                contentColor = Color.DarkGray
+            )
+            ) {
             Text("¿Ya tienes cuenta? Inicia Sesión")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-        Text(text = registerResult)
+        //Text(text = registerResult)
 
         if (registerResult.startsWith("Registro exitoso")) {
             LaunchedEffect(Unit) {

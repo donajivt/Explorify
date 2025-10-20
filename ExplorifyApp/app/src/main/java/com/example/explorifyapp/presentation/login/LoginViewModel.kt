@@ -6,8 +6,11 @@ import com.example.explorifyapp.domain.repository.LoginRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import android.util.Log
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 
-class LoginViewModel : ViewModel() {
+/*class LoginViewModel : ViewModel() {
 
     private val repository = LoginRepository()
 
@@ -25,11 +28,12 @@ class LoginViewModel : ViewModel() {
             try {
                 val response = repository.login(username, password)
                 if (response.isSuccess && response.result != null) {
-                    val user = response.result.user
+                    //val user = response.result.user
                     userName = response.result.user.name
                     token = response.result.token
-                    //Aqui utilizar el navigation para entrar a la pagina inicial
-                    _loginResult.value = "Bienvenido ${user.name} (${user.email})\nToken: ${token?.take(20)}..."
+                    //Aqui utilizar el navigation para entrar a la pagina inicial //${user.name} (${user.email})
+                    _loginResult.value = "Bienvenido Token: ${token?.take(29)}..."
+                    Log.i("Token","${token}");
                 } else {
                     _loginResult.value = "Error: ${response.message ?: "No se pudo iniciar sesión"}"
                 }
@@ -37,5 +41,54 @@ class LoginViewModel : ViewModel() {
                 _loginResult.value = "Error de red: ${e.localizedMessage}"
             }
         }
+    }
+}*/
+
+class LoginViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val repository = LoginRepository(application)
+
+    private val _loginResult = MutableStateFlow<String>("")
+    val loginResult: StateFlow<String> = _loginResult
+
+    var token: String? = null
+        private set
+
+    var userName: String = ""
+        private set
+
+    fun login(username: String, password: String) {
+        viewModelScope.launch {
+            try {
+                val response = repository.login(username, password)
+                if (response.isSuccess && response.result != null) {
+                    userName = response.result.user.name
+                    token = response.result.token
+
+                    // Guardar token en Room
+                    repository.saveToken(token!!)
+
+                    _loginResult.value = "Bienvenido Token: ${token?.take(29)}..."
+                } else {
+                    _loginResult.value = "Error: ${response.message ?: "No se pudo iniciar sesión"}"
+                }
+            } catch (e: Exception) {
+                _loginResult.value = "Error de red: ${e.localizedMessage}"
+            }
+        }
+    }
+
+    fun logout(onLogout: () -> Unit) {
+        viewModelScope.launch {
+            repository.clearToken()
+            token = null
+            userName = ""
+            onLogout()
+        }
+    }
+
+    suspend fun isLoggedIn(): Boolean {
+        token = repository.getToken()
+        return token != null
     }
 }
