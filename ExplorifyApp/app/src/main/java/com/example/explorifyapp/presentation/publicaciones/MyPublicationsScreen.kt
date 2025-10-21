@@ -86,7 +86,7 @@ fun MyPublicationsScreen(navController: NavController,viewModel: LoginViewModel 
         },
         bottomBar = {
             BottomAppBar {
-                IconButton(onClick = { navController.navigate("home") }) {
+                IconButton(onClick = { navController.navigate("inicio") }) {
                     Icon(Icons.Default.Home, contentDescription = "Inicio")
                 }
                 IconButton(onClick = { navController.navigate("buscar") }) {

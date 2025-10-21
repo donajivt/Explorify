@@ -12,6 +12,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.Icon
@@ -23,11 +25,18 @@ import androidx.navigation.NavController
 import com.example.explorifyapp.presentation.login.LoginViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 @OptIn(ExperimentalMaterial3Api::class)
 
 @Composable
 fun HomeScreen(userName: String,navController: NavController, viewModel: LoginViewModel = viewModel()) {
+
+    var menuExpanded by remember { mutableStateOf(false) }
+
     LaunchedEffect(Unit) {
         val isLoggedIn = viewModel.isLoggedIn()
         if (!isLoggedIn) {
@@ -39,19 +48,38 @@ fun HomeScreen(userName: String,navController: NavController, viewModel: LoginVi
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Título de la página") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                title = { Text("Mi Lista de Aventuras") },
+                actions = {
+                    Box {
+                        IconButton(onClick = { menuExpanded = true }) {
+                            Icon(Icons.Default.AccountCircle, contentDescription = "Perfil")
+                        }
+
+                        DropdownMenu(
+                            expanded = menuExpanded,
+                            onDismissRequest = { menuExpanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Perfil") },
+                                onClick = {
+                                    menuExpanded = false
+                                    navController.navigate("perfil")
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Cerrar sesión") },
+                                onClick = {
+                                    menuExpanded = false
+                                    viewModel.logout {
+                                        navController.navigate("login") {
+                                            popUpTo("mypublications") { inclusive = true }
+                                        }
+                                    }
+                                }
+                            )
+                        }
                     }
                 },
-                actions = {
-                    IconButton(onClick = {
-                        navController.navigate("perfil")
-                    }) {
-                        Icon(Icons.Default.AccountCircle, contentDescription = "Perfil")
-                    }
-                }
             )
         },
         bottomBar = {
