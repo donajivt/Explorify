@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("kotlin-kapt")
+    //kotlin("kapt")
 }
 
 android {
@@ -50,7 +51,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.room.common.jvm)
+    //implementation(libs.androidx.room.common.jvm)
     implementation(libs.androidx.room.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -76,5 +77,12 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
 //Navegacion atraves de pantallas
     implementation("androidx.navigation:navigation-compose:2.7.5")
+    // Room
+    implementation("androidx.room:room-runtime:2.7.0")
+    kapt("androidx.room:room-compiler:2.7.0")
+    implementation("androidx.room:room-ktx:2.7.0")
 
+
+    // Opcional: para corutinas y Flow
+    implementation("androidx.room:room-ktx:2.6.1")
 }

@@ -1,6 +1,9 @@
 package com.example.explorifyapp.data.remote.room
 
 import androidx.room.Insert
+import androidx.room.Dao
+import androidx.room.Query
+import androidx.room.OnConflictStrategy
 
 @Dao
 interface AuthTokenDao {

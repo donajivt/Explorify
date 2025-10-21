@@ -1,6 +1,6 @@
 package com.example.explorifyapp.presentation.login
 
-import androidx.lifecycle.ViewModel
+
 import androidx.lifecycle.viewModelScope
 import com.example.explorifyapp.domain.repository.LoginRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -66,7 +66,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                     token = response.result.token
 
                     // Guardar token en Room
-                    repository.saveToken(token!!)
+                    repository.saveToken(token!!,userName)
 
                     _loginResult.value = "Bienvenido Token: ${token?.take(29)}..."
                 } else {
@@ -88,7 +88,10 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     suspend fun isLoggedIn(): Boolean {
-        token = repository.getToken()
+        val authData = repository.getAuthData()
+        token = authData?.token
+        userName = authData?.username ?: ""
+        Log.d("SplashScreen", "isLoggedIn: ${token != null}, userName: $userName")
         return token != null
     }
 }

@@ -31,7 +31,7 @@ fun AppNavigation() {
         }
 
         composable(
-            "home/{userName}",
+            "inicio/{userName}",
             arguments = listOf(navArgument("userName") {
                 type = NavType.StringType
             })

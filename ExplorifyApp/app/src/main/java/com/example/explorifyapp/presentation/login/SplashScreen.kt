@@ -10,15 +10,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Alignment
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.lifecycle.viewmodel.compose.viewModel
+import android.util.Log
 
 
 @Composable
 fun SplashScreen(navController: NavController, viewModel: LoginViewModel = viewModel()) {
     LaunchedEffect(Unit) {
         val isLoggedIn = viewModel.isLoggedIn()
+        val userName=viewModel.userName
+        Log.d("SplashScreen", "isLoggedIn: $isLoggedIn, userName: $userName")
         delay(1000) // solo para dar tiempo a mostrar el splash
-        if (isLoggedIn) {
-            navController.navigate("home/${viewModel.userName}") {
+
+        if (isLoggedIn && !userName.isNullOrEmpty()) {
+            navController.navigate("inicio/${viewModel.userName}") {
                 popUpTo("splash") { inclusive = true }
             }
         } else {

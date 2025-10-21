@@ -3,6 +3,7 @@ package com.example.explorifyapp.data.remote.room
 import androidx.room.Database
 import android.content.Context
 import androidx.room.Room
+import androidx.room.RoomDatabase
 
 @Database(entities = [AuthToken::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
