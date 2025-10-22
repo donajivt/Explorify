@@ -53,8 +53,9 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
     var token: String? = null
         private set
-
     var userName: String = ""
+        private set
+    var userId: String = ""
         private set
 
     fun login(username: String, password: String) {
@@ -64,9 +65,11 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 if (response.isSuccess && response.result != null) {
                     userName = response.result.user.name
                     token = response.result.token
+                    userId = response.result.user.id
 
+                        //
                     // Guardar token en Room
-                    repository.saveToken(token!!,userName)
+                    repository.saveToken(token!!,userName,userId)
 
                     _loginResult.value = "Bienvenido Token: ${token?.take(29)}..."
                 } else {
@@ -83,6 +86,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
             repository.clearToken()
             token = null
             userName = ""
+            userId=""
             onLogout()
         }
     }
@@ -91,6 +95,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         val authData = repository.getAuthData()
         token = authData?.token
         userName = authData?.username ?: ""
+        userId = authData?.userId ?: ""
         Log.d("SplashScreen", "isLoggedIn: ${token != null}, userName: $userName")
         return token != null
     }

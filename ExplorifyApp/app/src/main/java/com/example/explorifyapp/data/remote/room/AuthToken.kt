@@ -7,5 +7,6 @@ import androidx.room.Entity
 data class AuthToken(
     @PrimaryKey val id: Int = 0, // solo uno
     val token: String,
-    val username: String
+    val username: String,
+    val userId: String,
 )

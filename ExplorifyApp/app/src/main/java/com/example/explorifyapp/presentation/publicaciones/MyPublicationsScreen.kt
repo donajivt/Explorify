@@ -27,19 +27,45 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.Alignment
+import com.example.explorifyapp.data.remote.dto.Publication
+import androidx.compose.material3.Card
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.rememberAsyncImagePainter
+import androidx.compose.foundation.lazy.items
+import com.example.explorifyapp.data.remote.publications.RetrofitPublicationsInstance
+import com.example.explorifyapp.domain.repository.PublicationsRepository
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MyPublicationsScreen(navController: NavController,viewModel: LoginViewModel = viewModel()) {
+@Composable //,viewModel: MyPublicationsViewModel = viewModel()
+fun MyPublicationsScreen(navController: NavController, loginViewModel: LoginViewModel = viewModel()) {
 
     var menuExpanded by remember { mutableStateOf(false) }
+    //val repo = remember { PublicationsRepository() }
+    val repo = remember { PublicationsRepository(RetrofitPublicationsInstance.api) }
+    val factory = remember { MyPublicationsViewModelFactory(repo) }
+    val viewModel: MyPublicationsViewModel = viewModel(factory = factory)
 
     LaunchedEffect(Unit) {
-        val isLoggedIn = viewModel.isLoggedIn()
+        val isLoggedIn = loginViewModel.isLoggedIn()
         if (!isLoggedIn) {
             navController.navigate("login") {
                 popUpTo("mypublications") { inclusive = true }
             }
+        }
+        val userId = loginViewModel.userId
+        val token = loginViewModel.token
+        // posiblemente también usar userId si lo tienes
+        if (!token.isNullOrEmpty() && userId.isNotEmpty()) {
+            viewModel.loadPublications(userId, token)
         }
     }
     Scaffold(
@@ -72,7 +98,7 @@ fun MyPublicationsScreen(navController: NavController,viewModel: LoginViewModel 
                                  text = { Text("Cerrar sesión") },
                                 onClick = {
                                     menuExpanded = false
-                                    viewModel.logout {
+                                    loginViewModel.logout {
                                         navController.navigate("login") {
                                             popUpTo("mypublications") { inclusive = true }
                                         }
@@ -98,9 +124,44 @@ fun MyPublicationsScreen(navController: NavController,viewModel: LoginViewModel 
             }
         }
     ) {
-        // Aquí va el contenido principal
-        Box(modifier = Modifier.padding(it)) {
-            // Tu contenido aquí
+            paddingValues ->
+        Box(modifier = Modifier.padding(paddingValues)) {
+            when {
+                viewModel.isLoading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+                viewModel.errorMessage != null -> {
+                    Text(text = viewModel.errorMessage ?: "Error", color = MaterialTheme.colorScheme.error)
+                }
+                else -> {
+                    LazyColumn {
+                        items(viewModel.publications) { pub ->
+                            PublicationItem(pub)
+                        }
+                    }
+                }
+            }
         }
     }
 }
+
+
+@Composable
+fun PublicationItem(pub: Publication) {
+    Card(modifier = Modifier.padding(8.dp).fillMaxWidth()) {
+        Column {
+            Image(
+                painter = rememberAsyncImagePainter(pub.imageUrl),
+                contentDescription = pub.title,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp),
+                contentScale = ContentScale.Crop
+            )
+            Text(text = pub.title, style = MaterialTheme.typography.titleMedium)
+            Text(text = pub.description, style = MaterialTheme.typography.bodyMedium)
+            Text(text = pub.location, style = MaterialTheme.typography.bodySmall)
+        }
+    }
+    }
+

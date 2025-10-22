@@ -16,6 +16,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.foundation.Image
 import androidx.compose.ui.layout.ContentScale
 import com.example.explorifyapp.R
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.coroutineScope
+
+
 
 @Composable
 fun RegisterScreen(navController: NavController) {
@@ -24,6 +28,11 @@ fun RegisterScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
     val registerResult by viewModel.registerResult.collectAsState()
 
@@ -98,8 +107,17 @@ fun RegisterScreen(navController: NavController) {
 
         Button(
             onClick = {
-                viewModel.register(email, name, password)
+                if (name.isBlank() || password.isBlank() ||email.isBlank()) {
+                    errorMessage = "Por favor, completa todos los campos"
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(errorMessage!!)
+                    }
+                } else {
+                    errorMessage = null
+                    viewModel.register(email, name, password)
+                }
             },
+            enabled = name.isNotBlank() && password.isNotBlank() && email.isNotBlank(),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF355031),
                 contentColor = Color.White

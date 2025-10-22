@@ -60,10 +60,10 @@ fun HomeScreen(userName: String,navController: NavController, viewModel: LoginVi
                             onDismissRequest = { menuExpanded = false }
                         ) {
                             DropdownMenuItem(
-                                text = { Text("Perfil") },
+                                text = { Text("Mis Publicaciones") },
                                 onClick = {
                                     menuExpanded = false
-                                    navController.navigate("perfil")
+                                    navController.navigate("mispublicaciones")
                                 }
                             )
                             DropdownMenuItem(
@@ -84,7 +84,7 @@ fun HomeScreen(userName: String,navController: NavController, viewModel: LoginVi
         },
         bottomBar = {
             BottomAppBar {
-                IconButton(onClick = { navController.navigate("home") }) {
+                IconButton(onClick = { navController.navigate("inicio") }) {
                     Icon(Icons.Default.Home, contentDescription = "Inicio")
                 }
                 IconButton(onClick = { navController.navigate("buscar") }) {
