@@ -41,7 +41,7 @@ fun HomeScreen(userName: String,navController: NavController, viewModel: LoginVi
         val isLoggedIn = viewModel.isLoggedIn()
         if (!isLoggedIn) {
             navController.navigate("login") {
-                popUpTo("home/{$userName}") { inclusive = true }
+                popUpTo("inicio/{$userName}") { inclusive = true }
             }
         }
     }

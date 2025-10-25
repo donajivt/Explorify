@@ -14,8 +14,8 @@ class LoginRepository(context: Context) {
     //ROOM
     private val tokenDao = AppDatabase.getInstance(context).authTokenDao()
 
-    suspend fun saveToken(token: String, username: String,userId: String) {
-        tokenDao.saveToken(AuthToken(token = token,username = username,userId = userId))
+    suspend fun saveToken(token: String, username: String,userId: String,userEmail:String) {
+        tokenDao.saveToken(AuthToken(token = token,username = username,userId = userId,userEmail = userEmail))
     }
 
     suspend fun getAuthData(): AuthToken? {

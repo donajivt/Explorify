@@ -9,4 +9,7 @@ import retrofit2.http.Path
 interface PublicationsApiService {
     @GET("/api/Publication/user/{userId}")
     suspend fun getPublicationsByUser(@Path("userId") userId: String, @Header("Authorization") token: String): PublicationsResponse
+
+    @GET("/api/Publication/location/{location}")
+    suspend fun getPublicationsByLocation(@Path("location")location:String, @Header("Authorization") token: String): PublicationsResponse
 }

@@ -57,6 +57,8 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         private set
     var userId: String = ""
         private set
+    var userEmail:String=""
+        private set
 
     fun login(username: String, password: String) {
         viewModelScope.launch {
@@ -66,10 +68,10 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                     userName = response.result.user.name
                     token = response.result.token
                     userId = response.result.user.id
-
+                    userEmail=response.result.user.email
                         //
                     // Guardar token en Room
-                    repository.saveToken(token!!,userName,userId)
+                    repository.saveToken(token!!,userName,userId,userEmail)
 
                     _loginResult.value = "Bienvenido Token: ${token?.take(29)}..."
                 } else {

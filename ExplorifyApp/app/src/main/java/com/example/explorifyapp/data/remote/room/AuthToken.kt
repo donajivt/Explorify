@@ -9,4 +9,5 @@ data class AuthToken(
     val token: String,
     val username: String,
     val userId: String,
+    val userEmail: String
 )
