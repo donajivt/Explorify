@@ -18,12 +18,27 @@ fun SplashScreen(navController: NavController, viewModel: LoginViewModel = viewM
     LaunchedEffect(Unit) {
         val isLoggedIn = viewModel.isLoggedIn()
         val userName=viewModel.userName
+        val role=viewModel.getSavedRole()
         Log.d("SplashScreen", "isLoggedIn: $isLoggedIn, userName: $userName")
         delay(1000) // solo para dar tiempo a mostrar el splash
 
         if (isLoggedIn && !userName.isNullOrEmpty()) {
-            navController.navigate("inicio/${viewModel.userName}") {
-                popUpTo("splash") { inclusive = true }
+            when (role) {
+                "ADMIN" -> {
+                    navController.navigate("adminDashboard") {
+                        popUpTo("splash") { inclusive = true }
+                    }
+                }
+                "USER" -> {
+                    navController.navigate("inicio/${userName}") {
+                        popUpTo("splash") { inclusive = true }
+                    }
+                }
+                else -> { // si no hay rol o es desconocido
+                    navController.navigate("inicio/${userName}") {
+                        popUpTo("splash") { inclusive = true }
+                    }
+                }
             }
         } else {
             navController.navigate("login") {

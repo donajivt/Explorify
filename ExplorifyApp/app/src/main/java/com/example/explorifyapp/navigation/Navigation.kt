@@ -12,6 +12,7 @@ import com.example.explorifyapp.presentation.buscar.BuscarScreen
 import com.example.explorifyapp.presentation.perfil.PerfilScreen
 import com.example.explorifyapp.presentation.login.SplashScreen
 import com.example.explorifyapp.presentation.publicaciones.MyPublicationsScreen
+import com.example.explorifyapp.presentation.admin.AdminDashboard
 
 @Composable
 fun AppNavigation() {
@@ -40,6 +41,9 @@ fun AppNavigation() {
             HomeScreen(userName = userName,navController= navController)
         }
 
+        composable("adminDashboard") {
+            AdminDashboard( navController = navController)
+        }
 
         composable("perfil") {
             PerfilScreen( navController = navController)

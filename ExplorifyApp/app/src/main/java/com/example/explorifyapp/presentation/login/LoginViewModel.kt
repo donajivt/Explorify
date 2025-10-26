@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import android.util.Log
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import com.example.explorifyapp.data.remote.auth.decodeJwtPayload
 
 /*class LoginViewModel : ViewModel() {
 
@@ -59,6 +60,8 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         private set
     var userEmail:String=""
         private set
+    var role:String? =""
+        private set
 
     fun login(username: String, password: String) {
         viewModelScope.launch {
@@ -69,10 +72,19 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                     token = response.result.token
                     userId = response.result.user.id
                     userEmail=response.result.user.email
+                    if (token != null) {
+                        val payload = decodeJwtPayload(token!!)
+                        role = payload?.optString("http://schemas.microsoft.com/ws/2008/06/identity/claims/role")
+                        // Guardar token en Room
+                        repository.saveToken(token!!, userName, userId, userEmail,role!!)
+                        // maybe also save role in DB here
+                    } else {
+                        Log.e("LoginViewModel", "Token was null after login")
+                    }
+                    //val payload = decodeJwtPayload(token!!)
+                    //val role = payload?.optString("http://schemas.microsoft.com/ws/2008/06/identity/claims/role")
                         //
-                    // Guardar token en Room
-                    repository.saveToken(token!!,userName,userId,userEmail)
-
+                    //
                     _loginResult.value = "Bienvenido Token: ${token?.take(29)}..."
                 } else {
                     _loginResult.value = "Error: ${response.message ?: "No se pudo iniciar sesión"}"
@@ -101,4 +113,22 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         Log.d("SplashScreen", "isLoggedIn: ${token != null}, userName: $userName")
         return token != null
     }
+
+    suspend fun checkUserRole(): String? {
+        val authData = repository.getAuthData()
+        token = authData?.token
+        userName = authData?.username ?: ""
+        userId = authData?.userId ?: ""
+        userEmail = authData?.userEmail ?: ""
+
+        return authData?.role // <- puede ser "USER", "ADMIN", etc.
+    }
+
+    suspend fun getSavedRole(): String? {
+        val authData = repository.getAuthData()
+        return authData?.role
+    }
+
 }
+
+

@@ -5,6 +5,7 @@ import com.example.explorifyapp.data.remote.auth.RetrofitInstance
 import com.example.explorifyapp.data.remote.room.AppDatabase
 import com.example.explorifyapp.data.remote.room.AuthToken
 import android.content.Context
+import androidx.compose.ui.semantics.Role
 
 class LoginRepository(context: Context) {
 
@@ -14,8 +15,8 @@ class LoginRepository(context: Context) {
     //ROOM
     private val tokenDao = AppDatabase.getInstance(context).authTokenDao()
 
-    suspend fun saveToken(token: String, username: String,userId: String,userEmail:String) {
-        tokenDao.saveToken(AuthToken(token = token,username = username,userId = userId,userEmail = userEmail))
+    suspend fun saveToken(token: String, username: String,userId: String,userEmail:String,role: String) {
+        tokenDao.saveToken(AuthToken(token = token,username = username,userId = userId,userEmail = userEmail, role = role))
     }
 
     suspend fun getAuthData(): AuthToken? {
