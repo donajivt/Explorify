@@ -1,5 +1,4 @@
 # Pipeline de CI/CD para API de Publicaciones
-# Automatiza build, pruebas, análisis y despliegue
 
 name: Publications API - CI/CD Pipeline
 
@@ -9,7 +8,7 @@ on:
       - main
       - develop
     paths:
-      - 'Backend/Explorify.Api.Publications/**'
+      - 'Backend/Explorify.Api.Plubications/**'
       - '.github/workflows/**'
 
   pull_request:
@@ -17,14 +16,14 @@ on:
       - main
       - develop
     paths:
-      - 'Backend/Explorify.Api.Publications/**'
+      - 'Backend/Explorify.Api.Plubications/**'
 
   workflow_dispatch:
 
 env:
   DOTNET_VERSION: '9.0.x'
-  PROJECT_PATH: 'Backend/Explorify.Api.Publications'
-  SOLUTION_FILE: 'Explorify.Api.Publications.sln'
+  PROJECT_PATH: 'Backend/Explorify.Api.Plubications'
+  SOLUTION_FILE: 'Explorify.Api.Plubications.sln'
   BUILD_CONFIGURATION: 'Release'
 
 jobs:
@@ -32,10 +31,12 @@ jobs:
   build:
     name: Build and Test
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -51,16 +52,20 @@ jobs:
             ${{ runner.os }}-nuget-
 
       - name: Restore dependencies
-        run: dotnet restore ${{ env.SOLUTION_FILE }}
+        run: |
+          cd ${{ env.PROJECT_PATH }}
+          dotnet restore ${{ env.SOLUTION_FILE }}
 
       - name: Build solution
         run: |
+          cd ${{ env.PROJECT_PATH }}
           dotnet build ${{ env.SOLUTION_FILE }} \
             --configuration ${{ env.BUILD_CONFIGURATION }} \
             --no-restore
 
       - name: Run unit tests
         run: |
+          cd ${{ env.PROJECT_PATH }}
           dotnet test ${{ env.SOLUTION_FILE }} \
             --configuration ${{ env.BUILD_CONFIGURATION }} \
             --no-build \
@@ -78,9 +83,10 @@ jobs:
 
       - name: Publish application
         run: |
-          dotnet publish ${{ env.PROJECT_PATH }}/Explorify.Api.Publications/Explorify.Api.Publications.csproj \
+          cd ${{ env.PROJECT_PATH }}
+          dotnet publish Explorify.Api.Plubications/Explorify.Api.Plubications.csproj \
             --configuration ${{ env.BUILD_CONFIGURATION }} \
-            --output ${{ env.PROJECT_PATH }}/publish \
+            --output publish \
             --no-build
 
       - name: Upload build artifacts
@@ -94,7 +100,7 @@ jobs:
     name: Code Quality Analysis
     runs-on: ubuntu-latest
     needs: build
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -106,11 +112,13 @@ jobs:
 
       - name: Security scan
         run: |
+          cd ${{ env.PROJECT_PATH }}
           dotnet list ${{ env.SOLUTION_FILE }} package --vulnerable --include-transitive
         continue-on-error: true
 
       - name: Check code formatting
         run: |
+          cd ${{ env.PROJECT_PATH }}
           dotnet format ${{ env.SOLUTION_FILE }} \
             --verify-no-changes \
             --verbosity diagnostic
@@ -124,7 +132,7 @@ jobs:
     permissions:
       contents: read
       packages: write
-    
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -143,12 +151,9 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/${{ github.repository_owner }}/explorify-publications-api
+          images: ghcr.io/${{ github.repository_owner }}/explorify-plubications-api
           tags: |
             type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
 
@@ -170,7 +175,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
     environment:
       name: development
-    
+
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -180,7 +185,7 @@ jobs:
 
       - name: Deploy to development server
         run: |
-          echo "Desplegando a dev..."
+          echo "Desplegando a desarrollo..."
         env:
           DEPLOY_KEY: ${{ secrets.DEV_DEPLOY_KEY }}
 
@@ -191,7 +196,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     environment:
       name: production
-    
+
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -204,7 +209,3 @@ jobs:
           echo "Desplegando a producción..."
         env:
           DEPLOY_KEY: ${{ secrets.PROD_DEPLOY_KEY }}
-
-      - name: Notify deployment success
-        if: success()
-        run: echo "🚀 Despliegue exitoso"
