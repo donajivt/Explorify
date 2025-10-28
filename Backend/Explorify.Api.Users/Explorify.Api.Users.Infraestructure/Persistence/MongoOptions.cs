@@ -11,6 +11,6 @@ namespace Explorify.Api.Users.Infrastructure.Persistence
         public const string SectionName = "Mongo";
         public string ConnectionString { get; set; } = "";
         public string Database { get; set; } = "";
-        public string PublicationsCollection { get; set; } = "publications";
+        public string UsersCollection { get; set; } = "users";
     }
 }
