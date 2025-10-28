@@ -1,8 +1,11 @@
-#  CI/CD para Explorify.Api.Publications
+# Pipeline de CI/CD para API de Publicaciones
+# Este workflow automatiza la construcción, pruebas y despliegue de la aplicación
+
 name: Publications API - CI/CD Pipeline
 
-#  Cuándo se ejecuta
+# Definición de triggers: cuándo se ejecutará el pipeline
 on:
+  # Se ejecuta en push a las ramas principales
   push:
     branches:
       - main
@@ -11,6 +14,7 @@ on:
       - 'Backend/Explorify.Api.Publications/**'
       - '.github/workflows/**'
   
+  # Se ejecuta en Pull Requests hacia main o develop
   pull_request:
     branches:
       - main
@@ -18,97 +22,212 @@ on:
     paths:
       - 'Backend/Explorify.Api.Publications/**'
   
-  workflow_dispatch: #  Permite ejecutar manualmente desde GitHub Actions
+  # Permite ejecución manual desde la interfaz de GitHub
+  workflow_dispatch:
 
-#  Variables globales
+# Variables de entorno globales para todo el workflow
 env:
   DOTNET_VERSION: '9.0.x'
   PROJECT_PATH: 'Backend/Explorify.Api.Publications'
   SOLUTION_FILE: 'Explorify.Api.Publications.sln'
   BUILD_CONFIGURATION: 'Release'
 
+# Definición de trabajos del pipeline
 jobs:
-
+  
+  # Job 1: Análisis de código y construcción
   build:
-    name: 🔧 Build and Test
+    name: Build and Test
     runs-on: ubuntu-latest
-
+    
     steps:
-      #  Descargar el repositorio
-      - uses: actions/checkout@v4
-        
-      #  Instalar .NET 9
-      - uses: actions/setup-dotnet@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      #  Cache NuGet
-      - uses: actions/cache@v3
+      
+      - name: Cache NuGet packages
+        uses: actions/cache@v3
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
-
-      #  Restaurar dependencias
-      - run: dotnet restore ${{ env.SOLUTION_FILE }}
-        working-directory: ${{ env.PROJECT_PATH }}
-
-      #  Build del solution completo
-      - run: dotnet build ${{ env.SOLUTION_FILE }} -c ${{ env.BUILD_CONFIGURATION }} --no-restore
-        working-directory: ${{ env.PROJECT_PATH }}
-
-      #  Ejecutar pruebas (si después incluyes proyectos de test, se ajustará)
-      - run: dotnet test ${{ env.SOLUTION_FILE }} --no-build --verbosity normal
-        working-directory: ${{ env.PROJECT_PATH }}
+      
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.PROJECT_PATH }}/${{ env.SOLUTION_FILE }}
+      
+      - name: Build solution
+        run: |
+          dotnet build ${{ env.PROJECT_PATH }}/${{ env.SOLUTION_FILE }} \
+            --configuration ${{ env.BUILD_CONFIGURATION }} \
+            --no-restore
+      
+      - name: Run unit tests
+        run: |
+          dotnet test ${{ env.PROJECT_PATH }}/${{ env.SOLUTION_FILE }} \
+            --configuration ${{ env.BUILD_CONFIGURATION }} \
+            --no-build \
+            --verbosity normal \
+            --logger "trx;LogFileName=test-results.trx" \
+            --collect:"XPlat Code Coverage"
         continue-on-error: true
-
-      # Publicar artefacto compilado
-      - run: dotnet publish Explorify.Api.Publications.csproj -c ${{ env.BUILD_CONFIGURATION }} -o ./publish --no-build
-        working-directory: ${{ env.PROJECT_PATH }}
-
-      #  Subir build a Actions
-      - uses: actions/upload-artifact@v4
+      
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: '**/test-results.trx'
+        continue-on-error: true
+      
+      - name: Publish application
+        run: |
+          dotnet publish ${{ env.PROJECT_PATH }}/Explorify.Api.Publications/Explorify.Api.Publications.csproj \
+            --configuration ${{ env.BUILD_CONFIGURATION }} \
+            --output ${{ env.PROJECT_PATH }}/publish \
+            --no-build
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
         with:
           name: publications-api-build
           path: ${{ env.PROJECT_PATH }}/publish
           retention-days: 7
 
-  docker-build:
-    name:  Build & Push Docker Image
+  # Job 2: Análisis de seguridad y calidad de código
+  code-quality:
+    name: Code Quality Analysis
     runs-on: ubuntu-latest
     needs: build
-    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+      - name: Security scan
+        run: |
+          dotnet list ${{ env.PROJECT_PATH }}/${{ env.SOLUTION_FILE }} package --vulnerable --include-transitive
+        continue-on-error: true
+      
+      - name: Check code formatting
+        run: |
+          dotnet format ${{ env.PROJECT_PATH }}/${{ env.SOLUTION_FILE }} \
+            --verify-no-changes \
+            --verbosity diagnostic
+        continue-on-error: true
+
+  # Job 3: Construcción y Push de Docker
+  docker-build:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: read
       packages: write
-
+    
     steps:
-      - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
-
-      # ✅ Login a GitHub Container Registry
-      - uses: docker/login-action@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      # ✅ Datos de la imagen
-      - id: meta
+      
+      - name: Extract metadata
+        id: meta
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository_owner }}/explorify-publications-api
           tags: |
             type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
-
-      # ✅ Build y Push de la imagen Docker
-      - uses: docker/build-push-action@v5
+      
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
         with:
-          context: Backend/Explorify.Api.Publications
-          file: Backend/Explorify.Api.Publications/Dockerfile
+          context: ${{ env.PROJECT_PATH }}
+          file: ${{ env.PROJECT_PATH }}/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+  # Job 4: Despliegue a entorno de desarrollo
+  deploy-dev:
+    name: Deploy to Development
+    runs-on: ubuntu-latest
+    needs: [build, code-quality]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    environment:
+      name: development
+      url: https://dev-api.tudominio.com
+    
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: login-api-build
+          path: ./publish
+      
+      # Ejemplo de despliegue (ajustar según tu infraestructura)
+      - name: Deploy to development server
+        run: |
+          echo "Desplegando a servidor de desarrollo..."
+          # Aquí iría tu script de despliegue real
+          # Por ejemplo: scp, rsync, kubectl, az webapp, etc.
+        env:
+          DEPLOY_KEY: ${{ secrets.DEV_DEPLOY_KEY }}
+
+  # Job 5: Despliegue a producción
+  deploy-prod:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build, code-quality]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://api.tudominio.com
+    
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: login-api-build
+          path: ./publish
+      
+      - name: Deploy to production server
+        run: |
+          echo "Desplegando a servidor de producción..."
+          # Script de despliegue a producción
+        env:
+          DEPLOY_KEY: ${{ secrets.PROD_DEPLOY_KEY }}
+      
+      # Notificación de despliegue exitoso
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "Despliegue exitoso a producción"
+          # Aquí puedes agregar notificaciones a Slack, Teams, etc.
