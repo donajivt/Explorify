@@ -37,9 +37,10 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
-                title = { Text("Mi Perfil") },
+                title = { Text("Buscar Aventuras") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
@@ -79,19 +80,6 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                 }
             )
         },
-        bottomBar = {
-            BottomAppBar {
-                IconButton(onClick = { navController.navigate("home") }) {
-                    Icon(Icons.Default.Home, contentDescription = "Inicio")
-                }
-                IconButton(onClick = { navController.navigate("buscar") }) {
-                    Icon(Icons.Default.Search, contentDescription = "Buscar")
-                }
-                IconButton(onClick = { navController.navigate("perfil") }) {
-                    Icon(Icons.Default.Person, contentDescription = "Perfil")
-                }
-            }
-        }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             // Tu contenido de publicaciones va aquí

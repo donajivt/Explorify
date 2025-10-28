@@ -37,6 +37,7 @@ fun PerfilScreen(navController: NavController,
     }
 
     Scaffold(
+        contentWindowInsets = WindowInsets(0),
         topBar = {
             TopAppBar(
                 title = { Text("Mi Perfil") },
@@ -64,6 +65,13 @@ fun PerfilScreen(navController: NavController,
                                 }
                             )
                             DropdownMenuItem(
+                                text = { Text("Mis Publicaciones") },
+                                onClick = {
+                                    menuExpanded = false
+                                    navController.navigate("mispublicaciones")
+                                }
+                            )
+                            DropdownMenuItem(
                                 text = { Text("Cerrar sesión") },
                                 onClick = {
                                     menuExpanded = false
@@ -79,19 +87,6 @@ fun PerfilScreen(navController: NavController,
                 }
             )
         },
-        bottomBar = {
-            BottomAppBar {
-                IconButton(onClick = { navController.navigate("home") }) {
-                    Icon(Icons.Default.Home, contentDescription = "Inicio")
-                }
-                IconButton(onClick = { navController.navigate("buscar") }) {
-                    Icon(Icons.Default.Search, contentDescription = "Buscar")
-                }
-                IconButton(onClick = { navController.navigate("perfil") }) {
-                    Icon(Icons.Default.Person, contentDescription = "Perfil")
-                }
-            }
-        }
     ) { innerPadding ->
         Box(modifier = Modifier.padding(innerPadding)) {
             // Tu contenido de publicaciones va aquí

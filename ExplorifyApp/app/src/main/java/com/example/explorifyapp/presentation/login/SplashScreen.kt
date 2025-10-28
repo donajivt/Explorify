@@ -18,11 +18,10 @@ fun SplashScreen(navController: NavController, viewModel: LoginViewModel = viewM
     LaunchedEffect(Unit) {
         val isLoggedIn = viewModel.isLoggedIn()
         val userName=viewModel.userName
-        Log.d("SplashScreen", "isLoggedIn: $isLoggedIn, userName: $userName")
         delay(1000) // solo para dar tiempo a mostrar el splash
 
         if (isLoggedIn && !userName.isNullOrEmpty()) {
-            navController.navigate("inicio/${viewModel.userName}") {
+            navController.navigate("main") {
                 popUpTo("splash") { inclusive = true }
             }
         } else {
