@@ -265,6 +265,15 @@ fun ProfileField(
         }
     }
 }
+-------------------------------------------
+colors = OutlinedTextFieldDefaults.colors(
+            focusedIndicatorColor = Color(0xFF6A7C52),
+            unfocusedIndicatorColor = Color(0xFFE6EFD2),
+            cursorColor = Color(0xFF6A7C52),
+            focusedLabelColor = Color(0xFF6A7C52),
+            unfocusedLabelColor = Color.Gray
+        )
+
 */
 @Composable
 fun ProfileField(
@@ -289,13 +298,7 @@ fun ProfileField(
             .padding(vertical = 6.dp),
         shape = RoundedCornerShape(12.dp),
         singleLine = true,
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedIndicatorColor = Color(0xFF6A7C52),
-            unfocusedIndicatorColor = Color(0xFFE6EFD2),
-            cursorColor = Color(0xFF6A7C52),
-            focusedLabelColor = Color(0xFF6A7C52),
-            unfocusedLabelColor = Color.Gray
-        )
+
     )
 }
 
