@@ -8,23 +8,23 @@
     "net9.0": []
   },
   "packageFolders": {
-    "C:\\Users\\range\\.nuget\\packages\\": {},
+    "C:\\Users\\vania\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\publicaciones-api\\Publications.API.Domain\\Publications.API.Domain.csproj",
+      "projectUniqueName": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\publicaciones-api\\Publications.API.Domain\\Publications.API.Domain.csproj",
       "projectName": "Publications.API.Domain",
-      "projectPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\publicaciones-api\\Publications.API.Domain\\Publications.API.Domain.csproj",
-      "packagesPath": "C:\\Users\\range\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\publicaciones-api\\Publications.API.Domain\\obj\\",
+      "projectPath": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\publicaciones-api\\Publications.API.Domain\\Publications.API.Domain.csproj",
+      "packagesPath": "C:\\Users\\vania\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\publicaciones-api\\Publications.API.Domain\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\range\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\vania\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -72,7 +72,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

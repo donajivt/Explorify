@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "QBf5OYIB8Xc=",
+  "dgSpecHash": "dgMxidNXTt4=",
   "success": true,
-  "projectFilePath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Web\\Identity.Api.Web.csproj",
+  "projectFilePath": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.Api.Web\\Identity.Api.Web.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\range\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.8\\microsoft.aspnetcore.openapi.9.0.8.nupkg.sha512",
-    "C:\\Users\\range\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512"
+    "C:\\Users\\vania\\.nuget\\packages\\microsoft.aspnetcore.openapi\\9.0.8\\microsoft.aspnetcore.openapi.9.0.8.nupkg.sha512",
+    "C:\\Users\\vania\\.nuget\\packages\\microsoft.openapi\\1.6.17\\microsoft.openapi.1.6.17.nupkg.sha512"
   ],
   "logs": []
 }

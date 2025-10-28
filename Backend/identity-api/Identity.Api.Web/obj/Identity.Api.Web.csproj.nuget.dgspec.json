@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Web\\Identity.Api.Web.csproj": {}
+    "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.Api.Web\\Identity.Api.Web.csproj": {}
   },
   "projects": {
-    "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Application\\Identity.Api.Application.csproj": {
+    "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.Api.Application\\Identity.Api.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Application\\Identity.Api.Application.csproj",
+        "projectUniqueName": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.Api.Application\\Identity.Api.Application.csproj",
         "projectName": "Identity.Api.Application",
-        "projectPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Application\\Identity.Api.Application.csproj",
-        "packagesPath": "C:\\Users\\range\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Application\\obj\\",
+        "projectPath": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.Api.Application\\Identity.Api.Application.csproj",
+        "packagesPath": "C:\\Users\\vania\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.Api.Application\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\range\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\vania\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -32,8 +32,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\Identity.API.Domain.csproj": {
-                "projectPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\Identity.API.Domain.csproj"
+              "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.API.Domain\\Identity.API.Domain.csproj": {
+                "projectPath": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.API.Domain\\Identity.API.Domain.csproj"
               }
             }
           }
@@ -69,24 +69,24 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\Identity.API.Domain.csproj": {
+    "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.API.Domain\\Identity.API.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\Identity.API.Domain.csproj",
+        "projectUniqueName": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.API.Domain\\Identity.API.Domain.csproj",
         "projectName": "Identity.API.Domain",
-        "projectPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\Identity.API.Domain.csproj",
-        "packagesPath": "C:\\Users\\range\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.API.Domain\\obj\\",
+        "projectPath": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.API.Domain\\Identity.API.Domain.csproj",
+        "packagesPath": "C:\\Users\\vania\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.API.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\range\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\vania\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -134,24 +134,24 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Infraestructure\\Identity.Api.Infraestructure.csproj": {
+    "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.Api.Infraestructure\\Identity.Api.Infraestructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Infraestructure\\Identity.Api.Infraestructure.csproj",
+        "projectUniqueName": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.Api.Infraestructure\\Identity.Api.Infraestructure.csproj",
         "projectName": "Identity.Api.Infraestructure",
-        "projectPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Infraestructure\\Identity.Api.Infraestructure.csproj",
-        "packagesPath": "C:\\Users\\range\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Infraestructure\\obj\\",
+        "projectPath": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.Api.Infraestructure\\Identity.Api.Infraestructure.csproj",
+        "packagesPath": "C:\\Users\\vania\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.Api.Infraestructure\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\range\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\vania\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -166,8 +166,8 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Application\\Identity.Api.Application.csproj": {
-                "projectPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Application\\Identity.Api.Application.csproj"
+              "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.Api.Application\\Identity.Api.Application.csproj": {
+                "projectPath": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.Api.Application\\Identity.Api.Application.csproj"
               }
             }
           }
@@ -203,24 +203,24 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Web\\Identity.Api.Web.csproj": {
+    "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.Api.Web\\Identity.Api.Web.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Web\\Identity.Api.Web.csproj",
+        "projectUniqueName": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.Api.Web\\Identity.Api.Web.csproj",
         "projectName": "Identity.Api.Web",
-        "projectPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Web\\Identity.Api.Web.csproj",
-        "packagesPath": "C:\\Users\\range\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Web\\obj\\",
+        "projectPath": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.Api.Web\\Identity.Api.Web.csproj",
+        "packagesPath": "C:\\Users\\vania\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.Api.Web\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\range\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\vania\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -235,11 +235,11 @@
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Application\\Identity.Api.Application.csproj": {
-                "projectPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Application\\Identity.Api.Application.csproj"
+              "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.Api.Application\\Identity.Api.Application.csproj": {
+                "projectPath": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.Api.Application\\Identity.Api.Application.csproj"
               },
-              "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Infraestructure\\Identity.Api.Infraestructure.csproj": {
-                "projectPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\Explorify\\Identity.Api.Infraestructure\\Identity.Api.Infraestructure.csproj"
+              "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.Api.Infraestructure\\Identity.Api.Infraestructure.csproj": {
+                "projectPath": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\identity-api\\Identity.Api.Infraestructure\\Identity.Api.Infraestructure.csproj"
               }
             }
           }
@@ -284,7 +284,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

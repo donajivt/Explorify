@@ -75,23 +75,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\range\\.nuget\\packages\\": {},
+    "C:\\Users\\vania\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\publicaciones-api\\Publications.API.Web\\Publications.API.Web.csproj",
+      "projectUniqueName": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\publicaciones-api\\Publications.API.Web\\Publications.API.Web.csproj",
       "projectName": "Publications.API.Web",
-      "projectPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\publicaciones-api\\Publications.API.Web\\Publications.API.Web.csproj",
-      "packagesPath": "C:\\Users\\range\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\range\\Desktop\\Explorify\\Explorify\\Backend\\publicaciones-api\\Publications.API.Web\\obj\\",
+      "projectPath": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\publicaciones-api\\Publications.API.Web\\Publications.API.Web.csproj",
+      "packagesPath": "C:\\Users\\vania\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\publicaciones-api\\Publications.API.Web\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\range\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\vania\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -148,16 +148,8 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.304/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.305/PortableRuntimeIdentifierGraph.json"
       }
     }
-  },
-  "logs": [
-    {
-      "code": "NU1900",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "Error al obtener los datos de vulnerabilidad del paquete: No se puede cargar el índice de servicio del origen https://api.nuget.org/v3/index.json."
-    }
-  ]
+  }
 }
