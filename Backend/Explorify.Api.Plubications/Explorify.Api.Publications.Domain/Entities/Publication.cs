@@ -21,6 +21,10 @@ namespace Explorify.Api.Publications.Domain.Entities
 
         [BsonElement("location")]
         public string Location { get; set; } = string.Empty;
+        [BsonElement("latitud")]
+        public string Latitud { get; set; } = string.Empty;
+        [BsonElement("longitud")]
+        public string Longitud { get; set; } = string.Empty;
 
         [BsonElement("userId")]
         public string UserId { get; set; } = string.Empty;

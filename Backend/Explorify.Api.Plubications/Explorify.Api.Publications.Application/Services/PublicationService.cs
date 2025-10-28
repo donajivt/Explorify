@@ -28,6 +28,8 @@ namespace Explorify.Api.Publications.Application.Services
                 Title = p.Title,
                 Description = p.Description,
                 Location = p.Location,
+                Latitud = p.Latitud,
+                Longitud = p.Longitud,
                 UserId = p.UserId,
                 CreatedAt = p.CreatedAt
             });
@@ -44,6 +46,8 @@ namespace Explorify.Api.Publications.Application.Services
                 Title = p.Title,
                 Description = p.Description,
                 Location = p.Location,
+                Latitud = p.Latitud,
+                Longitud = p.Longitud,
                 UserId = p.UserId,
                 CreatedAt = p.CreatedAt
             };
@@ -61,6 +65,8 @@ namespace Explorify.Api.Publications.Application.Services
                 Title = p.Title,
                 Description = p.Description,
                 Location = p.Location,
+                Latitud = p.Latitud,
+                Longitud = p.Longitud,
                 UserId = p.UserId,
                 CreatedAt = p.CreatedAt
             };
@@ -75,6 +81,8 @@ namespace Explorify.Api.Publications.Application.Services
                 Title = p.Title,
                 Description = p.Description,
                 Location = p.Location,
+                Latitud = p.Latitud,
+                Longitud = p.Longitud,
                 UserId = p.UserId,
                 CreatedAt = p.CreatedAt
             });
@@ -88,8 +96,10 @@ namespace Explorify.Api.Publications.Application.Services
                 Title = dto.Title ?? string.Empty,
                 Description = dto.Description ?? string.Empty,
                 Location = dto.Location ?? string.Empty,
+                Latitud = dto.Latitud ?? string.Empty,
+                Longitud = dto.Longitud ?? string.Empty,
                 UserId = userId,
-                CreatedAt = DateTime.UtcNow // ← FECHA AUTOMÁTICA
+                CreatedAt = DateTime.UtcNow
             };
 
             await _repository.CreateAsync(entity);
@@ -116,6 +126,8 @@ namespace Explorify.Api.Publications.Application.Services
             existing.Title = dto.Title ?? existing.Title;
             existing.Description = dto.Description ?? existing.Description;
             existing.Location = dto.Location ?? existing.Location;
+            existing.Latitud = dto.Latitud ?? existing.Latitud;
+            existing.Longitud = dto.Longitud ?? existing.Longitud;
 
             await _repository.UpdateAsync(existing);
             return true;

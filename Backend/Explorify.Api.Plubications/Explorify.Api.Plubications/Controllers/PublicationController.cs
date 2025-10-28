@@ -87,7 +87,7 @@ namespace Explorify.Api.Plubications.Controllers
 
             var updated = await _service.UpdateAsync(id, dto, userId);
             if (!updated)
-                return Forbid(); // o NotFound si prefieres diferenciar
+                return Forbid();
 
             return Ok(new ResponseDto { Message = "Publicación actualizada correctamente" });
         }

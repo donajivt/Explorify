@@ -7,6 +7,8 @@
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public string Location { get; set; } = string.Empty;
+        public string Latitud { get; set; } = string.Empty;
+        public string Longitud { get; set; } = string.Empty;
         public string? UserId { get; set; }
         public DateTime? CreatedAt { get; set; }
     }
