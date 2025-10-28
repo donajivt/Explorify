@@ -8,7 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Explorify.Api.Publications.Infrastructure.Persistence
+namespace Explorify.Api.Users.Infrastructure.Persistence
 {
     public static class MongoMapping
     {
@@ -18,7 +18,7 @@ namespace Explorify.Api.Publications.Infrastructure.Persistence
             if (_registered) return;
             _registered = true;
 
-            BsonClassMap.RegisterClassMap<Domain.Entities.Publication>(cm =>
+            BsonClassMap.RegisterClassMap<Explorify.Api.Users.Domain.Entities.Publication>(cm =>
             {
                 cm.AutoMap();
                 cm.MapIdMember(x => x.Id)

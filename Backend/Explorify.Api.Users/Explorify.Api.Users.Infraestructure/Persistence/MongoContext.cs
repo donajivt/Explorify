@@ -1,5 +1,5 @@
-﻿using Explorify.Api.Publications.Domain.Entities;
-using Explorify.Api.Publications.Infrastructure.Persistence;
+﻿using Explorify.Api.Users.Domain.Entities;
+using Explorify.Api.Users.Infrastructure.Persistence;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Explorify.Api.Publications.Infrastructure.Persistence
+namespace Explorify.Api.Users.Infrastructure.Persistence
 {
     public class MongoContext
     {

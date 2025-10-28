@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Explorify.Api.Publications.Infrastructure.Persistence
+namespace Explorify.Api.Users.Infrastructure.Persistence
 {
     public class MongoOptions
     {
