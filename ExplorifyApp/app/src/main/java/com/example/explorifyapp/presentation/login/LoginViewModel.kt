@@ -10,6 +10,7 @@ import android.util.Log
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import com.example.explorifyapp.data.remote.auth.decodeJwtPayload
+import com.example.explorifyapp.data.remote.room.AuthToken
 
 /*class LoginViewModel : ViewModel() {
 
@@ -52,6 +53,9 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val _loginResult = MutableStateFlow<String>("")
     val loginResult: StateFlow<String> = _loginResult
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading
+
     var token: String? = null
         private set
     var userName: String = ""
@@ -64,8 +68,10 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         private set
 
     fun login(username: String, password: String) {
+        if (_isLoading.value) return
         viewModelScope.launch {
             try {
+                _isLoading.value = true
                 val response = repository.login(username, password)
                 if (response.isSuccess && response.result != null) {
                     userName = response.result.user.name
@@ -91,6 +97,8 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                 }
             } catch (e: Exception) {
                 _loginResult.value = "Error de red: ${e.localizedMessage}"
+            }finally {
+                _isLoading.value = false // ← vuelve a false cuando termina
             }
         }
     }
@@ -127,6 +135,24 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     suspend fun getSavedRole(): String? {
         val authData = repository.getAuthData()
         return authData?.role
+    }
+
+    private val _userData = MutableStateFlow<AuthToken?>(null)
+    val userData: StateFlow<AuthToken?> = _userData
+
+    fun loadUserData() {
+        viewModelScope.launch {
+            _userData.value = repository.getAuthData()
+        }
+    }
+
+    fun getUserData() = viewModelScope.launch {
+        val authData = repository.getAuthData()
+        if (authData != null) {
+            userName = authData.username
+            userEmail = authData.userEmail
+            _userData.value = authData // 👈 esto notifica al Composable
+        }
     }
 
 }

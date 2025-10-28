@@ -13,6 +13,7 @@ import com.example.explorifyapp.presentation.perfil.PerfilScreen
 import com.example.explorifyapp.presentation.login.SplashScreen
 import com.example.explorifyapp.presentation.publicaciones.MyPublicationsScreen
 import com.example.explorifyapp.presentation.admin.AdminDashboard
+import com.example.explorifyapp.presentation.perfil.EditProfileScreen
 
 @Composable
 fun AppNavigation() {
@@ -54,6 +55,10 @@ fun AppNavigation() {
 
         composable("mispublicaciones"){
             MyPublicationsScreen(navController =navController)
+        }
+
+        composable("editprofile"){
+            EditProfileScreen(navController =navController)
         }
 
     }

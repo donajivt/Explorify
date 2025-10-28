@@ -32,7 +32,7 @@ fun AdminDashboard(navController: NavController,
         val isLoggedIn = viewModel.isLoggedIn()
         if (!isLoggedIn) {
             navController.navigate("login") {
-                popUpTo("mypublications") { inclusive = true }
+                popUpTo("adminDashboard") { inclusive = true }
             }
         }
     }
@@ -40,12 +40,7 @@ fun AdminDashboard(navController: NavController,
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mi Perfil") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
-                    }
-                },
+                title = { Text("Admin") },
                 actions = {
                     // Menú de perfil con logout
                     Box {
@@ -81,16 +76,25 @@ fun AdminDashboard(navController: NavController,
             )
         },
         bottomBar = {
-            BottomAppBar {
-                IconButton(onClick = { navController.navigate("home") }) {
-                    Icon(Icons.Default.Home, contentDescription = "Inicio")
-                }
-                IconButton(onClick = { navController.navigate("buscar") }) {
-                    Icon(Icons.Default.Search, contentDescription = "Buscar")
-                }
-                IconButton(onClick = { navController.navigate("perfil") }) {
-                    Icon(Icons.Default.Person, contentDescription = "Perfil")
-                }
+            NavigationBar {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
+                    label = { Text("Inicio") },
+                    selected = false,
+                    onClick = { navController.navigate("adminDashboard") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+                    label = { Text("Buscar") },
+                    selected = false,
+                    onClick = { navController.navigate("buscar") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
+                    label = { Text("Perfil") },
+                    selected = true,
+                    onClick = {navController.navigate("perfil")}
+                )
             }
         }
     ) { innerPadding ->

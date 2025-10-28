@@ -35,6 +35,8 @@ fun RegisterScreen(navController: NavController) {
     val coroutineScope = rememberCoroutineScope()
 
     val registerResult by viewModel.registerResult.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+
 
     Box(
         modifier = Modifier
@@ -99,7 +101,8 @@ fun RegisterScreen(navController: NavController) {
             modifier = Modifier.fillMaxWidth(),
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedTextColor = Color.Gray,
-                focusedTextColor = Color.DarkGray
+                focusedTextColor = Color.DarkGray,
+
             )
         )
 
@@ -117,14 +120,23 @@ fun RegisterScreen(navController: NavController) {
                     viewModel.register(email, name, password)
                 }
             },
-            enabled = name.isNotBlank() && password.isNotBlank() && email.isNotBlank(),
+            enabled =!isLoading &&  name.isNotBlank() && password.isNotBlank() && email.isNotBlank(),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF355031),
-                contentColor = Color.White
+                contentColor = Color.White,
+                disabledContainerColor = Color.Gray
             ),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Registrarse")
+            if (isLoading) {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text("Registrarse")
+            }
         }
 
         Spacer(modifier = Modifier.height(12.dp))

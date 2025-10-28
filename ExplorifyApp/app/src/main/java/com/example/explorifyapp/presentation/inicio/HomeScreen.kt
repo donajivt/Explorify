@@ -45,6 +45,7 @@ fun HomeScreen(userName: String,navController: NavController, viewModel: LoginVi
             }
         }
     }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -83,16 +84,25 @@ fun HomeScreen(userName: String,navController: NavController, viewModel: LoginVi
             )
         },
         bottomBar = {
-            BottomAppBar {
-                IconButton(onClick = { navController.navigate("inicio") }) {
-                    Icon(Icons.Default.Home, contentDescription = "Inicio")
-                }
-                IconButton(onClick = { navController.navigate("buscar") }) {
-                    Icon(Icons.Default.Search, contentDescription = "Buscar")
-                }
-                IconButton(onClick = { navController.navigate("perfil") }) {
-                    Icon(Icons.Default.Person, contentDescription = "Perfil")
-                }
+            NavigationBar {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
+                    label = { Text("Inicio") },
+                    selected = true,
+                    onClick = { navController.navigate("inicio/${userName}") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+                    label = { Text("Buscar") },
+                    selected = false,
+                    onClick = { navController.navigate("buscar") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
+                    label = { Text("Perfil") },
+                    selected = false,
+                    onClick = {navController.navigate("perfil")}
+                )
             }
         }
     ) {

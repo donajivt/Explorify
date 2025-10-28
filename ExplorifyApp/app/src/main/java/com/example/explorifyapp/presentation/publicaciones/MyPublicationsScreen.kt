@@ -41,6 +41,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.rememberAsyncImagePainter
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import com.example.explorifyapp.data.remote.publications.RetrofitPublicationsInstance
 import com.example.explorifyapp.domain.repository.PublicationsRepository
 
@@ -53,7 +55,7 @@ fun MyPublicationsScreen(navController: NavController, loginViewModel: LoginView
     val repo = remember { PublicationsRepository(RetrofitPublicationsInstance.api) }
     val factory = remember { MyPublicationsViewModelFactory(repo) }
     val viewModel: MyPublicationsViewModel = viewModel(factory = factory)
-
+    var userName by remember { mutableStateOf("") }
     LaunchedEffect(Unit) {
         val isLoggedIn = loginViewModel.isLoggedIn()
         if (!isLoggedIn) {
@@ -62,6 +64,7 @@ fun MyPublicationsScreen(navController: NavController, loginViewModel: LoginView
             }
         }
         val userId = loginViewModel.userId
+        userName=loginViewModel.userName
         val token = loginViewModel.token
         // posiblemente también usar userId si lo tienes
         if (!token.isNullOrEmpty() && userId.isNotEmpty()) {
@@ -111,16 +114,25 @@ fun MyPublicationsScreen(navController: NavController, loginViewModel: LoginView
             )
         },
         bottomBar = {
-            BottomAppBar {
-                IconButton(onClick = { navController.navigate("inicio") }) {
-                    Icon(Icons.Default.Home, contentDescription = "Inicio")
-                }
-                IconButton(onClick = { navController.navigate("buscar") }) {
-                    Icon(Icons.Default.Search, contentDescription = "Buscar")
-                }
-                IconButton(onClick = { navController.navigate("perfil") }) {
-                    Icon(Icons.Default.Person, contentDescription = "Perfil")
-                }
+            NavigationBar {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
+                    label = { Text("Inicio") },
+                    selected = false,
+                    onClick = { navController.navigate("inicio/${userName}") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+                    label = { Text("Buscar") },
+                    selected = false,
+                    onClick = { navController.navigate("buscar") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
+                    label = { Text("Perfil") },
+                    selected = true,
+                    onClick = {navController.navigate("perfil")}
+                )
             }
         }
     ) {

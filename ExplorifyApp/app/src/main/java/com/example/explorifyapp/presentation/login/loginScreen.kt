@@ -30,14 +30,13 @@ fun LoginScreen(navController: NavController) {
 
     var userNameError by remember { mutableStateOf(false) }
     var passwordError by remember { mutableStateOf(false) }
-
-
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
     val loginResult by viewModel.loginResult.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -133,16 +132,24 @@ fun LoginScreen(navController: NavController) {
                     errorMessage = null
                     viewModel.login(userName, password)
                 }
-            // viewModel.login(userName, password)
                       },
-            enabled = userName.isNotBlank() && password.isNotBlank(),
+            enabled = !isLoading && userName.isNotBlank() && password.isNotBlank(),
             colors = ButtonDefaults.buttonColors(
                 containerColor = Color(0xFF355031),
-                contentColor = Color.White
+                contentColor = Color.White,
+                disabledContainerColor = Color.Gray
             ),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Entrar")
+            if (isLoading) {
+                CircularProgressIndicator(
+                    color = Color.White,
+                    modifier = Modifier.size(20.dp),
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text("Entrar")
+            }
         }
 
         Spacer(modifier = Modifier.height(16.dp))
