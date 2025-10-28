@@ -18,7 +18,7 @@ namespace Explorify.Api.Users.Infrastructure.Persistence
             if (_registered) return;
             _registered = true;
 
-            BsonClassMap.RegisterClassMap<Explorify.Api.Users.Domain.Entities.Publication>(cm =>
+            BsonClassMap.RegisterClassMap<Domain.Entities.User>(cm =>
             {
                 cm.AutoMap();
                 cm.MapIdMember(x => x.Id)

@@ -2,7 +2,7 @@ using Explorify.Api.Publications.Application.Interfaces;
 using Explorify.Api.Publications.Application.Services;
 using Explorify.Api.Publications.Infraestructure.Publication;
 using Explorify.Api.Publications.Infraestructure.Repositories;
-using Logueo.Infrastructure.Persistence;
+using Explorify.Api.Publications.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
