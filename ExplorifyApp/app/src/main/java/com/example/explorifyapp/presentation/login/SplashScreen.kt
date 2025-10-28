@@ -29,8 +29,8 @@ fun SplashScreen(navController: NavController, viewModel: LoginViewModel = viewM
                         popUpTo("splash") { inclusive = true }
                     }
                 }
-                "USER" -> {
-                    navController.navigate("inicio/${userName}") {
+                "USER" -> {  //publicaciones inicio/${userName}
+                    navController.navigate("publicaciones") {
                         popUpTo("splash") { inclusive = true }
                     }
                 }

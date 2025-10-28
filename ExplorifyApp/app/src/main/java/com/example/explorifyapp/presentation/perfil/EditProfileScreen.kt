@@ -89,7 +89,7 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Buscar Aventuras Cercanas") },
+                title = { Text("") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
@@ -135,7 +135,7 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
                     icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
                     label = { Text("Inicio") },
                     selected = false,
-                    onClick = { navController.navigate("inicio/${userName}") }
+                    onClick = { navController.navigate("publicaciones") }
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },

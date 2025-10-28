@@ -12,6 +12,9 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -93,6 +96,28 @@ fun MyPublicationsScreen(navController: NavController, loginViewModel: LoginView
                 },
             )
         },
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
+                    label = { Text("Inicio") },
+                    selected = false,
+                    onClick = { navController.navigate("publicaciones") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+                    label = { Text("Buscar") },
+                    selected = false,
+                    onClick = { navController.navigate("buscar") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
+                    label = { Text("Perfil") },
+                    selected = true,
+                    onClick = {}
+                )
+            }
+        }
     )
     {
             paddingValues ->

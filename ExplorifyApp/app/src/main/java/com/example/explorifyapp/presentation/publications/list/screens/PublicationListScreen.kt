@@ -6,7 +6,11 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,23 +30,38 @@ import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import kotlinx.coroutines.launch
 import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.explorifyapp.data.remote.room.AppDatabase
+import com.example.explorifyapp.presentation.login.LoginViewModel
 import com.example.explorifyapp.presentation.publications.list.PublicationsListModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PublicationListScreen(
     vm: PublicationsListModel,
     navController: NavController,
     onCreateClick: (String) -> Unit,
-    onOpenDetail: (String) -> Unit
+    onOpenDetail: (String) -> Unit,
+    viewModel: LoginViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val state = vm.uiState
     val swipeState = rememberSwipeRefreshState(isRefreshing = state.loading)
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+
+    var menuExpanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        val isLoggedIn = viewModel.isLoggedIn()
+        if (!isLoggedIn) {
+            navController.navigate("login") {
+                popUpTo("publicaciones") { inclusive = true }
+            }
+        }
+    }
 
     // 🔹 Carga inicial de publicaciones con token desde Room
     LaunchedEffect(Unit) {
@@ -78,7 +97,66 @@ fun PublicationListScreen(
     }
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Lista de Aventuras") },
+                actions = {
+                    Box {
+                        IconButton(onClick = { menuExpanded = true }) {
+                            Icon(Icons.Default.AccountCircle, contentDescription = "Perfil")
+                        }
+
+                        DropdownMenu(
+                            expanded = menuExpanded,
+                            onDismissRequest = { menuExpanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Mis Publicaciones") },
+                                onClick = {
+                                    menuExpanded = false
+                                    navController.navigate("mispublicaciones")
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Cerrar sesión") },
+                                onClick = {
+                                    menuExpanded = false
+                                    viewModel.logout {
+                                        navController.navigate("login") {
+                                            popUpTo("mypublications") { inclusive = true }
+                                        }
+                                    }
+                                }
+                            )
+                        }
+                    }
+                },
+            )
+        },
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
+                    label = { Text("Inicio") },
+                    selected = true,
+                    onClick = { navController.navigate("publicaciones") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+                    label = { Text("Buscar") },
+                    selected = false,
+                    onClick = { navController.navigate("buscar") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
+                    label = { Text("Perfil") },
+                    selected = false,
+                    onClick = {navController.navigate("perfil")}
+                )
+            }
+        },
         floatingActionButton = {
+
             FloatingActionButton(
                 onClick = {
                     if (userId != null)

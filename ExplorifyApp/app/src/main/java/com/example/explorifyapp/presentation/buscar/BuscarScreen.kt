@@ -162,7 +162,7 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                     icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
                     label = { Text("Inicio") },
                     selected = false,
-                    onClick = { navController.navigate("inicio/${userName}") }
+                    onClick = { navController.navigate("publicaciones") }
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
