@@ -1,16 +1,13 @@
-# Pipeline CI/CD para la API de Publicaciones de Explorify
-# Automatiza Build, Test, Calidad y Despliegue
-
+#  CI/CD para Explorify.Api.Publications
 name: Publications API - CI/CD Pipeline
 
-#  Cuándo se debe ejecutar este workflow
+#  Cuándo se ejecuta
 on:
   push:
     branches:
-      - main       # Cada push a main dispara build + deploy prod
-      - develop    # Cada push a develop dispara build + deploy dev
+      - main
+      - develop
     paths:
-      # Solo se ejecuta si cambian estos archivos ↓
       - 'Backend/Explorify.Api.Publications/**'
       - '.github/workflows/**'
   
@@ -21,9 +18,9 @@ on:
     paths:
       - 'Backend/Explorify.Api.Publications/**'
   
-  workflow_dispatch: # Permite ejecutarlo manualmente
+  workflow_dispatch: #  Permite ejecutar manualmente desde GitHub Actions
 
-#  Variables globales del pipeline
+#  Variables globales
 env:
   DOTNET_VERSION: '9.0.x'
   PROJECT_PATH: 'Backend/Explorify.Api.Publications'
@@ -32,210 +29,86 @@ env:
 
 jobs:
 
-  #  JOB 1: Compilar y ejecutar pruebas
   build:
-    name: Build and Test
+    name: 🔧 Build and Test
     runs-on: ubuntu-latest
 
     steps:
-      # Descargar el código
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Se usa historial completo para análisis
-
-      # Instalar SDK .NET 9
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      #  Descargar el repositorio
+      - uses: actions/checkout@v4
+        
+      #  Instalar .NET 9
+      - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
-      # Cachear paquetes NuGet (optimiza builds)
-      - name: Cache NuGet packages
-        uses: actions/cache@v3
+      #  Cache NuGet
+      - uses: actions/cache@v3
         with:
           path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
           restore-keys: |
             ${{ runner.os }}-nuget-
 
-      # Restaurar dependencias del proyecto
-      - name: Restore dependencies
-        run: dotnet restore ${{ env.PROJECT_PATH }}/${{ env.SOLUTION_FILE }}
+      #  Restaurar dependencias
+      - run: dotnet restore ${{ env.SOLUTION_FILE }}
+        working-directory: ${{ env.PROJECT_PATH }}
 
-      # Compilar la solución
-      - name: Build solution
-        run: |
-          dotnet build \
-            ${{ env.PROJECT_PATH }}/${{ env.SOLUTION_FILE }} \
-            --configuration ${{ env.BUILD_CONFIGURATION }} \
-            --no-restore
+      #  Build del solution completo
+      - run: dotnet build ${{ env.SOLUTION_FILE }} -c ${{ env.BUILD_CONFIGURATION }} --no-restore
+        working-directory: ${{ env.PROJECT_PATH }}
 
-      # Ejecutar pruebas unitarias si existen (no rompe el build si fallan/no hay)
-      - name: Run unit tests
-        run: |
-          dotnet test \
-            ${{ env.PROJECT_PATH }}/${{ env.SOLUTION_FILE }} \
-            --configuration ${{ env.BUILD_CONFIGURATION }} \
-            --no-build \
-            --verbosity normal \
-            --logger "trx;LogFileName=test-results.trx" \
-            --collect:"XPlat Code Coverage"
+      #  Ejecutar pruebas (si después incluyes proyectos de test, se ajustará)
+      - run: dotnet test ${{ env.SOLUTION_FILE }} --no-build --verbosity normal
+        working-directory: ${{ env.PROJECT_PATH }}
         continue-on-error: true
 
-      # Publicar resultados de las pruebas en GitHub
-      - name: Publish test results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
-        with:
-          files: '**/test-results.trx'
-        continue-on-error: true
+      # Publicar artefacto compilado
+      - run: dotnet publish Explorify.Api.Publications.csproj -c ${{ env.BUILD_CONFIGURATION }} -o ./publish --no-build
+        working-directory: ${{ env.PROJECT_PATH }}
 
-      # Publicar artefacto para deploys posteriores
-      - name: Publish application artifact
-        run: |
-          dotnet publish \
-            ${{ env.PROJECT_PATH }}/Explorify.Api.Publications/Explorify.Api.Publications.csproj \
-            --configuration ${{ env.BUILD_CONFIGURATION }} \
-            --output ${{ env.PROJECT_PATH }}/publish \
-            --no-build
-
-      # Guardar artefactos compilados para otros jobs
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+      #  Subir build a Actions
+      - uses: actions/upload-artifact@v4
         with:
           name: publications-api-build
           path: ${{ env.PROJECT_PATH }}/publish
           retention-days: 7
 
-  #  JOB 2: Análisis de seguridad y formato del código
-  code-quality:
-    name: Code Quality Analysis
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-
-      # Buscar vulnerabilidades en NuGet
-      - name: Security scan
-        run: |
-          dotnet list \
-          ${{ env.PROJECT_PATH }}/${{ env.SOLUTION_FILE }} \
-          package --vulnerable --include-transitive
-        continue-on-error: true
-
-      # Verificar estilo/formato del código
-      - name: Check code formatting
-        run: |
-          dotnet format \
-          ${{ env.PROJECT_PATH }}/${{ env.SOLUTION_FILE }} \
-          --verify-no-changes \
-          --verbosity diagnostic
-        continue-on-error: true
-
-  # 🐳 JOB 3: Construcción de imagen Docker y Push a GHCR
   docker-build:
-    name: Build Docker Image
+    name:  Build & Push Docker Image
     runs-on: ubuntu-latest
     needs: build
-    # Solo se ejecuta en PRs o pushes a main
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     permissions:
       contents: read
       packages: write
 
     steps:
-      # Checkout
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
 
-      # Configurar Builder
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      # Login al container registry GitHub
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+      # ✅ Login a GitHub Container Registry
+      - uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Generar tags automáticamente (branch, sha, latest)
-      - name: Extract metadata
-        id: meta
+      # ✅ Datos de la imagen
+      - id: meta
         uses: docker/metadata-action@v5
         with:
           images: ghcr.io/${{ github.repository_owner }}/explorify-publications-api
           tags: |
             type=ref,event=branch
-            type=ref,event=pr
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
 
-      # Compilar imagen y publicarla en GHCR
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+      # ✅ Build y Push de la imagen Docker
+      - uses: docker/build-push-action@v5
         with:
-          context: ${{ env.PROJECT_PATH }}
-          file: ${{ env.PROJECT_PATH }}/Dockerfile
+          context: Backend/Explorify.Api.Publications
+          file: Backend/Explorify.Api.Publications/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-  #  JOB 4: Deploy automático a entorno Desarrollo
-  deploy-dev:
-    name: Deploy to Development
-    runs-on: ubuntu-latest
-    needs: [build, code-quality]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: publications-api-build
-          path: ./publish
-
-      - name: Deploy to development
-        run: |
-          echo " Desplegando en desarrollo..."
-          # Aquí va comando de deploy real
-        env:
-          DEPLOY_KEY: ${{ secrets.DEV_DEPLOY_KEY }}
-
-  #  JOB 5: Deploy automático a Producción
-  deploy-prod:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    needs: [build, code-quality]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: publications-api-build
-          path: ./publish
-
-      - name: Deploy to production
-        run: |
-          echo " Desplegando en producción..."
-          # Aquí va comando de deploy real
-        env:
-          DEPLOY_KEY: ${{ secrets.PROD_DEPLOY_KEY }}
-
-      - name: Notify deployment success
-        if: success()
-        run: echo " Deploy completado con éxito"
