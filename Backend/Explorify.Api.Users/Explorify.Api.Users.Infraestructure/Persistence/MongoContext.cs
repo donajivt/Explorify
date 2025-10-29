@@ -11,7 +11,7 @@ namespace Explorify.Api.Users.Infrastructure.Persistence
 {
     public class MongoContext
     {
-        public IMongoCollection<User> Publication { get; }
+        public IMongoCollection<User> Users { get; }
 
         public MongoContext(MongoOptions opts)
         {
@@ -19,12 +19,12 @@ namespace Explorify.Api.Users.Infrastructure.Persistence
 
             var client = new MongoClient(opts.ConnectionString);
             var db = client.GetDatabase(opts.Database);
-            Publication = db.GetCollection<User>(opts.PublicationsCollection);
+            Users = db.GetCollection<User>(opts.UsersCollection);
 
             var idx = new CreateIndexModel<User>(
-                 Builders<User>.IndexKeys.Ascending(x => x.Title),
+                 Builders<User>.IndexKeys.Ascending(x => x.Username),
                  new CreateIndexOptions { Unique = false });
-            Publication.Indexes.CreateOne(idx);
+            Users.Indexes.CreateOne(idx);
         }
     }
 }
