@@ -36,6 +36,7 @@ import com.example.explorifyapp.presentation.login.LoginViewModel
 import com.example.explorifyapp.presentation.publications.list.PublicationsListModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import android.net.Uri
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -229,7 +230,10 @@ fun PublicationListScreen(
                                 publication = pub,
                                 onOpen = { onOpenDetail(pub.id) },
                                 onViewMap = {
-                                    navController.navigate("map/${pub.latitud}/${pub.longitud}/${pub.location}")
+                                    val lat = pub.latitud.toString()
+                                    val lon = pub.longitud.toString()
+                                    val name = Uri.encode(pub.location)
+                                    navController.navigate("map/$lat/$lon/$name")
                                 }
                             )
                         }
