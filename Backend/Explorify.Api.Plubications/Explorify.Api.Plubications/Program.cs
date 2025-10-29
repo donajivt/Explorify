@@ -2,6 +2,7 @@ using Explorify.Api.Publications.Application.Interfaces;
 using Explorify.Api.Publications.Application.Services;
 using Explorify.Api.Publications.Infraestructure.Publication;
 using Explorify.Api.Publications.Infraestructure.Repositories;
+using Explorify.Api.Publications.Infrastructure.Extensions;
 using Explorify.Api.Publications.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +16,10 @@ builder.Configuration.GetSection(MongoOptions.SectionName).Bind(mongoOptions);
 
 // Contexto Mongo
 builder.Services.AddSingleton(new MongoContext(mongoOptions));
+
+// Cloudinary Service NUEVO
+builder.Services.AddCloudinaryService(builder.Configuration);
+
 
 // Repositorio y servicios
 builder.Services.AddScoped<IPublicationRepository, PublicationRepository>();

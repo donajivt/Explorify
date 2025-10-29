@@ -7,7 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Explorify.Api.Publications.Domain\Explorify.Api.Publications.Domain.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+	<ProjectReference Include="..\Explorify.Api.Publications.Domain\Explorify.Api.Publications.Domain.csproj" />	
   </ItemGroup>
 
 </Project>
