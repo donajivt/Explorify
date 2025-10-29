@@ -24,6 +24,8 @@ import com.example.explorifyapp.presentation.publications.list.screens.EditPubli
 import com.example.explorifyapp.presentation.publications.list.screens.PublicationListScreen
 import com.example.explorifyapp.presentation.publications.list.CreatePublicationViewModel
 import com.example.explorifyapp.presentation.publications.list.screens.CreatePublicationScreen
+import com.example.explorifyapp.presentation.publications.list.screens.MapPickerScreen
+import com.example.explorifyapp.presentation.publications.list.screens.PublicationMapScreen
 
 @Composable
 fun AppNavigation() {
@@ -105,6 +107,7 @@ fun AppNavigation() {
 
             CreatePublicationScreen(
                 vm = createVM,
+                navController = navController,
                 onBack = { navController.popBackStack() },
                 onPublishDone = { navController.popBackStack() },
                 userId = userId
@@ -131,6 +134,24 @@ fun AppNavigation() {
 
         composable("editprofile"){
             EditProfileScreen(navController =navController)
+        }
+
+        composable(
+            "map/{lat}/{lon}/{name}",
+            arguments = listOf(
+                navArgument("lat") { type = NavType.StringType },
+                navArgument("lon") { type = NavType.StringType },
+                navArgument("name") { type = NavType.StringType }
+            )
+        ) { backStack ->
+            val lat = backStack.arguments?.getString("lat") ?: "0.0"
+            val lon = backStack.arguments?.getString("lon") ?: "0.0"
+            val name = backStack.arguments?.getString("name") ?: "Ubicación desconocida"
+            PublicationMapScreen(latitud = lat, longitud = lon, locationName = name)
+        }
+
+        composable("map_picker") {
+            MapPickerScreen(navController = navController)
         }
 
     }

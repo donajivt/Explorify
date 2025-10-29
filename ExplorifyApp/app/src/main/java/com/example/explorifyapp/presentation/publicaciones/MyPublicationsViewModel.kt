@@ -52,12 +52,14 @@ class MyPublicationsViewModel(
         title: String,
         description: String,
         location: String,
+        latitud: String,      // Nuevo
+        longitud: String,
         userId: String,
         token: String
     ) {
         viewModelScope.launch {
             try {
-                val updated = repo.update(id, imageUrl, title, description, location, userId, token)
+                val updated = repo.update(id, imageUrl, title, description, location, latitud,longitud, userId, token)
                 publications = publications.map { if (it.id == id) updated else it }
             } catch (e: Exception) {
                 errorMessage = e.message

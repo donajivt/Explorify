@@ -35,10 +35,12 @@ class PublicationRepositoryImpl(private val api: PublicationsApiService): Public
         title: String,
         description: String,
         location: String,
+        latitud: String?,
+        longitud: String?,
         userId: String,
         token: String
     ): Publication {
-        val body = CreatePublicationRequest(imageUrl, title, description, location, userId)
+        val body = CreatePublicationRequest(imageUrl, title, description, location, latitud, longitud, userId)
         val response = api.create(body, "Bearer $token")
         if (!response.isSuccessful) {
             if (response.code() == 401) throw UnauthorizedException()
@@ -53,6 +55,8 @@ class PublicationRepositoryImpl(private val api: PublicationsApiService): Public
                 title = title,
                 description = description,
                 location = location,
+                latitud = latitud,
+                longitud = longitud,
                 userId = userId,
                 createdAt = ""
             )
@@ -67,10 +71,12 @@ class PublicationRepositoryImpl(private val api: PublicationsApiService): Public
         title: String,
         description: String,
         location: String,
+        latitud: String?,
+        longitud: String?,
         userId: String,
         token: String
     ): Publication {
-        val body = UpdatePublicationRequest(imageUrl, title, description, location, userId)
+        val body = UpdatePublicationRequest(imageUrl, title, description, location,latitud, longitud, userId)
         val response = api.update(id, body, "Bearer $token")
         if (!response.isSuccessful) {
             if (response.code() == 401) throw UnauthorizedException()
@@ -87,6 +93,8 @@ class PublicationRepositoryImpl(private val api: PublicationsApiService): Public
            title = title,
            description = description,
            location = location,
+           latitud= latitud,
+           longitud = longitud,
            userId = userId,
            createdAt = ""
        )

@@ -1,6 +1,7 @@
 package com.example.explorifyapp.presentation.publications.list.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -19,17 +20,23 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import com.example.explorifyapp.data.remote.room.AppDatabase
+import com.example.explorifyapp.presentation.publications.components.MapPickerView
 import com.example.explorifyapp.presentation.publications.list.CreatePublicationViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.material3.OutlinedTextFieldDefaults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreatePublicationScreen(
     vm: CreatePublicationViewModel,
+    navController: NavController,
     onBack: () -> Unit,
     onPublishDone: () -> Unit,
     userId: String
@@ -38,50 +45,34 @@ fun CreatePublicationScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
 
-    // 🔹 Cargar el token y el userId desde Room
     var token by remember { mutableStateOf<String?>(null) }
-    var userId by remember { mutableStateOf<String?>(null) }
+    var userIdState by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
             val dao = AppDatabase.getInstance(context).authTokenDao()
             token = dao.getToken()?.token
-            userId = dao.getToken()?.userId
+            userIdState = dao.getToken()?.userId
         }
     }
 
-    // 🔹 Estados locales para el formulario
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var location by remember { mutableStateOf("") }
-    var imageUrl by remember {
-        mutableStateOf("https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg")
-    }
+    var title by rememberSaveable { mutableStateOf("") }
+    var description by rememberSaveable { mutableStateOf("") }
+    var location by rememberSaveable { mutableStateOf("") }
+    var latitud by remember { mutableStateOf<String?>(null) }
+    var longitud by remember { mutableStateOf<String?>(null) }
+    val imageUrl = remember { "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg" }
 
     val ui = vm.uiState
     var isPublishing by remember { mutableStateOf(false) }
 
-    // 🔹 Mostrar mensajes de error
-    LaunchedEffect(ui.error) {
-        ui.error?.let {
-            snackbarHostState.currentSnackbarData?.dismiss()
-            snackbarHostState.showSnackbar(it)
-        }
-    }
-
-    // 🔹 Mostrar éxito
-    LaunchedEffect(ui.success) {
-        if (ui.success) {
-            isPublishing = false
-            snackbarHostState.currentSnackbarData?.dismiss()
-            snackbarHostState.showSnackbar("Publicación creada correctamente")
-
-            title = ""
-            description = ""
-            location = ""
-            kotlinx.coroutines.delay(1500)
-
-            onPublishDone()
+    // Resultados del mapa
+    LaunchedEffect(navController.currentBackStackEntry?.savedStateHandle?.get<String>("selected_location_name")) {
+        val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
+        savedStateHandle?.get<String>("selected_location_name")?.let {
+            location = it
+            latitud = savedStateHandle.get<String>("selected_latitude")
+            longitud = savedStateHandle.get<String>("selected_longitude")
         }
     }
 
@@ -90,7 +81,7 @@ fun CreatePublicationScreen(
             CenterAlignedTopAppBar(
                 title = { Text("Nueva Publicación", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = { onBack() }) {
+                    IconButton(onClick = onBack) {
                         Icon(Icons.Default.Close, contentDescription = "Volver")
                     }
                 },
@@ -109,51 +100,41 @@ fun CreatePublicationScreen(
             Button(
                 onClick = {
                     if (isPublishing || ui.loading) return@Button
-
                     if (description.isBlank() || location.isBlank()) {
                         scope.launch {
-                            snackbarHostState.currentSnackbarData?.dismiss()
                             snackbarHostState.showSnackbar("Debes llenar la descripción y ubicación")
                         }
                         return@Button
                     }
-
-                    // ⚠️ Asegúrate de tener userId
-                    if (userId.isNullOrEmpty()) {
+                    if (userIdState.isNullOrEmpty()) {
                         scope.launch {
                             snackbarHostState.showSnackbar("Error: No se encontró el usuario autenticado")
                         }
                         return@Button
                     }
-
                     isPublishing = true
-
                     vm.createPublication(
                         context = context,
                         imageUrl = imageUrl,
                         title = title,
                         description = description,
                         location = location,
-                        userId = userId!!,
-                        onDone = { }
+                        latitud = latitud,
+                        longitud = longitud,
+                        userId = userIdState!!,
+                        onDone = { onPublishDone() }
                     )
                 },
                 enabled = !ui.loading && !isPublishing,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(20.dp),
-                shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF355E3B))
             ) {
-                if (vm.uiState.loading) {
-                    CircularProgressIndicator(
-                        color = Color.White,
-                        strokeWidth = 2.dp,
-                        modifier = Modifier.size(20.dp)
-                    )
-                } else {
+                if (vm.uiState.loading)
+                    CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
+                else
                     Text("Publicar", color = Color.White)
-                }
             }
         }
     ) { padding ->
@@ -166,26 +147,14 @@ fun CreatePublicationScreen(
         ) {
             Spacer(Modifier.height(10.dp))
 
-            // Imagen principal (simple)
-            Box(Modifier.size(120.dp)) {
-                AsyncImage(
-                    model = imageUrl,
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(RoundedCornerShape(12.dp))
-                )
-                IconButton(
-                    onClick = { /* TODO: abrir selector de imágenes */ },
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .size(48.dp)
-                        .background(Color(0xFF355E3B), CircleShape)
-                ) {
-                    Icon(Icons.Default.Add, contentDescription = "Agregar imagen", tint = Color.White)
-                }
-            }
+            AsyncImage(
+                model = imageUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(140.dp)
+                    .clip(RoundedCornerShape(12.dp))
+            )
 
             Spacer(Modifier.height(20.dp))
 
@@ -195,22 +164,44 @@ fun CreatePublicationScreen(
                 label = { Text("Título (Opcional)") },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFFE8F0E5),
-                    unfocusedContainerColor = Color(0xFFE8F0E5)
+                    focusedContainerColor = Color(0xFFDDF5E3),  // 💚 Fondo activo (resalta)
+                    unfocusedContainerColor = Color.White,      // 🤍 Fondo inactivo
+                    disabledContainerColor = Color.White,
+                    focusedTextColor = Color(0xFF2B2B2B),       // Texto oscuro
+                    unfocusedTextColor = Color(0xFF2B2B2B),
+                    disabledTextColor = Color(0xFF2B2B2B),
+                    cursorColor = Color(0xFF3C9D6D),            // Cursor verde
+                    focusedLabelColor = Color(0xFF3C9D6D),      // Label verde activo
+                    unfocusedLabelColor = Color(0xFF6B4F3B),    // Label café inactivo
+                    disabledLabelColor = Color(0xFF6B4F3B),
+                    focusedBorderColor = Color(0xFF3C9D6D),     // Borde verde
+                    unfocusedBorderColor = Color(0xFFBFAE94),   // Borde gris arena
+                    disabledBorderColor = Color(0xFFBFAE94)
                 )
             )
+
 
             Spacer(Modifier.height(12.dp))
 
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
-                label = { Text("Escribe una descripción") },
+                label = { Text("Descripción") },
                 modifier = Modifier.fillMaxWidth(),
-                isError = description.isBlank(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFFE8F0E5),
-                    unfocusedContainerColor = Color(0xFFE8F0E5)
+                    focusedContainerColor = Color(0xFFDDF5E3),
+                    unfocusedContainerColor = Color.White,
+                    disabledContainerColor = Color.White,
+                    focusedTextColor = Color(0xFF2B2B2B),
+                    unfocusedTextColor = Color(0xFF2B2B2B),
+                    disabledTextColor = Color(0xFF2B2B2B),
+                    cursorColor = Color(0xFF3C9D6D),
+                    focusedLabelColor = Color(0xFF3C9D6D),
+                    unfocusedLabelColor = Color(0xFF6B4F3B),
+                    disabledLabelColor = Color(0xFF6B4F3B),
+                    focusedBorderColor = Color(0xFF3C9D6D),
+                    unfocusedBorderColor = Color(0xFFBFAE94),
+                    disabledBorderColor = Color(0xFFBFAE94)
                 )
             )
 
@@ -218,16 +209,30 @@ fun CreatePublicationScreen(
 
             OutlinedTextField(
                 value = location,
-                onValueChange = { location = it },
-                label = { Text("Añade una ubicación") },
-                leadingIcon = { Icon(Icons.Outlined.LocationOn, contentDescription = null) },
-                modifier = Modifier.fillMaxWidth(),
-                isError = location.isBlank(),
+                onValueChange = {},
+                label = { Text("Ubicación") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { navController.navigate("map_picker") },
+                enabled = false,
+                readOnly = true,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFFE8F0E5),
-                    unfocusedContainerColor = Color(0xFFE8F0E5)
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    disabledContainerColor = Color.White,
+                    focusedTextColor = Color(0xFF2B2B2B),
+                    unfocusedTextColor = Color(0xFF2B2B2B),
+                    disabledTextColor = Color(0xFF2B2B2B),
+                    cursorColor = Color(0xFF3C9D6D),
+                    focusedLabelColor = Color(0xFF3C9D6D),
+                    unfocusedLabelColor = Color(0xFF6B4F3B),
+                    disabledLabelColor = Color(0xFF6B4F3B),
+                    focusedBorderColor = Color(0xFF3C9D6D),
+                    unfocusedBorderColor = Color(0xFFBFAE94),
+                    disabledBorderColor = Color(0xFFBFAE94)
                 )
             )
+
         }
     }
 }

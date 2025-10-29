@@ -36,6 +36,8 @@ class CreatePublicationViewModel(
         title: String,
         description: String,
         location: String,
+        latitud: String?,
+        longitud: String?,
         userId: String,
         onDone: () -> Unit
     ) {
@@ -58,7 +60,8 @@ class CreatePublicationViewModel(
                 }
 
                 // 🔹 Crear publicación en API
-                repo.create(imageUrl, title, description, location, userId, token)
+                repo.create(imageUrl, title, description, location,latitud,
+                longitud, userId, token)
 
                 uiState = uiState.copy(
                     loading = false,

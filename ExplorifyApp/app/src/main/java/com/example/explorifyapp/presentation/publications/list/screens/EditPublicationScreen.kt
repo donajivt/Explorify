@@ -1,6 +1,7 @@
 package com.example.explorifyapp.presentation.publications.list.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -13,12 +14,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-import com.example.explorifyapp.data.remote.model.Publication
 import com.example.explorifyapp.data.remote.publications.RetrofitPublicationsInstance
 import com.example.explorifyapp.domain.repository.PublicationRepositoryImpl
 import com.example.explorifyapp.presentation.login.LoginViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import androidx.compose.ui.graphics.Color
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.ui.draw.clip
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -35,57 +38,59 @@ fun EditPublicationScreen(
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
 
-    var snackbarJob by remember { mutableStateOf<Job?>(null) }
-
     var isLoading by remember { mutableStateOf(false) }
     var isSaving by remember { mutableStateOf(false) }
 
-    var title by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var location by remember { mutableStateOf("") }
-    var imageUrl by remember { mutableStateOf("") }
+    var title by rememberSaveable { mutableStateOf("") }
+    var description by rememberSaveable { mutableStateOf("") }
+    var location by rememberSaveable { mutableStateOf("") }
+    var latitud by remember { mutableStateOf<String?>(null) }
+    var longitud by remember { mutableStateOf<String?>(null) }
+    var imageUrl by rememberSaveable { mutableStateOf("") }
 
-    LaunchedEffect(loginViewModel.token, publicationId) {
-        println("🔑 Token recibido: $token")
-        println("🆔 ID publicación: $publicationId")
-        if (!token.isNullOrEmpty() && userId.isNotEmpty()) {
+    var hasLoadedOnce by rememberSaveable { mutableStateOf(false) }
+
+    // 🔹 Cargar datos solo una vez
+    LaunchedEffect(publicationId) {
+        if (!hasLoadedOnce && token.isNotEmpty() && userId.isNotEmpty()) {
+            hasLoadedOnce = true
             isLoading = true
             try {
-                val publications = repo.getUserPublications(userId, token)
-                val pub = publications.find { it.id == publicationId }
-
-                if (pub != null) {
-                    println("✅ Publicación encontrada entre las del usuario: ${pub.title}")
-                    title = pub.title
-                    description = pub.description
-                    location = pub.location
-                    imageUrl = pub.imageUrl
-                } else {
-                    println("⚠️ No se encontró la publicación entre las del usuario.")
-                    coroutineScope.launch {
-                        snackbarHostState.currentSnackbarData?.dismiss()
-                        snackbarHostState.showSnackbar("No se encontró la publicación seleccionada")
-                        delay(1000)
-                        snackbarHostState.currentSnackbarData?.dismiss()
-                    }
+                val pub = repo.getUserPublications(userId, token).find { it.id == publicationId }
+                pub?.let {
+                    title = it.title
+                    description = it.description
+                    location = it.location
+                    latitud = it.latitud
+                    longitud = it.longitud
+                    imageUrl = it.imageUrl
                 }
-
             } catch (e: Exception) {
-                println("⚠️ Error al cargar publicación: ${e.message}")
-                coroutineScope.launch {
-                    snackbarHostState.currentSnackbarData?.dismiss()
-                    snackbarHostState.showSnackbar("Error al cargar la publicación")
-                    delay(1000)
-                    snackbarHostState.currentSnackbarData?.dismiss()
-                }
+                snackbarHostState.showSnackbar("Error al cargar la publicación")
             } finally {
                 isLoading = false
             }
-        }else {
-            println("🚫 Token o userId vacío, no se puede cargar la publicación.")
         }
     }
 
+    // 🔁 Escuchar cambios del mapa (cuando regresa de MapPickerScreen)
+    LaunchedEffect(Unit) {
+        val handle = navController.currentBackStackEntry?.savedStateHandle
+        handle?.getLiveData<String>("selected_location_name")?.observeForever { name ->
+            val lat = handle.get<String>("selected_latitude")
+            val lon = handle.get<String>("selected_longitude")
+
+            if (!name.isNullOrEmpty() && !lat.isNullOrEmpty() && !lon.isNullOrEmpty()) {
+                location = name
+                latitud = lat
+                longitud = lon
+                println("📍 Nueva ubicación seleccionada: $location ($lat, $lon)")
+                handle.remove<String>("selected_location_name")
+                handle.remove<String>("selected_latitude")
+                handle.remove<String>("selected_longitude")
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -100,32 +105,41 @@ fun EditPublicationScreen(
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
-
         if (isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(Modifier.fillMaxSize(), Alignment.Center) {
                 CircularProgressIndicator()
             }
         } else {
             Column(
-                modifier = Modifier
+                Modifier
                     .padding(padding)
-                    .padding(16.dp)
+                    .padding(horizontal = 20.dp)
                     .fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    "Actualiza los datos de tu aventura",
-                    style = MaterialTheme.typography.titleMedium
-                )
+                Text("Edita tu publicación", style = MaterialTheme.typography.titleMedium)
 
-                // 🖼️ Vista previa de imagen actual
+                // 🖼️ Imagen (solo vista previa, no editable)
                 if (imageUrl.isNotEmpty()) {
                     Image(
                         painter = rememberAsyncImagePainter(imageUrl),
-                        contentDescription = "Vista previa",
+                        contentDescription = "Vista previa de imagen",
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp),
+                            .size(160.dp)
+                            .clip(MaterialTheme.shapes.medium),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    // Imagen por defecto si no tiene
+                    Image(
+                        painter = rememberAsyncImagePainter(
+                            "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg"
+                        ),
+                        contentDescription = "Imagen por defecto",
+                        modifier = Modifier
+                            .size(160.dp)
+                            .clip(MaterialTheme.shapes.medium),
                         contentScale = ContentScale.Crop
                     )
                 }
@@ -134,80 +148,94 @@ fun EditPublicationScreen(
                     value = title,
                     onValueChange = { title = it },
                     label = { Text("Título") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color(0xFF3A3A3A),   // Fondo al enfocar
+                        unfocusedContainerColor = Color(0xFF2C2C2C), // Fondo normal
+                        disabledContainerColor = Color(0xFF2C2C2C),
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        disabledTextColor = Color.White,
+                        cursorColor = Color(0xFF3C9D6D),             // Cursor verde
+                        focusedLabelColor = Color(0xFF3C9D6D),       // Label verde al enfocar
+                        unfocusedLabelColor = Color(0xFFAFAFAF),     // Label gris inactivo
+                        disabledLabelColor = Color(0xFFAFAFAF),
+                        focusedBorderColor = Color(0xFF3C9D6D),      // Borde verde activo
+                        unfocusedBorderColor = Color(0xFFAFAFAF),    // Borde gris inactivo
+                        disabledBorderColor = Color(0xFFAFAFAF)
+                    )
                 )
 
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
                     label = { Text("Descripción") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color(0xFF3A3A3A),
+                        unfocusedContainerColor = Color(0xFF2C2C2C),
+                        disabledContainerColor = Color(0xFF2C2C2C),
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        disabledTextColor = Color.White,
+                        cursorColor = Color(0xFF3C9D6D),
+                        focusedLabelColor = Color(0xFF3C9D6D),
+                        unfocusedLabelColor = Color(0xFFAFAFAF),
+                        disabledLabelColor = Color(0xFFAFAFAF),
+                        focusedBorderColor = Color(0xFF3C9D6D),
+                        unfocusedBorderColor = Color(0xFFAFAFAF),
+                        disabledBorderColor = Color(0xFFAFAFAF)
+                    )
                 )
 
                 OutlinedTextField(
                     value = location,
-                    onValueChange = { location = it },
+                    onValueChange = {},
                     label = { Text("Ubicación") },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { navController.navigate("map_picker") },
+                    enabled = false,
+                    readOnly = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color(0xFF2C2C2C),
+                        unfocusedContainerColor = Color(0xFF2C2C2C),
+                        disabledContainerColor = Color(0xFF2C2C2C),
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        disabledTextColor = Color.White,
+                        cursorColor = Color(0xFF3C9D6D),
+                        focusedLabelColor = Color(0xFF3C9D6D),
+                        unfocusedLabelColor = Color(0xFFAFAFAF),
+                        disabledLabelColor = Color(0xFFAFAFAF),
+                        focusedBorderColor = Color(0xFF3C9D6D),
+                        unfocusedBorderColor = Color(0xFFAFAFAF),
+                        disabledBorderColor = Color(0xFFAFAFAF)
+                    )
                 )
 
-                OutlinedTextField(
-                    value = imageUrl,
-                    onValueChange = { imageUrl = it },
-                    label = { Text("URL de imagen") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(Modifier.height(10.dp))
 
                 Button(
                     onClick = {
-                        if (isSaving) return@Button
-
-                        // Validar campos
-                        if (description.isBlank() || location.isBlank() || imageUrl.isBlank()) {
-                            snackbarJob?.cancel()
-                            snackbarJob = coroutineScope.launch {
-                                snackbarHostState.showSnackbar("Todos los campos (excepto título) son obligatorios")
-                                delay(1000)
-                                snackbarHostState.currentSnackbarData?.dismiss()
-                            }
-                            return@Button
-                        }
-
                         coroutineScope.launch {
-                            isSaving = true
                             try {
-
                                 repo.update(
                                     id = publicationId,
-                                    imageUrl = imageUrl,
+                                    imageUrl = if (imageUrl.isBlank()) "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg" else imageUrl, // ✅ se conserva la actual
                                     title = title,
                                     description = description,
                                     location = location,
+                                    latitud = latitud,
+                                    longitud = longitud,
                                     userId = userId,
                                     token = token
                                 )
-
-                                snackbarJob?.cancel()
-                                snackbarJob = coroutineScope.launch {
-                                    snackbarHostState.showSnackbar("Publicación actualizada correctamente")
-                                    delay(1000)
-                                    snackbarHostState.currentSnackbarData?.dismiss()
-                                }
-
-                                delay(800)
+                                snackbarHostState.showSnackbar("Publicación actualizada correctamente")
+                                delay(1000)
                                 navController.popBackStack()
-
                             } catch (e: Exception) {
-                                snackbarJob?.cancel()
-                                snackbarJob = coroutineScope.launch {
-                                    snackbarHostState.showSnackbar("Error al actualizar publicación")
-                                    delay(1000)
-                                    snackbarHostState.currentSnackbarData?.dismiss()
-                                }
-                            } finally {
-                                isSaving = false
+                                snackbarHostState.showSnackbar("Error al actualizar")
                             }
                         }
                     },
@@ -216,15 +244,7 @@ fun EditPublicationScreen(
                         .fillMaxWidth()
                         .height(50.dp)
                 ) {
-                    if (isSaving) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(22.dp),
-                            color = MaterialTheme.colorScheme.onPrimary,
-                            strokeWidth = 2.dp
-                        )
-                    } else {
-                        Text("Guardar cambios")
-                    }
+                    Text("Guardar cambios")
                 }
             }
         }
