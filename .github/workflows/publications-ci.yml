@@ -1,4 +1,4 @@
-# Pipeline de CI/CD para API de Publicaciones
+# Pipeline de CI/CD solo para rama main
 
 name: Publications API - CI/CD Pipeline
 
@@ -6,7 +6,6 @@ on:
   push:
     branches:
       - main
-      - develop
     paths:
       - 'Backend/Explorify.Api.Plubications/**'
       - '.github/workflows/**'
@@ -14,7 +13,6 @@ on:
   pull_request:
     branches:
       - main
-      - develop
     paths:
       - 'Backend/Explorify.Api.Plubications/**'
 
@@ -59,14 +57,7 @@ jobs:
 
       - name: Run unit tests
         working-directory: ${{ env.PROJECT_PATH }}
-        run: dotnet test ${{ env.SOLUTION_FILE }} --configuration ${{ env.BUILD_CONFIGURATION }} --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
-        continue-on-error: true
-
-      - name: Publish test results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
-        with:
-          files: '**/test-results.trx'
+        run: dotnet test ${{ env.SOLUTION_FILE }} --configuration ${{ env.BUILD_CONFIGURATION }} --no-build --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
         continue-on-error: true
 
       - name: Publish application
@@ -101,14 +92,14 @@ jobs:
 
       - name: Check code formatting
         working-directory: ${{ env.PROJECT_PATH }}
-        run: dotnet format ${{ env.SOLUTION_FILE }} --verify-no-changes --verbosity diagnostic
+        run: dotnet format ${{ env.SOLUTION_FILE }} --verify-no-changes
         continue-on-error: true
 
   docker-build:
     name: Build Docker Image
     runs-on: ubuntu-latest
     needs: build
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     permissions:
       contents: read
       packages: write
@@ -145,31 +136,11 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  deploy-dev:
-    name: Deploy to Development
-    runs-on: ubuntu-latest
-    needs: [build, code-quality]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-    environment:
-      name: development
-
-    steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: publications-api-build
-          path: ./publish
-
-      - name: Deploy to development server
-        run: echo "Desplegando a desarrollo..."
-        env:
-          DEPLOY_KEY: ${{ secrets.DEV_DEPLOY_KEY }}
-
   deploy-prod:
     name: Deploy to Production
     runs-on: ubuntu-latest
     needs: [build, code-quality]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'
     environment:
       name: production
 
@@ -181,6 +152,6 @@ jobs:
           path: ./publish
 
       - name: Deploy to production server
-        run: echo "Desplegando a producción..."
+        run: echo "🚀 Desplegando a producción..."
         env:
           DEPLOY_KEY: ${{ secrets.PROD_DEPLOY_KEY }}
