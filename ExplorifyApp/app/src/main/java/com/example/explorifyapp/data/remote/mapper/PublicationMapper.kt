@@ -9,6 +9,8 @@ fun Publication.toDomain() = DomainPublication(
     title = title,
     description = description,
     location = location,
+    latitud = latitud,
+    longitud = longitud,
     userId = userId,
     createdAt = createdAt
 )

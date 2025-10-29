@@ -18,6 +18,8 @@ interface PublicationRepository {
         title: String,
         description: String,
         location: String,
+        latitud: String?,
+        longitud: String?,
         userId: String,
         token: String
     ): Publication
@@ -28,6 +30,8 @@ interface PublicationRepository {
         title: String,
         description: String,
         location: String,
+        latitud: String?,
+        longitud: String?,
         userId: String,
         token: String
     ): Publication

@@ -23,9 +23,11 @@ class PublicationUseCases(
             title: String,
             description: String,
             location: String,
+            latitud: String?,      // Nuevo
+            longitud: String?,
             userId: String,
             token: String
-        ): Publication = repo.create(imageUrl, title, description, location, userId, token)
+        ): Publication = repo.create(imageUrl, title, description, location,latitud,longitud, userId, token)
     }
 
     class UpdatePublicationUseCase(private val repo: PublicationRepositoryImpl) {
@@ -35,9 +37,11 @@ class PublicationUseCases(
             title: String,
             description: String,
             location: String,
+            latitud: String,      // Nuevo
+            longitud: String,
             userId: String,
             token: String
-        ): Publication = repo.update(id, imageUrl, title, description, location, userId, token)
+        ): Publication = repo.update(id, imageUrl, title, description, location,latitud,longitud, userId, token)
     }
 
     class DeletePublicationUseCase(private val repo: PublicationRepositoryImpl) {

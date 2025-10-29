@@ -89,7 +89,7 @@ fun HomeScreen(userName: String,navController: NavController, viewModel: LoginVi
                     icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
                     label = { Text("Inicio") },
                     selected = true,
-                    onClick = { navController.navigate("inicio/${userName}") }
+                    onClick = { navController.navigate("publicaciones") }
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },

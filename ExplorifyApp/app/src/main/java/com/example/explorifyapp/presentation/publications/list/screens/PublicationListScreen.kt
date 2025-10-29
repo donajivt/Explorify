@@ -149,7 +149,10 @@ fun PublicationListScreen(
                         items(state.items, key = { it.id }) { pub ->
                             PublicationCard(
                                 publication = pub,
-                                onOpen = { onOpenDetail(pub.id) }
+                                onOpen = { onOpenDetail(pub.id) },
+                                onViewMap = {
+                                    navController.navigate("map/${pub.latitud}/${pub.longitud}/${pub.location}")
+                                }
                             )
                         }
                     }
@@ -162,7 +165,8 @@ fun PublicationListScreen(
 @Composable
 private fun PublicationCard(
     publication: Publication,
-    onOpen: () -> Unit
+    onOpen: () -> Unit,
+    onViewMap: () -> Unit
 ) {
     Card(
         modifier = Modifier
@@ -226,6 +230,10 @@ private fun PublicationCard(
                 )
                 Spacer(Modifier.width(6.dp))
                 Text(publication.location, style = MaterialTheme.typography.labelMedium)
+            }
+            Spacer(Modifier.height(6.dp))
+            TextButton(onClick = onViewMap) {
+                Text("Ver ubicación en mapa")
             }
         }
     }

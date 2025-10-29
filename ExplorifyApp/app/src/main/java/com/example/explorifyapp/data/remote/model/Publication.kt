@@ -6,6 +6,8 @@ data class Publication(
     val title: String,
     val description: String,
     val location: String,
+    val latitud: String? = null,
+    val longitud: String? = null,
     val userId: String,
     val createdAt: String
 )
