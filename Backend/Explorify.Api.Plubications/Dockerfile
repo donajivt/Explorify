@@ -1,48 +1,48 @@
-# Dockerfile multi-stage para API de Publicaciones
+# Dockerfile multi-stage para Explorify API - Publicaciones
+# Optimizado para .NET 9 en producción
 
-# Etapa 1: Build - Construcción de la aplicación
+# ========== Etapa 1: Build ========== #
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-# Copiamos los .csproj para aprovechar caché
-COPY ["Explorify.Api.Publications/Explorify.Api.Publications.csproj", "Explorify.Api.Publications/"]
-COPY ["Explorify.Api.Publications.Application/Explorify.Api.Publications.Application.csproj", "Explorify.Api.Publications.Application/"]
-COPY ["Explorify.Api.Publications.Domain/Explorify.Api.Publications.Domain.csproj", "Explorify.Api.Publications.Domain/"]
-COPY ["Explorify.Api.Publications.Infrastructure/Explorify.Api.Publications.Infrastructure.csproj", "Explorify.Api.Publications.Infrastructure/"]
+# Copiar proyectos por separado para uso eficiente del cache
+COPY ["Explorify.Api.Plubications/Explorify.Api.Plubications.csproj", "Explorify.Api.Plubications/"]
+COPY ["Explorify.Application/Explorify.Application.csproj", "Explorify.Application/"]
+COPY ["Explorify.Domain/Explorify.Domain.csproj", "Explorify.Domain/"]
+COPY ["Explorify.Infrastructure/Explorify.Infrastructure.csproj", "Explorify.Infrastructure/"]
 
-# Restauramos dependencias
-RUN dotnet restore "Explorify.Api.Publications/Explorify.Api.Publications.csproj"
+# Restaurar dependencias
+RUN dotnet restore "Explorify.Api.Plubications/Explorify.Api.Plubications.csproj"
 
-# Copiamos el resto del código
+# Copiar todo el código
 COPY . .
 
-# Compilar en Release y publicar
-WORKDIR "/src/Explorify.Api.Publications"
-RUN dotnet build -c Release -o /app/build
-RUN dotnet publish -c Release -o /app/publish /p:UseAppHost=false
+# Compilar y Publicar en Release
+WORKDIR "/src/Explorify.Api.Plubications"
+RUN dotnet build "Explorify.Api.Plubications.csproj" -c Release -o /app/build
+RUN dotnet publish "Explorify.Api.Plubications.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# Etapa 2: Runtime - Contenedor final
+# ========== Etapa 2: Runtime ========== #
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
 
-# Crear usuario no-root (seguridad)
-RUN groupadd -r appuser && useradd -r -g appuser appuser
+# Crear usuario no-root
+RUN adduser --disabled-password --gecos "" appuser
 
-# Copiamos la publicación hecha en la etapa build
+# Copiar artefactos publicados
 COPY --from=build /app/publish .
 
-# Asignar permisos y cambiar usuario
-RUN chown -R appuser:appuser /app
 USER appuser
 
 # Exponer puerto de la API
 EXPOSE 8080
+
+# ASP.NET Core Env
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
 
-# Healthcheck 
+# Healthcheck de ejemplo (ajusta ruta si tu API la usa diferente)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8080/health || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health || exit 1
 
-# Arranque de la aplicación
-ENTRYPOINT ["dotnet", "Explorify.Api.Publications.dll"]
+ENTRYPOINT ["dotnet", "Explorify.Api.Plubications.dll"]
