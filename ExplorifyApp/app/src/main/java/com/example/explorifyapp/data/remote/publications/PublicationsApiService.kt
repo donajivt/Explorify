@@ -12,6 +12,7 @@ import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import com.example.explorifyapp.data.remote.dto.PublicationsMapResponse
 
 interface PublicationsApiService {
 
@@ -20,6 +21,12 @@ interface PublicationsApiService {
     suspend fun getAll(
         @Header("Authorization") token: String
     ): Response<PublicationsResponse>
+
+    @GET("api/Publication")
+    suspend fun getAllMaps(
+        @Header("Authorization") token: String
+    ): PublicationsMapResponse
+
 
     // 🔹 Obtener una publicación por ID
     @GET("api/Publication/{id}")

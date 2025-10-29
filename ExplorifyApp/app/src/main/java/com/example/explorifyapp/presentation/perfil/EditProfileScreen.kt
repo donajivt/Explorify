@@ -61,6 +61,8 @@ import androidx.compose.ui.Alignment
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
@@ -68,9 +70,11 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
 ) {
     var profileName = remember { mutableStateOf("") }
     var email = remember { mutableStateOf("") }
+    val userData by loginViewModel.userData.collectAsState()
+    //val userName =  ?: "Usuario"
+    //val userEmail = userData?.userEmail ?: "correo@ejemplo.com"
 
     var menuExpanded by remember { mutableStateOf(false) }
-    var userName by remember { mutableStateOf("") }
 
     // 🔐 Validar si hay sesión
     LaunchedEffect(Unit) {
@@ -80,10 +84,10 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
                 popUpTo("editprofile") { inclusive = true }
             }
         }
+
         //permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-        userName=loginViewModel.userName
-        email.value = loginViewModel.userEmail // ✅ use .value
-        profileName.value = loginViewModel.userName
+        email.value= userData?.username ?: "Usuario"//loginViewModel.userEmail // ✅ use .value
+        profileName.value =userData?.userEmail?: "correo@ejemplo.com" //loginViewModel.userName
     }
 
     Scaffold(

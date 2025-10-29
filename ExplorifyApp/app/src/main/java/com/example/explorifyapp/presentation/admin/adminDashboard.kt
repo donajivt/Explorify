@@ -16,6 +16,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Addchart
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.BorderColor
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
@@ -80,20 +83,26 @@ fun AdminDashboard(navController: NavController,
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
                     label = { Text("Inicio") },
-                    selected = false,
+                    selected = true,
                     onClick = { navController.navigate("adminDashboard") }
                 )
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
-                    label = { Text("Buscar") },
+                    icon = { Icon(Icons.Default.BarChart, contentDescription = "Buscar") },
+                    label = { Text("Estadisticas") },
                     selected = false,
-                    onClick = { navController.navigate("buscar") }
+                    onClick = { } //navController.navigate("buscar")
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.BorderColor, contentDescription = "Buscar") },
+                    label = { Text("Reportes") },
+                    selected = false,
+                    onClick = {  } //navController.navigate("buscar")
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
                     label = { Text("Perfil") },
-                    selected = true,
-                    onClick = {navController.navigate("perfil")}
+                    selected = false,
+                    onClick = { }//navController.navigate("perfil")
                 )
             }
         }
