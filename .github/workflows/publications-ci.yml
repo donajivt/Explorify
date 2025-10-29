@@ -22,9 +22,9 @@ on:
 
 env:
   DOTNET_VERSION: '9.0.x'
-  PROJECT_PATH: 'Backend/Explorify.Api.Plubications'
-  SOLUTION_FILE: 'Explorify.Api.Plubications.sln'
-  BUILD_CONFIGURATION: 'Release'
+  PROJECT_PATH: Backend/Explorify.Api.Plubications
+  SOLUTION_FILE: Explorify.Api.Plubications.sln
+  BUILD_CONFIGURATION: Release
 
 jobs:
 
@@ -35,8 +35,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
@@ -52,26 +50,23 @@ jobs:
             ${{ runner.os }}-nuget-
 
       - name: Restore dependencies
-        run: |
-          cd ${{ env.PROJECT_PATH }}
-          dotnet restore ${{ env.SOLUTION_FILE }}
+        working-directory: ${{ env.PROJECT_PATH }}
+        run: dotnet restore ${{ env.SOLUTION_FILE }}
 
       - name: Build solution
-        run: |
-          cd ${{ env.PROJECT_PATH }}
-          dotnet build ${{ env.SOLUTION_FILE }} \
-            --configuration ${{ env.BUILD_CONFIGURATION }} \
-            --no-restore
+        working-directory: ${{ env.PROJECT_PATH }}
+        run: dotnet build ${{ env.SOLUTION_FILE }} \
+              --configuration ${{ env.BUILD_CONFIGURATION }} \
+              --no-restore
 
       - name: Run unit tests
-        run: |
-          cd ${{ env.PROJECT_PATH }}
-          dotnet test ${{ env.SOLUTION_FILE }} \
-            --configuration ${{ env.BUILD_CONFIGURATION }} \
-            --no-build \
-            --verbosity normal \
-            --logger "trx;LogFileName=test-results.trx" \
-            --collect:"XPlat Code Coverage"
+        working-directory: ${{ env.PROJECT_PATH }}
+        run: dotnet test ${{ env.SOLUTION_FILE }} \
+              --configuration ${{ env.BUILD_CONFIGURATION }} \
+              --no-build \
+              --verbosity normal \
+              --logger "trx;LogFileName=test-results.trx" \
+              --collect:"XPlat Code Coverage"
         continue-on-error: true
 
       - name: Publish test results
@@ -82,12 +77,11 @@ jobs:
         continue-on-error: true
 
       - name: Publish application
-        run: |
-          cd ${{ env.PROJECT_PATH }}
-          dotnet publish Explorify.Api.Plubications/Explorify.Api.Plubications.csproj \
-            --configuration ${{ env.BUILD_CONFIGURATION }} \
-            --output publish \
-            --no-build
+        working-directory: ${{ env.PROJECT_PATH }}
+        run: dotnet publish Explorify.Api.Plubications/Explorify.Api.Plubications.csproj \
+              --configuration ${{ env.BUILD_CONFIGURATION }} \
+              --output publish \
+              --no-build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
@@ -111,17 +105,15 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Security scan
-        run: |
-          cd ${{ env.PROJECT_PATH }}
-          dotnet list ${{ env.SOLUTION_FILE }} package --vulnerable --include-transitive
+        working-directory: ${{ env.PROJECT_PATH }}
+        run: dotnet list ${{ env.SOLUTION_FILE }} package --vulnerable --include-transitive
         continue-on-error: true
 
       - name: Check code formatting
-        run: |
-          cd ${{ env.PROJECT_PATH }}
-          dotnet format ${{ env.SOLUTION_FILE }} \
-            --verify-no-changes \
-            --verbosity diagnostic
+        working-directory: ${{ env.PROJECT_PATH }}
+        run: dotnet format ${{ env.SOLUTION_FILE }} \
+              --verify-no-changes \
+              --verbosity diagnostic
         continue-on-error: true
 
   docker-build:
@@ -153,18 +145,15 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository_owner }}/explorify-plubications-api
           tags: |
-            type=ref,event=branch
-            type=sha,prefix={{branch}}-
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ${{ env.PROJECT_PATH }}
+          context: .
           file: ${{ env.PROJECT_PATH }}/Dockerfile
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -184,8 +173,7 @@ jobs:
           path: ./publish
 
       - name: Deploy to development server
-        run: |
-          echo "Desplegando a desarrollo..."
+        run: echo "Desplegando a desarrollo..."
         env:
           DEPLOY_KEY: ${{ secrets.DEV_DEPLOY_KEY }}
 
@@ -205,7 +193,6 @@ jobs:
           path: ./publish
 
       - name: Deploy to production server
-        run: |
-          echo "Desplegando a producción..."
+        run: echo "Desplegando a producción..."
         env:
           DEPLOY_KEY: ${{ secrets.PROD_DEPLOY_KEY }}
