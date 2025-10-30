@@ -175,7 +175,7 @@ fun LoginScreen(navController: NavController) {
             if (loginResult.startsWith("Bienvenido")) {
                 // Extraer nombre del usuario desde el mensaje o del ViewModel
                 val name = viewModel.userName
-                navController.navigate("inicio/${name}")
+                navController.navigate("publicaciones")
             }
         }
     }

@@ -100,30 +100,45 @@ fun CreatePublicationScreen(
             Button(
                 onClick = {
                     if (isPublishing || ui.loading) return@Button
-                    if (description.isBlank() || location.isBlank()) {
-                        scope.launch {
-                            snackbarHostState.showSnackbar("Debes llenar la descripción y ubicación")
+
+                    scope.launch {
+                        snackbarHostState.currentSnackbarData?.dismiss()
+
+                        when {
+                            description.isBlank() || location.isBlank() ->{
+                                snackbarHostState.showSnackbar("Debes llenar descripcion y ubicacion", duration = SnackbarDuration.Short)
+                                return@launch
+                            }
+                            description.isBlank() -> {
+                                snackbarHostState.showSnackbar("Debes llenar la descripción", duration = SnackbarDuration.Short)
+                                return@launch
+                            }
+
+                            location.isBlank() ->{
+                                snackbarHostState.showSnackbar("Debes llenar la ubicacion", duration = SnackbarDuration.Short)
+                                return@launch
+                            }
+
+                            userIdState.isNullOrEmpty() -> {
+                                snackbarHostState.showSnackbar("No se encontró el usuario autenticado", duration = SnackbarDuration.Short)
+                                return@launch
+                            }
+                            else -> {
+                                isPublishing = true
+                                vm.createPublication(
+                                    context = context,
+                                    imageUrl = imageUrl,
+                                    title = title,
+                                    description = description,
+                                    location = location,
+                                    latitud = latitud,
+                                    longitud = longitud,
+                                    userId = userIdState!!,
+                                    onDone = { onPublishDone() }
+                                )
+                            }
                         }
-                        return@Button
                     }
-                    if (userIdState.isNullOrEmpty()) {
-                        scope.launch {
-                            snackbarHostState.showSnackbar("Error: No se encontró el usuario autenticado")
-                        }
-                        return@Button
-                    }
-                    isPublishing = true
-                    vm.createPublication(
-                        context = context,
-                        imageUrl = imageUrl,
-                        title = title,
-                        description = description,
-                        location = location,
-                        latitud = latitud,
-                        longitud = longitud,
-                        userId = userIdState!!,
-                        onDone = { onPublishDone() }
-                    )
                 },
                 enabled = !ui.loading && !isPublishing,
                 modifier = Modifier

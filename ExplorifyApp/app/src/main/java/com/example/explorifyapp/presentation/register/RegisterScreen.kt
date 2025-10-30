@@ -38,6 +38,14 @@ fun RegisterScreen(navController: NavController) {
     val isLoading by viewModel.isLoading.collectAsState()
     val context = LocalContext.current
 
+    // ✅ Expresión regular mejorada para emails válidos (incluye subdominios, letras, números, etc.)
+    val emailRegex = Regex("^[A-Za-z0-9._%+-]{1,40}@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")
+
+    // ✅ Verificación central
+    val isEmailValid = remember(email) {
+        emailRegex.matches(email) && email.length <= 20
+    }
+
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -78,11 +86,21 @@ fun RegisterScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(8.dp))
 
+                // ✉️ Campo de correo con validación estricta
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
                     label = { Text("Correo electrónico") },
                     modifier = Modifier.fillMaxWidth(),
+                    isError = email.isNotEmpty() && !isEmailValid,
+                    supportingText = {
+                        when {
+                            email.isNotEmpty() && email.length > 60 ->
+                                Text("El correo es demasiado largo máx. 60 caracteres.", color = Color.Red, fontSize = 11.sp)
+                            email.isNotEmpty() && !emailRegex.matches(email) ->
+                                Text("Ingresa un correo válido", color = Color.Red, fontSize = 11.sp)
+                        }
+                    },
                     colors = OutlinedTextFieldDefaults.colors(
                         unfocusedTextColor = Color.Gray,
                         focusedTextColor = Color.DarkGray
@@ -106,15 +124,11 @@ fun RegisterScreen(navController: NavController) {
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // 🔒 Checkbox para aceptar términos
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     Checkbox(
                         checked = acceptedTerms,
                         onCheckedChange = { acceptedTerms = it },
-                        colors = CheckboxDefaults.colors(
-                            checkedColor = Color(0xFF355031)
-                        )
+                        colors = CheckboxDefaults.colors(checkedColor = Color(0xFF355031))
                     )
                     Text(
                         text = "Acepto los Términos y Condiciones y la Política de Privacidad",
@@ -124,7 +138,7 @@ fun RegisterScreen(navController: NavController) {
                     )
                 }
 
-                // 🔗 Enlaces debajo (más limpios visualmente)
+                // 🔗 Enlaces debajo
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -133,7 +147,6 @@ fun RegisterScreen(navController: NavController) {
                 ) {
                     TextButton(
                         onClick = {
-                            // TODO: 🔗 Cambia por tu URL real de Términos y Condiciones
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("http://explorify2.somee.com/Home/Terminos"))
                             context.startActivity(intent)
                         }
@@ -145,7 +158,6 @@ fun RegisterScreen(navController: NavController) {
 
                     TextButton(
                         onClick = {
-                            // TODO: 🔗 Cambia por tu URL real de Política de Privacidad
                             val intent = Intent(Intent.ACTION_VIEW, Uri.parse("http://explorify2.somee.com/Home/Privacidad"))
                             context.startActivity(intent)
                         }
@@ -156,22 +168,31 @@ fun RegisterScreen(navController: NavController) {
 
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // ✅ Botón habilitado solo si todo es válido
                 Button(
                     onClick = {
-                        if (name.isBlank() || password.isBlank() || email.isBlank()) {
-                            errorMessage = "Por favor, completa todos los campos"
-                        } else if (!acceptedTerms) {
-                            errorMessage = "Debes aceptar los Términos y Condiciones"
-                        } else {
-                            errorMessage = null
-                            viewModel.register(email, name, password)
+                        when {
+                            name.isBlank() || password.isBlank() || email.isBlank() ->
+                                errorMessage = "Por favor, completa todos los campos"
+                            !isEmailValid ->
+                                errorMessage = "Ingresa un correo válido"
+                            !acceptedTerms ->
+                                errorMessage = "Debes aceptar los Términos y Condiciones"
+                            else -> {
+                                errorMessage = null
+                                viewModel.register(email, name, password)
+                            }
                         }
 
                         errorMessage?.let {
                             coroutineScope.launch { snackbarHostState.showSnackbar(it) }
                         }
                     },
-                    enabled = !isLoading && name.isNotBlank() && password.isNotBlank() && email.isNotBlank() &&  acceptedTerms,
+                    enabled = !isLoading &&
+                            name.isNotBlank() &&
+                            password.isNotBlank() &&
+                            acceptedTerms &&
+                            isEmailValid,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF355031),
                         contentColor = Color.White,
@@ -194,17 +215,13 @@ fun RegisterScreen(navController: NavController) {
 
                 TextButton(
                     onClick = { navController.navigate("login") },
-                    colors = ButtonDefaults.textButtonColors(
-                        contentColor = Color.DarkGray
-                    )
+                    colors = ButtonDefaults.textButtonColors(contentColor = Color.DarkGray)
                 ) {
                     Text("¿Ya tienes cuenta? Inicia Sesión")
                 }
 
                 if (registerResult.startsWith("Registro exitoso")) {
-                    LaunchedEffect(Unit) {
-                        navController.popBackStack()
-                    }
+                    LaunchedEffect(Unit) { navController.popBackStack() }
                 }
             }
         }
