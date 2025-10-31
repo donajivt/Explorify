@@ -129,12 +129,10 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ${{ env.PROJECT_PATH }}/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+        context: Backend/Explorify.Api.Plubications
+        file: Backend/Explorify.Api.Plubications/Dockerfile
+        push: true
+        tags: ghcr.io/donajivt/explorify-plubications-api:latest
 
   deploy-prod:
     name: Deploy to Production
