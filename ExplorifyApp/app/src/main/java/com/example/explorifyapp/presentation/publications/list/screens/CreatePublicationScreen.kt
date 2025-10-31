@@ -61,7 +61,8 @@ fun CreatePublicationScreen(
     var location by rememberSaveable { mutableStateOf("") }
     var latitud by remember { mutableStateOf<String?>(null) }
     var longitud by remember { mutableStateOf<String?>(null) }
-    val imageUrl = remember { "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg" }
+    val imageUrl =
+        remember { "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg" }
 
     val ui = vm.uiState
     var isPublishing by remember { mutableStateOf(false) }
@@ -79,175 +80,229 @@ fun CreatePublicationScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Nueva Publicación", fontWeight = FontWeight.Bold) },
+                title = {
+                    Text(
+                        "Nueva Aventura",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF2E473B)
+                        )
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.Close, contentDescription = "Volver")
+                        Icon(
+                            Icons.Default.Close,
+                            contentDescription = "Volver",
+                            tint = Color(0xFF3C9D6D)
+                        )
                     }
                 },
-                actions = {
-                    Icon(
-                        imageVector = Icons.Default.AccountCircle,
-                        contentDescription = "Perfil",
-                        tint = Color(0xFF355E3B),
-                        modifier = Modifier.size(40.dp)
-                    )
-                }
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color(0xFFF6F4EF)
+                )
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            Button(
-                onClick = {
-                    if (isPublishing || ui.loading) return@Button
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .background(Color.Transparent)
+                    .padding(20.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Button(
+                    onClick = {
+                        if (isPublishing || ui.loading) return@Button
+                        scope.launch {
+                            snackbarHostState.currentSnackbarData?.dismiss()
+                            when {
+                                description.isBlank() || location.isBlank() -> {
+                                    snackbarHostState.showSnackbar(
+                                        "Debes llenar descripción y ubicación",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                    return@launch
+                                }
 
-                    scope.launch {
-                        snackbarHostState.currentSnackbarData?.dismiss()
+                                userIdState.isNullOrEmpty() -> {
+                                    snackbarHostState.showSnackbar(
+                                        "No se encontró el usuario autenticado",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                    return@launch
+                                }
 
-                        when {
-                            description.isBlank() || location.isBlank() ->{
-                                snackbarHostState.showSnackbar("Debes llenar descripcion y ubicacion", duration = SnackbarDuration.Short)
-                                return@launch
-                            }
-                            description.isBlank() -> {
-                                snackbarHostState.showSnackbar("Debes llenar la descripción", duration = SnackbarDuration.Short)
-                                return@launch
-                            }
-
-                            location.isBlank() ->{
-                                snackbarHostState.showSnackbar("Debes llenar la ubicacion", duration = SnackbarDuration.Short)
-                                return@launch
-                            }
-
-                            userIdState.isNullOrEmpty() -> {
-                                snackbarHostState.showSnackbar("No se encontró el usuario autenticado", duration = SnackbarDuration.Short)
-                                return@launch
-                            }
-                            else -> {
-                                isPublishing = true
-                                vm.createPublication(
-                                    context = context,
-                                    imageUrl = imageUrl,
-                                    title = title,
-                                    description = description,
-                                    location = location,
-                                    latitud = latitud,
-                                    longitud = longitud,
-                                    userId = userIdState!!,
-                                    onDone = { onPublishDone() }
-                                )
+                                else -> {
+                                    isPublishing = true
+                                    vm.createPublication(
+                                        context = context,
+                                        imageUrl = imageUrl,
+                                        title = title,
+                                        description = description,
+                                        location = location,
+                                        latitud = latitud,
+                                        longitud = longitud,
+                                        userId = userIdState!!,
+                                        onDone = { onPublishDone() }
+                                    )
+                                }
                             }
                         }
-                    }
-                },
-                enabled = !ui.loading && !isPublishing,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(20.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF355E3B))
-            ) {
-                if (vm.uiState.loading)
-                    CircularProgressIndicator(color = Color.White, strokeWidth = 2.dp, modifier = Modifier.size(20.dp))
-                else
-                    Text("Publicar", color = Color.White)
+                    },
+                    enabled = !ui.loading && !isPublishing,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .clip(RoundedCornerShape(16.dp)),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3C9D6D))
+                ) {
+                    if (ui.loading)
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            strokeWidth = 2.dp,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    else
+                        Text(
+                            "Publicar aventura",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                color = Color.White,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        )
+                }
             }
         }
     ) { padding ->
         Column(
-            Modifier
+            modifier = Modifier
                 .fillMaxSize()
+                .background(
+                    brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                        listOf(
+                            Color(0xFFF6F4EF),
+                            Color(0xFFDDF5E3)
+                        )
+                    )
+                )
                 .padding(padding)
                 .padding(horizontal = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(10.dp))
-
-            AsyncImage(
-                model = imageUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(140.dp)
-                    .clip(RoundedCornerShape(12.dp))
-            )
-
             Spacer(Modifier.height(20.dp))
+
+            // Imagen decorativa
+            Card(
+                modifier = Modifier
+                    .size(180.dp)
+                    .clip(RoundedCornerShape(16.dp)),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                AsyncImage(
+                    model = imageUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
+            Spacer(Modifier.height(26.dp))
 
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
-                label = { Text("Título (Opcional)") },
+                label = { Text("Título (opcional)") },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        tint = Color(0xFF3C9D6D)
+                    )
+                },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color(0xFFDDF5E3),  // 💚 Fondo activo (resalta)
-                    unfocusedContainerColor = Color.White,      // 🤍 Fondo inactivo
-                    disabledContainerColor = Color.White,
-                    focusedTextColor = Color(0xFF2B2B2B),       // Texto oscuro
+                    focusedContainerColor = Color(0xFFDDF5E3),
+                    unfocusedContainerColor = Color.White,
+                    focusedBorderColor = Color(0xFF3C9D6D),
+                    unfocusedBorderColor = Color(0xFFBFAE94),
+                    focusedLabelColor = Color(0xFF3C9D6D),
+                    unfocusedLabelColor = Color(0xFF6B4F3B),
+                    cursorColor = Color(0xFF3C9D6D),
+                    focusedTextColor = Color(0xFF2B2B2B),
                     unfocusedTextColor = Color(0xFF2B2B2B),
-                    disabledTextColor = Color(0xFF2B2B2B),
-                    cursorColor = Color(0xFF3C9D6D),            // Cursor verde
-                    focusedLabelColor = Color(0xFF3C9D6D),      // Label verde activo
-                    unfocusedLabelColor = Color(0xFF6B4F3B),    // Label café inactivo
-                    disabledLabelColor = Color(0xFF6B4F3B),
-                    focusedBorderColor = Color(0xFF3C9D6D),     // Borde verde
-                    unfocusedBorderColor = Color(0xFFBFAE94),   // Borde gris arena
-                    disabledBorderColor = Color(0xFFBFAE94)
+                    disabledTextColor = Color(0xFFB0B0B0)
                 )
             )
 
-
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(14.dp))
 
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Descripción") },
-                modifier = Modifier.fillMaxWidth(),
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = null,
+                        tint = Color(0xFF3C9D6D)
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 100.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFFDDF5E3),
                     unfocusedContainerColor = Color.White,
-                    disabledContainerColor = Color.White,
-                    focusedTextColor = Color(0xFF2B2B2B),
-                    unfocusedTextColor = Color(0xFF2B2B2B),
-                    disabledTextColor = Color(0xFF2B2B2B),
-                    cursorColor = Color(0xFF3C9D6D),
-                    focusedLabelColor = Color(0xFF3C9D6D),
-                    unfocusedLabelColor = Color(0xFF6B4F3B),
-                    disabledLabelColor = Color(0xFF6B4F3B),
                     focusedBorderColor = Color(0xFF3C9D6D),
                     unfocusedBorderColor = Color(0xFFBFAE94),
-                    disabledBorderColor = Color(0xFFBFAE94)
+                    focusedLabelColor = Color(0xFF3C9D6D),
+                    unfocusedLabelColor = Color(0xFF6B4F3B),
+                    cursorColor = Color(0xFF3C9D6D),
+                    focusedTextColor = Color(0xFF2B2B2B),
+                    unfocusedTextColor = Color(0xFF2B2B2B),
+                    disabledTextColor = Color(0xFFB0B0B0)
                 )
             )
 
-            Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(14.dp))
 
             OutlinedTextField(
                 value = location,
                 onValueChange = {},
                 label = { Text("Ubicación") },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Outlined.LocationOn,
+                        contentDescription = null,
+                        tint = if (location.isNotBlank()) Color(0xFF3C9D6D) else Color(0xFF6B4F3B)
+                    )
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { navController.navigate("map_picker") },
                 enabled = false,
                 readOnly = true,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    disabledContainerColor = Color.White,
+                    focusedContainerColor = if (location.isNotBlank()) Color(0xFFDDF5E3) else Color.White, // 💚 verde claro si hay ubicación
+                    unfocusedContainerColor = if (location.isNotBlank()) Color(0xFFDDF5E3) else Color.White,
+                    disabledContainerColor = if (location.isNotBlank()) Color(0xFFDDF5E3) else Color.White,
                     focusedTextColor = Color(0xFF2B2B2B),
                     unfocusedTextColor = Color(0xFF2B2B2B),
                     disabledTextColor = Color(0xFF2B2B2B),
                     cursorColor = Color(0xFF3C9D6D),
-                    focusedLabelColor = Color(0xFF3C9D6D),
+                    focusedLabelColor = if (location.isNotBlank()) Color(0xFF3C9D6D) else Color(0xFF6B4F3B),
                     unfocusedLabelColor = Color(0xFF6B4F3B),
                     disabledLabelColor = Color(0xFF6B4F3B),
-                    focusedBorderColor = Color(0xFF3C9D6D),
-                    unfocusedBorderColor = Color(0xFFBFAE94),
-                    disabledBorderColor = Color(0xFFBFAE94)
+                    focusedBorderColor = if (location.isNotBlank()) Color(0xFF3C9D6D) else Color(0xFFBFAE94),
+                    unfocusedBorderColor = if (location.isNotBlank()) Color(0xFF3C9D6D) else Color(0xFFBFAE94),
+                    disabledBorderColor = if (location.isNotBlank()) Color(0xFF3C9D6D) else Color(0xFFBFAE94)
                 )
             )
 
+            Spacer(Modifier.height(30.dp))
         }
     }
 }

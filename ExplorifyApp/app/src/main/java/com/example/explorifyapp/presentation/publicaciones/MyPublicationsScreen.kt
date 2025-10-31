@@ -20,6 +20,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -57,41 +59,13 @@ fun MyPublicationsScreen(navController: NavController, loginViewModel: LoginView
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mi Lista de Aventuras") },
+                title = { Text("Mis Aventuras", style = MaterialTheme.typography.titleLarge) },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                ),
                 navigationIcon = {
                     IconButton(onClick = { navController.navigate("perfil") }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
-                    }
-                },
-                actions = {
-                    Box {
-                        IconButton(onClick = { menuExpanded = true }) {
-                            Icon(Icons.Default.AccountCircle, contentDescription = "Perfil")
-                        }
-
-                        DropdownMenu(
-                            expanded = menuExpanded,
-                            onDismissRequest = { menuExpanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Perfil") },
-                                onClick = {
-                                    menuExpanded = false
-                                    navController.navigate("perfil")
-                                }
-                            )
-                            DropdownMenuItem(
-                                 text = { Text("Cerrar sesión") },
-                                onClick = {
-                                    menuExpanded = false
-                                    loginViewModel.logout {
-                                        navController.navigate("login") {
-                                            popUpTo("mypublications") { inclusive = true }
-                                        }
-                                    }
-                                }
-                            )
-                        }
                     }
                 },
             )
@@ -165,103 +139,132 @@ fun PublicationItem(
 
     Card(
         modifier = Modifier
-            .padding(8.dp)
-            .fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-        shape = RoundedCornerShape(12.dp)
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 10.dp)
+            .clip(RoundedCornerShape(22.dp))
+            .shadow(3.dp, RoundedCornerShape(22.dp)),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
-        Column {
-            // Imagen superior
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(260.dp)
+        ) {
+            // Imagen principal
             Image(
                 painter = rememberAsyncImagePainter(pub.imageUrl),
                 contentDescription = pub.title,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(180.dp),
+                    .fillMaxSize()
+                    .clip(RoundedCornerShape(22.dp)),
                 contentScale = ContentScale.Crop
             )
 
-            // Contenido textual
-            Column(modifier = Modifier.padding(12.dp)) {
-                Text(
-                    text = pub.title,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = pub.description,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = pub.location,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+            // Overlay degradado oscuro inferior
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .background(
+                        brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black.copy(alpha = 0.6f)
+                            )
+                        )
+                    )
+            )
 
-            // Acciones (editar / eliminar)
+            // Botones editar / eliminar arriba
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                    .padding(10.dp),
                 horizontalArrangement = Arrangement.End
             ) {
-                IconButton(onClick = onEdit) {
+                IconButton(
+                    onClick = onEdit,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .background(Color.Black.copy(alpha = 0.4f))
+                ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
-                        contentDescription = "Editar publicación",
-                        tint = MaterialTheme.colorScheme.primary
+                        contentDescription = "Editar",
+                        tint = Color.White
                     )
                 }
-
+                Spacer(Modifier.width(8.dp))
                 IconButton(
                     onClick = { showDialog = true },
                     modifier = Modifier
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.errorContainer)
+                        .background(Color.Black.copy(alpha = 0.4f))
                 ) {
                     Icon(
                         imageVector = Icons.Default.Delete,
-                        contentDescription = "Eliminar publicación",
-                        tint = MaterialTheme.colorScheme.onErrorContainer
+                        contentDescription = "Eliminar",
+                        tint = Color.White
                     )
                 }
+            }
+
+            // Información inferior (texto)
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(16.dp)
+            ) {
+                Text(
+                    text = pub.title,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        color = Color.White,
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                    ),
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = pub.description,
+                    style = MaterialTheme.typography.bodyMedium.copy(color = Color.White.copy(alpha = 0.9f)),
+                    maxLines = 2,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = "📍 ${pub.location}",
+                    style = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.primary),
+                    maxLines = 1
+                )
             }
         }
     }
 
+    // Diálogo de confirmación para eliminar
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("Eliminar publicación") },
-            text = { Text("¿Seguro que deseas eliminar esta publicación? Esta acción no se puede deshacer.") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onDelete()
-                        showDialog = false
-                    }
-                ) {
-                    Text(
-                        "Eliminar",
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDialog = false }) {
-                    Text("Cancelar")
-                }
-            },
             icon = {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.error
                 )
+            },
+            title = { Text("Eliminar publicación") },
+            text = { Text("¿Deseas eliminar esta publicación? Esta acción no se puede deshacer.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    onDelete()
+                    showDialog = false
+                }) {
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Cancelar")
+                }
             }
         )
     }

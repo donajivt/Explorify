@@ -151,38 +151,6 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                     }
                 },
-                actions = {
-                    // Menú de perfil con logout
-                    Box {
-                        IconButton(onClick = { menuExpanded = true }) {
-                            Icon(Icons.Default.AccountCircle, contentDescription = "Perfil")
-                        }
-
-                        DropdownMenu(
-                            expanded = menuExpanded,
-                            onDismissRequest = { menuExpanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Perfil") },
-                                onClick = {
-                                    menuExpanded = false
-                                    navController.navigate("perfil")
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Cerrar sesión") },
-                                onClick = {
-                                    menuExpanded = false
-                                    loginViewModel.logout {
-                                        navController.navigate("login") {
-                                            popUpTo("mypublications") { inclusive = true }
-                                        }
-                                    }
-                                }
-                            )
-                        }
-                    }
-                }
             )
         },
         bottomBar = {

@@ -1,10 +1,12 @@
 package com.example.explorifyapp.presentation.publications.list.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -84,7 +87,6 @@ fun EditPublicationScreen(
                 location = name
                 latitud = lat
                 longitud = lon
-                println("📍 Nueva ubicación seleccionada: $location ($lat, $lon)")
                 handle.remove<String>("selected_location_name")
                 handle.remove<String>("selected_latitude")
                 handle.remove<String>("selected_longitude")
@@ -95,126 +97,154 @@ fun EditPublicationScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Editar publicación") },
+                title = {
+                    Text(
+                        "Editar publicación",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            color = Color(0xFF2E473B),
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Volver",
+                            tint = Color(0xFF3C9D6D)
+                        )
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFFF2F0EC)
+                )
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
+
         if (isLoading) {
             Box(Modifier.fillMaxSize(), Alignment.Center) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = Color(0xFF3C9D6D))
             }
         } else {
             Column(
                 Modifier
-                    .padding(padding)
-                    .padding(horizontal = 20.dp)
-                    .fillMaxSize(),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text("Edita tu publicación", style = MaterialTheme.typography.titleMedium)
-
-                // 🖼️ Imagen (solo vista previa, no editable)
-                if (imageUrl.isNotEmpty()) {
-                    Image(
-                        painter = rememberAsyncImagePainter(imageUrl),
-                        contentDescription = "Vista previa de imagen",
-                        modifier = Modifier
-                            .size(160.dp)
-                            .clip(MaterialTheme.shapes.medium),
-                        contentScale = ContentScale.Crop
+                    .fillMaxSize()
+                    .background(
+                        brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                            listOf(
+                                Color(0xFFF6F4EF),
+                                Color(0xFFDDF5E3)
+                            )
+                        )
                     )
-                } else {
-                    // Imagen por defecto si no tiene
+                    .padding(padding)
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ) {
+
+                // 🖼️ Imagen previa
+                Card(
+                    modifier = Modifier
+                        .size(180.dp)
+                        .clip(MaterialTheme.shapes.large),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF2F0EC))
+                ) {
                     Image(
                         painter = rememberAsyncImagePainter(
-                            "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg"
+                            if (imageUrl.isNotEmpty()) imageUrl
+                            else "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg"
                         ),
-                        contentDescription = "Imagen por defecto",
-                        modifier = Modifier
-                            .size(160.dp)
-                            .clip(MaterialTheme.shapes.medium),
+                        contentDescription = "Vista previa de imagen",
+                        modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
                 }
 
+                Spacer(Modifier.height(24.dp))
+
+                // Campos
                 OutlinedTextField(
                     value = title,
                     onValueChange = { title = it },
                     label = { Text("Título") },
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFF3A3A3A),   // Fondo al enfocar
-                        unfocusedContainerColor = Color(0xFF2C2C2C), // Fondo normal
-                        disabledContainerColor = Color(0xFF2C2C2C),
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        disabledTextColor = Color.White,
-                        cursorColor = Color(0xFF3C9D6D),             // Cursor verde
-                        focusedLabelColor = Color(0xFF3C9D6D),       // Label verde al enfocar
-                        unfocusedLabelColor = Color(0xFFAFAFAF),     // Label gris inactivo
-                        disabledLabelColor = Color(0xFFAFAFAF),
-                        focusedBorderColor = Color(0xFF3C9D6D),      // Borde verde activo
-                        unfocusedBorderColor = Color(0xFFAFAFAF),    // Borde gris inactivo
-                        disabledBorderColor = Color(0xFFAFAFAF)
+                        focusedContainerColor = Color(0xFFDDF5E3),
+                        unfocusedContainerColor = Color.White,
+                        focusedTextColor = Color(0xFF2B2B2B),
+                        unfocusedTextColor = Color(0xFF2B2B2B),
+                        cursorColor = Color(0xFF3C9D6D),
+                        focusedBorderColor = Color(0xFF3C9D6D),
+                        unfocusedBorderColor = Color(0xFFBFAE94),
+                        focusedLabelColor = Color(0xFF3C9D6D),
+                        unfocusedLabelColor = Color(0xFF6B4F3B)
                     )
                 )
+
+                Spacer(Modifier.height(14.dp))
 
                 OutlinedTextField(
                     value = description,
                     onValueChange = { description = it },
                     label = { Text("Descripción") },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 100.dp),
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFF3A3A3A),
-                        unfocusedContainerColor = Color(0xFF2C2C2C),
-                        disabledContainerColor = Color(0xFF2C2C2C),
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        disabledTextColor = Color.White,
+                        focusedContainerColor = Color(0xFFDDF5E3),
+                        unfocusedContainerColor = Color.White,
+                        focusedTextColor = Color(0xFF2B2B2B),
+                        unfocusedTextColor = Color(0xFF2B2B2B),
                         cursorColor = Color(0xFF3C9D6D),
-                        focusedLabelColor = Color(0xFF3C9D6D),
-                        unfocusedLabelColor = Color(0xFFAFAFAF),
-                        disabledLabelColor = Color(0xFFAFAFAF),
                         focusedBorderColor = Color(0xFF3C9D6D),
-                        unfocusedBorderColor = Color(0xFFAFAFAF),
-                        disabledBorderColor = Color(0xFFAFAFAF)
+                        unfocusedBorderColor = Color(0xFFBFAE94),
+                        focusedLabelColor = Color(0xFF3C9D6D),
+                        unfocusedLabelColor = Color(0xFF6B4F3B)
                     )
                 )
+
+                Spacer(Modifier.height(14.dp))
 
                 OutlinedTextField(
                     value = location,
                     onValueChange = {},
                     label = { Text("Ubicación") },
+                    leadingIcon = {
+                        Icon(
+                            imageVector = Icons.Outlined.LocationOn,
+                            contentDescription = null,
+                            tint = if (location.isNotBlank()) Color(0xFF3C9D6D) else Color(
+                                0xFF6B4F3B
+                            )
+                        )
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { navController.navigate("map_picker") },
                     enabled = false,
                     readOnly = true,
                     colors = OutlinedTextFieldDefaults.colors(
-                        focusedContainerColor = Color(0xFF2C2C2C),
-                        unfocusedContainerColor = Color(0xFF2C2C2C),
-                        disabledContainerColor = Color(0xFF2C2C2C),
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        disabledTextColor = Color.White,
+                        focusedContainerColor = if (location.isNotBlank()) Color(0xFFDDF5E3) else Color.White,
+                        unfocusedContainerColor = if (location.isNotBlank()) Color(0xFFDDF5E3) else Color.White,
+                        disabledContainerColor = if (location.isNotBlank()) Color(0xFFDDF5E3) else Color.White,
+                        focusedTextColor = Color(0xFF2B2B2B),
+                        unfocusedTextColor = Color(0xFF2B2B2B),
+                        disabledTextColor = Color(0xFF2B2B2B),
                         cursorColor = Color(0xFF3C9D6D),
-                        focusedLabelColor = Color(0xFF3C9D6D),
-                        unfocusedLabelColor = Color(0xFFAFAFAF),
-                        disabledLabelColor = Color(0xFFAFAFAF),
                         focusedBorderColor = Color(0xFF3C9D6D),
-                        unfocusedBorderColor = Color(0xFFAFAFAF),
-                        disabledBorderColor = Color(0xFFAFAFAF)
+                        unfocusedBorderColor = Color(0xFFBFAE94),
+                        disabledBorderColor = Color(0xFFBFAE94),
+                        focusedLabelColor = Color(0xFF3C9D6D),
+                        unfocusedLabelColor = Color(0xFF6B4F3B),
+                        disabledLabelColor = Color(0xFF6B4F3B)
                     )
                 )
 
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(24.dp))
 
                 Button(
                     onClick = {
@@ -222,7 +252,7 @@ fun EditPublicationScreen(
                             try {
                                 repo.update(
                                     id = publicationId,
-                                    imageUrl = if (imageUrl.isBlank()) "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg" else imageUrl, // ✅ se conserva la actual
+                                    imageUrl = if (imageUrl.isBlank()) "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg" else imageUrl,
                                     title = title,
                                     description = description,
                                     location = location,
@@ -242,9 +272,24 @@ fun EditPublicationScreen(
                     enabled = !isSaving,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp)
+                        .height(52.dp)
+                        .clip(MaterialTheme.shapes.large),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3C9D6D))
                 ) {
-                    Text("Guardar cambios")
+                    if (isSaving)
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            strokeWidth = 2.dp,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    else
+                        Text(
+                            "Guardar cambios",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                color = Color.White,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                        )
                 }
             }
         }

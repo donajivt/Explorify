@@ -37,6 +37,9 @@ import com.example.explorifyapp.presentation.publications.list.PublicationsListM
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import android.net.Uri
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.shadow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -101,37 +104,6 @@ fun PublicationListScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Lista de Aventuras") },
-                actions = {
-                    Box {
-                        IconButton(onClick = { menuExpanded = true }) {
-                            Icon(Icons.Default.AccountCircle, contentDescription = "Perfil")
-                        }
-
-                        DropdownMenu(
-                            expanded = menuExpanded,
-                            onDismissRequest = { menuExpanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Mis Publicaciones") },
-                                onClick = {
-                                    menuExpanded = false
-                                    navController.navigate("mispublicaciones")
-                                }
-                            )
-                            DropdownMenuItem(
-                                text = { Text("Cerrar sesión") },
-                                onClick = {
-                                    menuExpanded = false
-                                    viewModel.logout {
-                                        navController.navigate("login") {
-                                            popUpTo("mypublications") { inclusive = true }
-                                        }
-                                    }
-                                }
-                            )
-                        }
-                    }
-                },
             )
         },
         bottomBar = {
@@ -254,68 +226,114 @@ private fun PublicationCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onOpen() }
+            .shadow(6.dp, shape = RoundedCornerShape(20.dp),clip = false)
+                .background(Color.Transparent)
+                .border(
+                    width = 1.2.dp,
+                    color = Color(0xFFBFAE94).copy(alpha = 0.8f), // 💡 Borde arena claro con transparencia
+                    shape = RoundedCornerShape(20.dp)
+                ),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1B1C)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
-        Column(Modifier.padding(14.dp)) {
-
-            // Encabezado: usuario y fecha
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    Modifier
-                        .size(36.dp)
-                        .clip(MaterialTheme.shapes.large)
-                        .background(Color(0xFFE0E0E0))
-                )
-                Spacer(Modifier.width(8.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        text = publication.userId.ifEmpty { "Usuario desconocido" },
-                        style = MaterialTheme.typography.labelLarge
-                    )
-                    Text(
-                        text = publication.createdAt.formatAsDate(),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-            }
-
-            Spacer(Modifier.height(10.dp))
-
-            // Imagen principal
-            AsyncImage(
-                model = publication.imageUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
+        Column {
+            // Imagen principal con overlay de título
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(160.dp)
-                    .clip(MaterialTheme.shapes.medium)
-                    .background(Color.LightGray)
-            )
-
-            Spacer(Modifier.height(10.dp))
-            Text(publication.title, style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(4.dp))
-            Text(
-                publication.description,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.bodyMedium
-            )
-
-            Spacer(Modifier.height(8.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Outlined.LocationOn,
+                    .height(220.dp)
+                    .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+            ) {
+                AsyncImage(
+                    model = publication.imageUrl,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.matchParentSize()
                 )
-                Spacer(Modifier.width(6.dp))
-                Text(publication.location, style = MaterialTheme.typography.labelMedium)
+
+                // Gradiente oscuro inferior
+                Box(
+                    Modifier
+                        .matchParentSize()
+                        .background(
+                            brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    Color.Black.copy(alpha = 0.55f)
+                                ),
+                                startY = 150f
+                            )
+                        )
+                )
+
+                // Título sobre la imagen
+                Text(
+                    text = publication.title,
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                    ),
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(16.dp)
+                )
             }
-            Spacer(Modifier.height(6.dp))
-            TextButton(onClick = onViewMap) {
-                Text("Ver ubicación en mapa")
+
+            // Contenido textual
+            Column(Modifier.padding(16.dp)) {
+                Text(
+                    text = publication.description,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(Modifier.height(10.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    // Usuario + fecha
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Column {
+                            Text(
+                                text = publication.userId.ifEmpty { "Usuario desconocido" },
+                                style = MaterialTheme.typography.labelLarge
+                            )
+                            Text(
+                                text = publication.createdAt.formatAsDate(),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.outline
+                            )
+                        }
+                    }
+
+                    // Ubicación con botón
+                    TextButton(onClick = onViewMap) {
+                        Icon(
+                            Icons.Outlined.LocationOn,
+                            contentDescription = "Ver en mapa",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            text = "Ver ubicación",
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                }
             }
         }
     }
