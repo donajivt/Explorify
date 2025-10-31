@@ -129,10 +129,11 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-        context: Backend/Explorify.Api.Plubications
-        file: Backend/Explorify.Api.Plubications/Dockerfile
-        push: true
-        tags: ghcr.io/donajivt/explorify-plubications-api:latest
+          context: Backend/Explorify.Api.Plubications
+          file: Backend/Explorify.Api.Plubications/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/explorify-plubications-api:latest
+          labels: ${{ steps.meta.outputs.labels }}
 
   deploy-prod:
     name: Deploy to Production
