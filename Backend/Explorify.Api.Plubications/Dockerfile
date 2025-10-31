@@ -1,41 +1,47 @@
+# ==============================================
 # Dockerfile multi-stage para Explorify API - Publicaciones
-# ========== Etapa 1: Build ========== #
+# ==============================================
+
+# ---------- Etapa 1: Build ----------
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-# Copiar proyectos por separado para uso eficiente del cache
-COPY Backend/Explorify.Api.Plubications/Explorify.Api.Plubications.csproj Explorify.Api.Plubications/
-COPY Backend/Explorify.Api.Plubications/Explorify.Application/Explorify.Application.csproj Explorify.Application/
-COPY Backend/Explorify.Api.Plubications/Explorify.Domain/Explorify.Domain.csproj Explorify.Domain/
-COPY Backend/Explorify.Api.Plubications/Explorify.Infrastructure/Explorify.Infrastructure.csproj Explorify.Infrastructure/
+# Copiar proyectos (.csproj) — rutas relativas al Dockerfile
+COPY ["Explorify.Api.Plubications/Explorify.Api.Plubications.csproj", "Explorify.Api.Plubications/"]
+COPY ["Explorify.Api.Plubications.Application/Explorify.Api.Plubications.Application.csproj", "Explorify.Api.Plubications.Application/"]
+COPY ["Explorify.Api.Plubications.Domain/Explorify.Api.Plubications.Domain.csproj", "Explorify.Api.Plubications.Domain/"]
+COPY ["Explorify.Api.Plubications.Infrastructure/Explorify.Api.Plubications.Infrastructure.csproj", "Explorify.Api.Plubications.Infrastructure/"]
 
 # Restaurar dependencias
 RUN dotnet restore "Explorify.Api.Plubications/Explorify.Api.Plubications.csproj"
 
-# Copiar el resto del código dentro de Backend
-COPY Backend/Explorify.Api.Plubications/ .
+# Copiar todo el contenido del backend (mismo nivel del Dockerfile)
+COPY . .
 
-# Compilar y publicar en Release
+# Establecer el directorio del proyecto principal
 WORKDIR "/src/Explorify.Api.Plubications"
+
+# Compilar y publicar
 RUN dotnet build "Explorify.Api.Plubications.csproj" -c Release -o /app/build
 RUN dotnet publish "Explorify.Api.Plubications.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
-# ========== Etapa 2: Runtime ========== #
+
+# ---------- Etapa 2: Runtime ----------
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
 
-# Crear usuario no-root
+# Crear usuario no-root (buenas prácticas)
 RUN adduser --disabled-password --gecos "" appuser
 
-# Copiar artefactos publicados
+# Copiar artefactos compilados
 COPY --from=build /app/publish .
 
 USER appuser
 
-# Exponer puerto de la API
+# Exponer puerto
 EXPOSE 8080
 
-# ASP.NET Core Env
+# Variables de entorno
 ENV ASPNETCORE_URLS=http://+:8080
 ENV ASPNETCORE_ENVIRONMENT=Production
 
