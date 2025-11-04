@@ -47,7 +47,7 @@ namespace Explorify.Api.Publications.Infraestructure.Publication
         {
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Microservicio Producto", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Microservicio Publications", Version = "v1" });
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Name = "Authorization",
@@ -55,7 +55,7 @@ namespace Explorify.Api.Publications.Infraestructure.Publication
                     Scheme = "bearer",
                     BearerFormat = "JWT",
                     In = ParameterLocation.Header,
-                    Description = "Ingrese 'Bearer' [espacio] y luego su token"
+                    Description = "Ingrese su token"
                 });
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement
             {
