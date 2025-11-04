@@ -155,6 +155,22 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun updateUserData(username: String, userEmail: String) {
+        viewModelScope.launch {
+            // 🔹 Actualiza en memoria
+          /**/  _userData.value = _userData.value?.copy(
+                username = username,
+                userEmail = userEmail
+            )
+
+            // 🔹 También en Room
+            _userData.value?.let { user ->
+                repository.editToken( username, userEmail)
+            }
+        }
+    }
+
+
 }
 
 

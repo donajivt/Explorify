@@ -63,31 +63,46 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.example.explorifyapp.domain.repository.UserRepository
+import com.example.explorifyapp.data.remote.users.RetrofitUsersInstance
+import com.example.explorifyapp.data.remote.dto.users.UserRequest
+import androidx.compose.material3.AlertDialog
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewModel = viewModel(),
 ) {
+    val userRepository = remember { UserRepository(RetrofitUsersInstance.api) }
+    val perfilViewModel = remember { PerfilViewModel(userRepository) }
+
     var profileName = remember { mutableStateOf("") }
     var email = remember { mutableStateOf("") }
     val userData by loginViewModel.userData.collectAsState()
-    //val userName =  ?: "Usuario"
-    //val userEmail = userData?.userEmail ?: "correo@ejemplo.com"
+
+    var showDialog by remember { mutableStateOf(false) }
+    var dialogMessage by remember { mutableStateOf("") }
 
     var menuExpanded by remember { mutableStateOf(false) }
 
     // 🔐 Validar si hay sesión
     LaunchedEffect(Unit) {
+
         val isLoggedIn = loginViewModel.isLoggedIn()
         if (!isLoggedIn) {
             navController.navigate("login") {
                 popUpTo("editprofile") { inclusive = true }
             }
         }
-
+        loginViewModel.loadUserData()
         //permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-        email.value= userData?.username ?: "Usuario"//loginViewModel.userEmail // ✅ use .value
-        profileName.value =userData?.userEmail?: "correo@ejemplo.com" //loginViewModel.userName
+       // profileName.value= userData?.username ?: "Usuario"//loginViewModel.userEmail // ✅ use .value
+       // email.value =userData?.userEmail?: "correo@ejemplo.com" //loginViewModel.userName
+    }
+    LaunchedEffect(userData) {
+        userData?.let {
+            profileName.value = it.username ?: ""
+            email.value = it.userEmail ?: ""
+        }
     }
 
     Scaffold(
@@ -160,9 +175,6 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
                 )
             }
 
-          //  Spacer(modifier = Modifier.height(8.dp))
-
-
             Spacer(modifier = Modifier.height(24.dp))
 
             // Form fields
@@ -180,17 +192,72 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
                 onValueChange = { email.value = it }
             )
 
-            ProfileField(
+         /*   ProfileField(
                 label = "Cambiar Contraseña",
                 value = "********",
                 icon = Icons.Default.Lock,
                 onValueChange = {}
-            )
+            )*/
 
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = {},
+                onClick = {
+                  /*  val token = loginViewModel.userData.value?.token ?: ""
+                    val updatedUser = UserRequest(
+                        email = email.value,
+                        username = profileName.value,
+                    )
+                    perfilViewModel.updateUser(token, updatedUser) { success, message ->
+                        if (success) {
+                            // ✅ Actualizamos localmente en LoginViewModel y Room
+                            loginViewModel.updateUserData(
+                                username = profileName.value,
+                                userEmail = email.value
+                            )
+                            dialogMessage = "✅ Perfil actualizado correctamente."
+                            showDialog = true
+                            // Navegar de vuelta al perfil
+                           /* navController.navigate("perfil") {
+                                popUpTo("editprofile") { inclusive = true }
+                            }*/
+                        } else {
+                            dialogMessage = "❌ Error al actualizar: $message"
+                            showDialog = true
+                            //println("❌ $message")
+                        }
+                    }
+                */
+                    if (profileName.value.isBlank() || email.value.isBlank()) {
+                        dialogMessage = "Por favor, completa todos los campos para actualizar tu perfil."
+                        showDialog = true
+                    } else {
+                        // 2. LÓGICA DE ACTUALIZACIÓN (SOLO SI LOS CAMPOS NO ESTÁN VACÍOS)
+                        val token = loginViewModel.userData.value?.token ?: ""
+                        val updatedUser = UserRequest(
+                            email = email.value,
+                            username = profileName.value,
+                        )
+
+                        perfilViewModel.updateUser(token, updatedUser) { success, message ->
+                            if (success) {
+                                // ✅ Actualizamos localmente en LoginViewModel y Room
+                                loginViewModel.updateUserData(
+                                    username = profileName.value,
+                                    userEmail = email.value
+                                )
+
+                                // Configurar diálogo para éxito
+                                dialogMessage = "Perfil actualizado correctamente."
+                                showDialog = true
+                            } else {
+                                // Configurar diálogo para fallo
+                                dialogMessage = "Error al actualizar: $message"
+                                showDialog = true
+                            }
+                        }
+                    }
+                },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3E4D2E)),
                 modifier = Modifier
                     .fillMaxWidth(0.6f)
@@ -200,6 +267,36 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
                 Text("Guardar", color = Color.White, fontWeight = FontWeight.Bold)
             }
         }
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                // Se llama si el usuario hace clic fuera, pero aquí queremos forzar el botón
+                showDialog = false
+            },
+            title = {
+                Text(if (dialogMessage.startsWith("✅")) "Éxito" else "Error")
+            },
+            text = {
+                Text(dialogMessage)
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDialog = false // Cerrar diálogo
+                        // Si la actualización fue exitosa, navegamos de vuelta al perfil
+                        if (dialogMessage.startsWith("✅")) {
+                            navController.navigate("perfil") {
+                                popUpTo("editprofile") { inclusive = true }
+                            }
+                        }
+                    }
+                ) {
+                    Text("Aceptar")
+                }
+            }
+        )
     }
 }
 
@@ -247,6 +344,7 @@ colors = OutlinedTextFieldDefaults.colors(
         )
 
 */
+
 @Composable
 fun ProfileField(
     label: String,

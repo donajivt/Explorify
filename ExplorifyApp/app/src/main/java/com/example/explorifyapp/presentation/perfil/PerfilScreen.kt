@@ -33,11 +33,17 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.ExitToApp
+import com.example.explorifyapp.data.remote.users.RetrofitUsersInstance
+import com.example.explorifyapp.domain.repository.UserRepository
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PerfilScreen(navController: NavController,
                  viewModel: LoginViewModel = viewModel()) {
+    val userApi = RetrofitUsersInstance.api
+    val userRepository = remember { UserRepository(userApi) }
+    val perfilViewModel = remember { PerfilViewModel(userRepository) }
     var menuExpanded by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
@@ -55,6 +61,7 @@ fun PerfilScreen(navController: NavController,
     // Collect user data from the ViewModel
     val userData by viewModel.userData.collectAsState()
     val userId = userData?.userId ?:""
+    val token= userData?.token ?:""
     val userName = userData?.username ?: "Usuario"
     val userEmail = userData?.userEmail ?: "correo@ejemplo.com"
     Log.d("PerfilScreen", "Perfildatos: ${userName}+ ${userEmail}")
@@ -199,10 +206,18 @@ fun PerfilScreen(navController: NavController,
             confirmButton = {
                 TextButton(onClick = {
                     showDeleteDialog = false
-                    // Aquí agregas tu lógica real para eliminar la cuenta
-                    // Ejemplo: viewModel.deleteAccount()
-                    navController.navigate("login") {
-                        popUpTo("inicio") { inclusive = true }
+
+                    perfilViewModel.deleteAccount(token) { success, message ->
+                        if (success) {
+                            // Redirigir al login y limpiar sesión
+                            viewModel.logout {
+                                navController.navigate("login") {
+                                    popUpTo("inicio") { inclusive = true }
+                                }
+                            }
+                        } else {
+                            println("❌ Error al eliminar: $message")
+                        }
                     }
                 }) {
                     Text("Eliminar", color = Color.Red)

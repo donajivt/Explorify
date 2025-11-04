@@ -27,7 +27,6 @@ interface PublicationsApiService {
         @Header("Authorization") token: String
     ): PublicationsMapResponse
 
-
     // 🔹 Obtener una publicación por ID
     @GET("api/Publication/{id}")
     suspend fun getById(

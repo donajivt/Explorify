@@ -58,6 +58,9 @@ import coil.compose.AsyncImage
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.text.style.TextAlign
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @SuppressLint("MissingPermission")
@@ -109,24 +112,6 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
     }
 
     // Obtener ubicación actual si tiene permiso
-    /*if (hasPermission) {
-        val fusedLocationClient = remember {
-            LocationServices.getFusedLocationProviderClient(context)
-        }
-
-        LaunchedEffect(Unit) {
-            try {
-                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                    if (location != null) {
-                        userLocation = GeoPoint(location.latitude, location.longitude)
-                        mapView.controller.setCenter(userLocation)
-                    }
-                }
-            } catch (e: SecurityException) {
-                e.printStackTrace()
-            }
-        }
-    }*/
     LaunchedEffect(locationPermissionState.status) { // ⚠️ aquí usamos status
         if (locationPermissionState.status.isGranted) { // ✅ comprobar si está concedido
             //val context = LocalContext.current
@@ -274,17 +259,34 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                             // 🧭 Encabezado con userId y botón "X"
                             Row(
                                 modifier = Modifier
-                                    .fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
+                                    .fillMaxWidth()
+                                .background(Color(0xFF355031))
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                //shape = RoundedCornerShape(16.dp),
                             ) {
                                 Text(
                                     text = " ${pub.userId}",
                                     style = MaterialTheme.typography.titleMedium,
                                     modifier = Modifier.weight(1f),
-                                    color = Color.Gray
+                                    color = Color.White
                                 )
-
-                                IconButton(
+                                Box(
+                                    modifier = Modifier
+                                        .size(28.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.Red)
+                                        .clickable { selectedPublication = null },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Cerrar",
+                                        tint = Color.White,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                               /* IconButton(
                                     onClick = { selectedPublication = null },
                                     modifier = Modifier.size(28.dp)
                                 ) {
@@ -293,7 +295,7 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                                         contentDescription = "Cerrar",
                                         tint = Color.Red
                                     )
-                                }
+                                }*/
                             }
 
                             Spacer(modifier = Modifier.height(8.dp))
@@ -309,7 +311,7 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                             )
 
                             Spacer(modifier = Modifier.height(12.dp))
-                            Text(pub.title, style = MaterialTheme.typography.titleMedium, color = Color.Gray)
+                            Text(pub.title, style = MaterialTheme.typography.titleMedium, color = Color.Gray, textAlign = TextAlign.Start )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(pub.description, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
 

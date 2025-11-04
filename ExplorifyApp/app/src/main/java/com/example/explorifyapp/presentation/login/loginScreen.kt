@@ -123,11 +123,29 @@ fun LoginScreen(navController: NavController) {
 
         Button(
             onClick = {
-                if (userName.isBlank() || password.isBlank()) {
+                var hasError = false
+
+                if (userName.isBlank()) {
+                    userNameError = true
+                    hasError = true
+                }
+
+                if (password.isBlank()) {
+                    passwordError = true
+                    hasError = true
+                }
+
+                if (hasError) {
                     errorMessage = "Por favor, completa todos los campos"
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(errorMessage!!)
                     }
+                /*if (userName.isBlank() || password.isBlank()) {
+                    errorMessage = "Por favor, completa todos los campos"
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar(errorMessage!!)
+                    }*/
+
                 } else {
                     errorMessage = null
                     viewModel.login(userName, password)
@@ -176,6 +194,15 @@ fun LoginScreen(navController: NavController) {
                 // Extraer nombre del usuario desde el mensaje o del ViewModel
                 val name = viewModel.userName
                 navController.navigate("publicaciones")
+            }
+            else {
+                // Error en el login
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(
+                        message = "Usuario y/o contraseña incorrectos",
+                        duration = SnackbarDuration.Short
+                    )
+                }
             }
         }
     }

@@ -13,6 +13,9 @@ interface AuthTokenDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveToken(token: AuthToken)
 
+    @Query("UPDATE auth_token SET username = :username, userEmail = :email WHERE id = 0")
+    suspend fun updateUserInfo(username: String, email: String)
+
     @Query("DELETE FROM auth_token")
     suspend fun clearToken()
 }

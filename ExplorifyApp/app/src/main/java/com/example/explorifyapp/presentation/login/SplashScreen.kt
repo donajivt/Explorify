@@ -29,7 +29,7 @@ fun SplashScreen(navController: NavController, viewModel: LoginViewModel = viewM
                         popUpTo("splash") { inclusive = true }
                     }
                 }
-                "USER" -> {  //publicaciones inicio/${userName}
+                "USER" -> {  //
                     navController.navigate("publicaciones") {
                         popUpTo("splash") { inclusive = true }
                     }

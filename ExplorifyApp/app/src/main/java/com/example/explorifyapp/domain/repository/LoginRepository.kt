@@ -5,7 +5,6 @@ import com.example.explorifyapp.data.remote.auth.RetrofitInstance
 import com.example.explorifyapp.data.remote.room.AppDatabase
 import com.example.explorifyapp.data.remote.room.AuthToken
 import android.content.Context
-import androidx.compose.ui.semantics.Role
 
 class LoginRepository(context: Context) {
 
@@ -27,5 +26,7 @@ class LoginRepository(context: Context) {
         tokenDao.clearToken()
     }
 
-
+    suspend fun editToken(username: String,email:String){
+        tokenDao.updateUserInfo(username = username, email = email)
+    }
 }
