@@ -1,5 +1,7 @@
 package com.example.explorifyapp.data.remote.model
 
+import com.google.gson.annotations.SerializedName
+
 data class Publication(
     val id: String,
     val imageUrl: String,
@@ -8,6 +10,6 @@ data class Publication(
     val location: String,
     val latitud: String? = null,
     val longitud: String? = null,
-    val userId: String,
+    @SerializedName("userId") val userId: String,
     val createdAt: String
 )

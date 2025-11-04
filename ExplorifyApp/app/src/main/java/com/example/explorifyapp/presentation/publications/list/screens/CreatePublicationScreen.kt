@@ -1,5 +1,11 @@
 package com.example.explorifyapp.presentation.publications.list.screens
 
+import android.net.Uri
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -31,6 +37,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.core.content.ContextCompat
+import com.example.explorifyapp.data.remote.publications.prepareFilePart
+import com.example.explorifyapp.domain.repository.MediaRepositoryImpl
+import okhttp3.MultipartBody
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import com.example.explorifyapp.data.remote.publications.MediaApi
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,6 +61,7 @@ fun CreatePublicationScreen(
     var token by remember { mutableStateOf<String?>(null) }
     var userIdState by remember { mutableStateOf<String?>(null) }
 
+    // 🔹 Carga de token y usuario
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
             val dao = AppDatabase.getInstance(context).authTokenDao()
@@ -56,18 +70,32 @@ fun CreatePublicationScreen(
         }
     }
 
+    // 🔹 Campos de la publicación
     var title by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
     var location by rememberSaveable { mutableStateOf("") }
-    var latitud by remember { mutableStateOf<String?>(null) }
-    var longitud by remember { mutableStateOf<String?>(null) }
-    val imageUrl =
-        remember { "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg" }
+    var latitud by rememberSaveable { mutableStateOf<String?>(null) }
+    var longitud by rememberSaveable { mutableStateOf<String?>(null) }
+    var selectedImageUri by rememberSaveable { mutableStateOf<Uri?>(null) }
+    var uploadedImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
+    var isUploading by remember { mutableStateOf(false) }
+    var imageUrl by remember { mutableStateOf<String?>(null) }
+
+    // 🔹 Retrofit para Media API
+    val mediaRepo = remember {
+        MediaRepositoryImpl(
+            Retrofit.Builder()
+                .baseUrl("http://explorify.somee.com/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+                .create(MediaApi::class.java)
+        )
+    }
 
     val ui = vm.uiState
     var isPublishing by remember { mutableStateOf(false) }
 
-    // Resultados del mapa
+    // 🔹 Ubicación seleccionada (desde MapPicker)
     LaunchedEffect(navController.currentBackStackEntry?.savedStateHandle?.get<String>("selected_location_name")) {
         val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
         savedStateHandle?.get<String>("selected_location_name")?.let {
@@ -76,6 +104,36 @@ fun CreatePublicationScreen(
             longitud = savedStateHandle.get<String>("selected_longitude")
         }
     }
+
+    // 🔹 Permisos de galería
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (!granted) {
+            scope.launch {
+                snackbarHostState.currentSnackbarData?.dismiss()
+                snackbarHostState.showSnackbar("Debes conceder permiso para acceder a tus imágenes")
+            }
+        }
+    }
+
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri -> uri?.let { selectedImageUri = it } }
+    )
+
+    // Solicitar permiso al entrar
+    LaunchedEffect(Unit) {
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_IMAGES
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+        permissionLauncher.launch(permission)
+    }
+
+
 
     Scaffold(
         topBar = {
@@ -91,11 +149,7 @@ fun CreatePublicationScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(
-                            Icons.Default.Close,
-                            contentDescription = "Volver",
-                            tint = Color(0xFF3C9D6D)
-                        )
+                        Icon(Icons.Default.Close, contentDescription = "Volver", tint = Color(0xFF3C9D6D))
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -117,61 +171,83 @@ fun CreatePublicationScreen(
                         if (isPublishing || ui.loading) return@Button
                         scope.launch {
                             snackbarHostState.currentSnackbarData?.dismiss()
-                            when {
-                                description.isBlank() || location.isBlank() -> {
-                                    snackbarHostState.showSnackbar(
-                                        "Debes llenar descripción y ubicación",
-                                        duration = SnackbarDuration.Short
-                                    )
-                                    return@launch
-                                }
 
-                                userIdState.isNullOrEmpty() -> {
-                                    snackbarHostState.showSnackbar(
-                                        "No se encontró el usuario autenticado",
-                                        duration = SnackbarDuration.Short
-                                    )
-                                    return@launch
-                                }
-
-                                else -> {
-                                    isPublishing = true
-                                    vm.createPublication(
-                                        context = context,
-                                        imageUrl = imageUrl,
-                                        title = title,
-                                        description = description,
-                                        location = location,
-                                        latitud = latitud,
-                                        longitud = longitud,
-                                        userId = userIdState!!,
-                                        onDone = { onPublishDone() }
-                                    )
-                                }
+                            if (selectedImageUri == null) {
+                                snackbarHostState.showSnackbar("Debes seleccionar una imagen antes de publicar")
+                                return@launch
                             }
+
+                            if (description.isBlank() || location.isBlank()) {
+                                snackbarHostState.showSnackbar("Debes llenar descripción y ubicación")
+                                return@launch
+                            }
+
+                            if (userIdState.isNullOrEmpty()) {
+                                snackbarHostState.showSnackbar("No se encontró el usuario autenticado")
+                                return@launch
+                            }
+
+                            // 📤 Subir imagen
+                            var finalImageUrl = uploadedImageUrl
+                            if (selectedImageUri != null) {
+                                isUploading = true
+                                try {
+                                val filePart = context.prepareFilePart("file", selectedImageUri!!)
+                                    val uploadResult = mediaRepo.uploadImage(token ?: "", filePart)
+                                println("🌐 Media upload response: $uploadResult")
+                                if (uploadResult != null) {
+                                    finalImageUrl = uploadResult.secureUrl
+                                    snackbarHostState.showSnackbar("Imagen subida correctamente")
+                                } else {
+                                    snackbarHostState.showSnackbar("Error al subir la imagen")
+                                    return@launch // 🔸 evita crear la publicación si la imagen falló
+                                }
+                                } catch (e: Exception) {
+                                    e.printStackTrace()
+                                    snackbarHostState.showSnackbar("Error al conectar con el servidor de imágenes ❌")
+                                    return@launch
+                                }
+                                isUploading = false
+                            }
+
+                            // 🧾 Crear publicación
+                            isPublishing = true
+                            vm.createPublication(
+                                context = context,
+                                imageUrl = finalImageUrl
+                                    ?: "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg",
+                                title = title,
+                                description = description,
+                                location = location,
+                                latitud = latitud,
+                                longitud = longitud,
+                                userId = userIdState!!,
+                                onDone = { onPublishDone() }
+                            )
+                            isPublishing = false
                         }
                     },
-                    enabled = !ui.loading && !isPublishing,
+                    enabled = !ui.loading && !isPublishing && !isUploading,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
                         .clip(RoundedCornerShape(16.dp)),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3C9D6D))
                 ) {
-                    if (ui.loading)
-                        CircularProgressIndicator(
+                    when {
+                        ui.loading || isUploading -> CircularProgressIndicator(
                             color = Color.White,
                             strokeWidth = 2.dp,
                             modifier = Modifier.size(22.dp)
                         )
-                    else
-                        Text(
+                        else -> Text(
                             "Publicar aventura",
                             style = MaterialTheme.typography.titleMedium.copy(
                                 color = Color.White,
                                 fontWeight = FontWeight.SemiBold
                             )
                         )
+                    }
                 }
             }
         }
@@ -181,10 +257,7 @@ fun CreatePublicationScreen(
                 .fillMaxSize()
                 .background(
                     brush = androidx.compose.ui.graphics.Brush.verticalGradient(
-                        listOf(
-                            Color(0xFFF6F4EF),
-                            Color(0xFFDDF5E3)
-                        )
+                        listOf(Color(0xFFF6F4EF), Color(0xFFDDF5E3))
                     )
                 )
                 .padding(padding)
@@ -193,16 +266,31 @@ fun CreatePublicationScreen(
         ) {
             Spacer(Modifier.height(20.dp))
 
-            // Imagen decorativa
+            val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Manifest.permission.READ_MEDIA_IMAGES
+            } else {
+                Manifest.permission.READ_EXTERNAL_STORAGE
+            }
+
             Card(
                 modifier = Modifier
                     .size(180.dp)
-                    .clip(RoundedCornerShape(16.dp)),
+                    .clip(RoundedCornerShape(16.dp))
+                    .clickable {
+                        if (ContextCompat.checkSelfPermission(context, permission)
+                            == PackageManager.PERMISSION_GRANTED
+                        ) {
+                            imagePickerLauncher.launch("image/*")
+                        } else {
+                            permissionLauncher.launch(permission)
+                        }
+                    },
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 AsyncImage(
-                    model = imageUrl,
+                    model = selectedImageUri ?: imageUrl
+                    ?: "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg",
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
@@ -211,16 +299,13 @@ fun CreatePublicationScreen(
 
             Spacer(Modifier.height(26.dp))
 
+            // 🎯 Título
             OutlinedTextField(
                 value = title,
                 onValueChange = { title = it },
                 label = { Text("Título (opcional)") },
                 leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = null,
-                        tint = Color(0xFF3C9D6D)
-                    )
+                    Icon(imageVector = Icons.Default.Add, contentDescription = null, tint = Color(0xFF3C9D6D))
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
@@ -239,20 +324,15 @@ fun CreatePublicationScreen(
 
             Spacer(Modifier.height(14.dp))
 
+            // 📝 Descripción
             OutlinedTextField(
                 value = description,
                 onValueChange = { description = it },
                 label = { Text("Descripción") },
                 leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = null,
-                        tint = Color(0xFF3C9D6D)
-                    )
+                    Icon(imageVector = Icons.Default.Add, contentDescription = null, tint = Color(0xFF3C9D6D))
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 100.dp),
+                modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFFDDF5E3),
                     unfocusedContainerColor = Color.White,
@@ -269,6 +349,7 @@ fun CreatePublicationScreen(
 
             Spacer(Modifier.height(14.dp))
 
+            // 📍 Ubicación (con color dinámico)
             OutlinedTextField(
                 value = location,
                 onValueChange = {},
@@ -286,7 +367,7 @@ fun CreatePublicationScreen(
                 enabled = false,
                 readOnly = true,
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = if (location.isNotBlank()) Color(0xFFDDF5E3) else Color.White, // 💚 verde claro si hay ubicación
+                    focusedContainerColor = if (location.isNotBlank()) Color(0xFFDDF5E3) else Color.White,
                     unfocusedContainerColor = if (location.isNotBlank()) Color(0xFFDDF5E3) else Color.White,
                     disabledContainerColor = if (location.isNotBlank()) Color(0xFFDDF5E3) else Color.White,
                     focusedTextColor = Color(0xFF2B2B2B),

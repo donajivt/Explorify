@@ -40,6 +40,9 @@ import android.net.Uri
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.text.font.FontWeight
+import com.example.explorifyapp.data.remote.publications.RetrofitUsersInstance
+import com.example.explorifyapp.domain.repository.UserRepositoryImpl
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,6 +61,13 @@ fun PublicationListScreen(
 
     var menuExpanded by remember { mutableStateOf(false) }
 
+    // 🧠 Mapa de usuarios (id → nombre)
+    val userRepo = remember { UserRepositoryImpl(RetrofitUsersInstance.api) }
+    var userMap by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+
+    // 🔹 Obtener token para cargar publicaciones y usuarios
+    var token by remember { mutableStateOf<String?>(null) }
+
     LaunchedEffect(Unit) {
         val isLoggedIn = viewModel.isLoggedIn()
         if (!isLoggedIn) {
@@ -67,15 +77,26 @@ fun PublicationListScreen(
         }
     }
 
-    // 🔹 Carga inicial de publicaciones con token desde Room
+    // 🔹 Carga inicial de publicaciones y usuarios
     LaunchedEffect(Unit) {
-        val token: String? = withContext(Dispatchers.IO) {
-            AppDatabase.getInstance(context).authTokenDao().getToken()?.token
+        withContext(Dispatchers.IO) {
+            val dao = AppDatabase.getInstance(context).authTokenDao()
+            token = dao.getToken()?.token
         }
-        if (!token.isNullOrEmpty()) {
-            vm.load(token)
+        token?.let {
+            vm.load(it)
+            try {
+                val users = userRepo.getAllUsers(it)
+                userMap = users.associate { u -> u.id to u.name }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
     }
+
+    println("🧭 MAP: ${userMap.keys}")
+    println("📋 POSTS: ${state.items.map { it.userId }}")
+
 
     // 🔹 Manejo de errores con Snackbar
     LaunchedEffect(state.error) {
@@ -92,7 +113,7 @@ fun PublicationListScreen(
         }
     }
 
-    // 🔹 Obtener userId del Room (de forma segura)
+    // 🔹 Obtener userId del Room (para crear)
     val userId by produceState<String?>(initialValue = null) {
         val id: String? = withContext(Dispatchers.IO) {
             AppDatabase.getInstance(context).authTokenDao().getToken()?.userId
@@ -124,12 +145,11 @@ fun PublicationListScreen(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
                     label = { Text("Perfil") },
                     selected = false,
-                    onClick = {navController.navigate("perfil")}
+                    onClick = { navController.navigate("perfil") }
                 )
             }
         },
         floatingActionButton = {
-
             FloatingActionButton(
                 onClick = {
                     if (userId != null)
@@ -140,16 +160,18 @@ fun PublicationListScreen(
             }
         }
     ) { padding ->
-
         SwipeRefresh(
             state = swipeState,
             onRefresh = {
                 scope.launch {
-                    val token: String? = withContext(Dispatchers.IO) {
-                        AppDatabase.getInstance(context).authTokenDao().getToken()?.token
-                    }
                     if (!token.isNullOrEmpty()) {
-                        vm.refresh(token)
+                        vm.refresh(token!!)
+                        try {
+                            val users = userRepo.getAllUsers(token!!)
+                            userMap = users.associate { u -> u.id to u.name }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     }
                 }
             },
@@ -158,14 +180,11 @@ fun PublicationListScreen(
                 .padding(padding)
         ) {
             when {
-                // Estado cargando sin datos
                 state.loading && state.items.isEmpty() -> {
                     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                         CircularProgressIndicator()
                     }
                 }
-
-                // Error sin datos
                 state.error != null && state.items.isEmpty() -> {
                     Column(
                         Modifier
@@ -178,11 +197,8 @@ fun PublicationListScreen(
                         Spacer(Modifier.height(8.dp))
                         OutlinedButton(onClick = {
                             scope.launch {
-                                val token: String? = withContext(Dispatchers.IO) {
-                                    AppDatabase.getInstance(context).authTokenDao().getToken()?.token
-                                }
                                 if (!token.isNullOrEmpty()) {
-                                    vm.refresh(token)
+                                    vm.refresh(token!!)
                                 }
                             }
                         }) {
@@ -190,8 +206,6 @@ fun PublicationListScreen(
                         }
                     }
                 }
-
-                // Lista de publicaciones
                 else -> {
                     LazyColumn(
                         contentPadding = PaddingValues(12.dp),
@@ -206,7 +220,8 @@ fun PublicationListScreen(
                                     val lon = pub.longitud.toString()
                                     val name = Uri.encode(pub.location)
                                     navController.navigate("map/$lat/$lon/$name")
-                                }
+                                },
+                                authorName = userMap[pub.userId] ?: "Usuario desconocido"
                             )
                         }
                     }
@@ -220,25 +235,25 @@ fun PublicationListScreen(
 private fun PublicationCard(
     publication: Publication,
     onOpen: () -> Unit,
-    onViewMap: () -> Unit
+    onViewMap: () -> Unit,
+    authorName: String
 ) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onOpen() }
-            .shadow(6.dp, shape = RoundedCornerShape(20.dp),clip = false)
-                .background(Color.Transparent)
-                .border(
-                    width = 1.2.dp,
-                    color = Color(0xFFBFAE94).copy(alpha = 0.8f), // 💡 Borde arena claro con transparencia
-                    shape = RoundedCornerShape(20.dp)
-                ),
+            .shadow(6.dp, shape = RoundedCornerShape(20.dp), clip = false)
+            .background(Color.Transparent)
+            .border(
+                width = 1.2.dp,
+                color = Color(0xFFBFAE94).copy(alpha = 0.8f),
+                shape = RoundedCornerShape(20.dp)
+            ),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1B1C)),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
         Column {
-            // Imagen principal con overlay de título
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -251,8 +266,6 @@ private fun PublicationCard(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.matchParentSize()
                 )
-
-                // Gradiente oscuro inferior
                 Box(
                     Modifier
                         .matchParentSize()
@@ -266,13 +279,11 @@ private fun PublicationCard(
                             )
                         )
                 )
-
-                // Título sobre la imagen
                 Text(
                     text = publication.title,
                     color = Color.White,
                     style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+                        fontWeight = FontWeight.Bold
                     ),
                     modifier = Modifier
                         .align(Alignment.BottomStart)
@@ -280,7 +291,6 @@ private fun PublicationCard(
                 )
             }
 
-            // Contenido textual
             Column(Modifier.padding(16.dp)) {
                 Text(
                     text = publication.description,
@@ -297,7 +307,6 @@ private fun PublicationCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Usuario + fecha
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Default.AccountCircle,
@@ -308,8 +317,8 @@ private fun PublicationCard(
                         Spacer(Modifier.width(6.dp))
                         Column {
                             Text(
-                                text = publication.userId.ifEmpty { "Usuario desconocido" },
-                                style = MaterialTheme.typography.labelLarge
+                                text = authorName,
+                                style = MaterialTheme.typography.labelLarge.copy(color = Color.White)
                             )
                             Text(
                                 text = publication.createdAt.formatAsDate(),
@@ -319,7 +328,6 @@ private fun PublicationCard(
                         }
                     }
 
-                    // Ubicación con botón
                     TextButton(onClick = onViewMap) {
                         Icon(
                             Icons.Outlined.LocationOn,
@@ -339,7 +347,6 @@ private fun PublicationCard(
     }
 }
 
-/** Utilidad para formatear fecha ISO → dd/MM/yyyy */
 private fun String.formatAsDate(): String = try {
     val odt = OffsetDateTime.parse(this)
     odt.toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))

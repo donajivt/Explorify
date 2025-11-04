@@ -1,5 +1,11 @@
 package com.example.explorifyapp.presentation.publications.list.screens
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -25,8 +31,14 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.core.content.ContextCompat
+import com.example.explorifyapp.domain.repository.MediaRepositoryImpl
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import com.example.explorifyapp.data.remote.publications.MediaApi
+import com.example.explorifyapp.data.remote.publications.prepareFilePart
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,7 +63,49 @@ fun EditPublicationScreen(
     var longitud by remember { mutableStateOf<String?>(null) }
     var imageUrl by rememberSaveable { mutableStateOf("") }
 
+    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
+    var uploadedImageUrl by remember { mutableStateOf<String?>(null) }
+    var publicId by remember { mutableStateOf<String?>(null) }
+    var isUploading by remember { mutableStateOf(false) }
+
+
     var hasLoadedOnce by rememberSaveable { mutableStateOf(false) }
+
+    val mediaRepo = remember {
+        MediaRepositoryImpl(
+            Retrofit.Builder()
+                .baseUrl("http://explorify.somee.com/") // ⚠️ HTTPS!
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
+                .create(MediaApi::class.java)
+        )
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (!granted) {
+            coroutineScope.launch {
+                snackbarHostState.currentSnackbarData?.dismiss()
+                snackbarHostState.showSnackbar("Debes permitir acceso a la galería")
+            }
+        }
+    }
+
+    val imagePickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri -> uri?.let { selectedImageUri = it } }
+    )
+
+    LaunchedEffect(Unit) {
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            Manifest.permission.READ_MEDIA_IMAGES
+        } else {
+            Manifest.permission.READ_EXTERNAL_STORAGE
+        }
+        permissionLauncher.launch(permission)
+    }
+
 
     // 🔹 Cargar datos solo una vez
     LaunchedEffect(publicationId) {
@@ -149,14 +203,31 @@ fun EditPublicationScreen(
                 Card(
                     modifier = Modifier
                         .size(180.dp)
-                        .clip(MaterialTheme.shapes.large),
+                        .clip(MaterialTheme.shapes.large)
+                        .clickable {
+                            val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                Manifest.permission.READ_MEDIA_IMAGES
+                            } else {
+                                Manifest.permission.READ_EXTERNAL_STORAGE
+                            }
+                            if (ContextCompat.checkSelfPermission(navController.context, permission)
+                                == PackageManager.PERMISSION_GRANTED
+                            ) {
+                                imagePickerLauncher.launch("image/*")
+                            } else {
+                                permissionLauncher.launch(permission)
+                            }
+                        },
                     elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFF2F0EC))
                 ) {
                     Image(
                         painter = rememberAsyncImagePainter(
-                            if (imageUrl.isNotEmpty()) imageUrl
-                            else "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg"
+                            when {
+                                selectedImageUri != null -> selectedImageUri
+                                imageUrl.isNotEmpty() -> imageUrl
+                                else -> "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg"
+                            }
                         ),
                         contentDescription = "Vista previa de imagen",
                         modifier = Modifier.fillMaxSize(),
@@ -250,9 +321,30 @@ fun EditPublicationScreen(
                     onClick = {
                         coroutineScope.launch {
                             try {
+                                var finalImageUrl = imageUrl
+                                if (selectedImageUri != null) {
+                                    isUploading = true
+                                    // 📤 Subir nueva imagen
+                                    val filePart = navController.context.prepareFilePart("file", selectedImageUri!!)
+                                    val uploadResult = mediaRepo.uploadImage(token, filePart)
+                                    if (uploadResult != null) {
+                                        finalImageUrl = uploadResult.secureUrl
+                                        uploadedImageUrl = uploadResult.secureUrl
+                                        // 🔥 Si tienes publicId anterior, elimínalo
+                                        publicId?.let {
+                                            mediaRepo.deleteImage(token, it)
+                                        }
+                                        snackbarHostState.showSnackbar("Imagen actualizada correctamente")
+                                    } else {
+                                        snackbarHostState.showSnackbar("Error al subir la nueva imagen")
+                                    }
+                                    isUploading = false
+                                }
+
+                                isSaving = true
                                 repo.update(
                                     id = publicationId,
-                                    imageUrl = if (imageUrl.isBlank()) "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg" else imageUrl,
+                                    imageUrl = finalImageUrl ?: imageUrl,
                                     title = title,
                                     description = description,
                                     location = location,
@@ -265,7 +357,9 @@ fun EditPublicationScreen(
                                 delay(1000)
                                 navController.popBackStack()
                             } catch (e: Exception) {
-                                snackbarHostState.showSnackbar("Error al actualizar")
+                                snackbarHostState.showSnackbar("Error al actualizar publicación")
+                            } finally {
+                                isSaving = false
                             }
                         }
                     },
