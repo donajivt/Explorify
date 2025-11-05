@@ -286,7 +286,7 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
                     onClick = {
                         showDialog = false // Cerrar diálogo
                         // Si la actualización fue exitosa, navegamos de vuelta al perfil
-                        if (dialogMessage.startsWith("✅")) {
+                        if (dialogMessage.startsWith("P")) {
                             navController.navigate("perfil") {
                                 popUpTo("editprofile") { inclusive = true }
                             }
