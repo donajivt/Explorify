@@ -276,7 +276,7 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
                 showDialog = false
             },
             title = {
-                Text(if (dialogMessage.startsWith("✅")) "Éxito" else "Error")
+                Text(if (dialogMessage.startsWith("P")) "Éxito" else "Error")
             },
             text = {
                 Text(dialogMessage)
