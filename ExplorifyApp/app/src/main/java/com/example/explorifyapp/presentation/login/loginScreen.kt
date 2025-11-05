@@ -42,171 +42,179 @@ fun LoginScreen(navController: NavController) {
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         containerColor = Color.Transparent // Para que se vea el fondo con la imagen
     ) { paddingValues ->
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(paddingValues),
-        contentAlignment = Alignment.Center
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.mountains),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize()
-        )
-
-        Card(
+        Box(
             modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .wrapContentHeight(),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                .fillMaxSize()
+                .padding(paddingValues),
+            contentAlignment = Alignment.Center
         ) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(32.dp),
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(text = "Iniciar Sesión", style = MaterialTheme.typography.headlineMedium)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = userName,
-            onValueChange = { userName = it
-                if (userNameError) userNameError = false
-                            },
-            label = { Text("Usuario") },
-            modifier = Modifier.fillMaxWidth(),
-            isError = userNameError, // ← activa borde rojo
-            supportingText = {
-                if (userNameError) {
-                    Text("El usuario es obligatorio", color = MaterialTheme.colorScheme.error)
-                }
-            },
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedTextColor = Color.Gray,
-                focusedTextColor = Color.DarkGray,
-                errorBorderColor = MaterialTheme.colorScheme.error,
-                errorLabelColor = MaterialTheme.colorScheme.error,
-                errorSupportingTextColor = MaterialTheme.colorScheme.error
+            Image(
+                painter = painterResource(id = R.drawable.mountains),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxSize()
             )
-        )
 
-        Spacer(modifier = Modifier.height(8.dp))
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .wrapContentHeight(),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(32.dp),
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text(text = "Iniciar Sesión", style = MaterialTheme.typography.headlineMedium)
 
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it
-                if (passwordError) passwordError = false
-            },
-            label = { Text("Contraseña") },
-            visualTransformation = PasswordVisualTransformation(),
-            modifier = Modifier.fillMaxWidth(),
-            isError = passwordError,
-            supportingText = {
-                if (passwordError) {
-                    Text("La contraseña es obligatoria", color = MaterialTheme.colorScheme.error)
-                }
-            },
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedTextColor = Color.Gray,
-                focusedTextColor = Color.DarkGray,
-                errorBorderColor = MaterialTheme.colorScheme.error,
-                errorLabelColor = MaterialTheme.colorScheme.error,
-                errorSupportingTextColor = MaterialTheme.colorScheme.error
-            )
-        )
+                    Spacer(modifier = Modifier.height(16.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = userName,
+                        onValueChange = {
+                            userName = it
+                            if (userNameError) userNameError = false
+                        },
+                        label = { Text("Usuario") },
+                        modifier = Modifier.fillMaxWidth(),
+                        isError = userNameError, // ← activa borde rojo
+                        supportingText = {
+                            if (userNameError) {
+                                Text(
+                                    "El usuario es obligatorio",
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedTextColor = Color.Gray,
+                            focusedTextColor = Color.DarkGray,
+                            errorBorderColor = MaterialTheme.colorScheme.error,
+                            errorLabelColor = MaterialTheme.colorScheme.error,
+                            errorSupportingTextColor = MaterialTheme.colorScheme.error
+                        )
+                    )
 
-        Button(
-            onClick = {
-                var hasError = false
+                    Spacer(modifier = Modifier.height(8.dp))
 
-                if (userName.isBlank()) {
-                    userNameError = true
-                    hasError = true
-                }
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = {
+                            password = it
+                            if (passwordError) passwordError = false
+                        },
+                        label = { Text("Contraseña") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        modifier = Modifier.fillMaxWidth(),
+                        isError = passwordError,
+                        supportingText = {
+                            if (passwordError) {
+                                Text(
+                                    "La contraseña es obligatoria",
+                                    color = MaterialTheme.colorScheme.error
+                                )
+                            }
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            unfocusedTextColor = Color.Gray,
+                            focusedTextColor = Color.DarkGray,
+                            errorBorderColor = MaterialTheme.colorScheme.error,
+                            errorLabelColor = MaterialTheme.colorScheme.error,
+                            errorSupportingTextColor = MaterialTheme.colorScheme.error
+                        )
+                    )
 
-                if (password.isBlank()) {
-                    passwordError = true
-                    hasError = true
-                }
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                if (hasError) {
-                    errorMessage = "Por favor, completa todos los campos"
-                    coroutineScope.launch {
-                        snackbarHostState.showSnackbar(errorMessage!!)
-                    }
-                /*if (userName.isBlank() || password.isBlank()) {
+                    Button(
+                        onClick = {
+                            var hasError = false
+
+                            if (userName.isBlank()) {
+                                userNameError = true
+                                hasError = true
+                            }
+
+                            if (password.isBlank()) {
+                                passwordError = true
+                                hasError = true
+                            }
+
+                            if (hasError) {
+                                errorMessage = "Por favor, completa todos los campos"
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(errorMessage!!)
+                                }
+                                /*if (userName.isBlank() || password.isBlank()) {
                     errorMessage = "Por favor, completa todos los campos"
                     coroutineScope.launch {
                         snackbarHostState.showSnackbar(errorMessage!!)
                     }*/
 
-                } else {
-                    errorMessage = null
-                    viewModel.login(userName, password)
-                }
-                      },
-            enabled = !isLoading && userName.isNotBlank() && password.isNotBlank(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF355031),
-                contentColor = Color.White,
-                disabledContainerColor = Color.Gray
-            ),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            if (isLoading) {
-                CircularProgressIndicator(
-                    color = Color.White,
-                    modifier = Modifier.size(20.dp),
-                    strokeWidth = 2.dp
-                )
-            } else {
-                Text("Entrar")
-            }
-        }
+                            } else {
+                                errorMessage = null
+                                viewModel.login(userName, password)
+                            }
+                        },
+                        enabled = !isLoading && userName.isNotBlank() && password.isNotBlank(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF355031),
+                            contentColor = Color.White,
+                            disabledContainerColor = Color.Gray
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                color = Color.White,
+                                modifier = Modifier.size(20.dp),
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Text("Entrar")
+                        }
+                    }
 
-        Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-        //Text(text = loginResult)
+                    //Text(text = loginResult)
 
-        Spacer(modifier = Modifier.height(24.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
 
-        // Hipervínculo para ir a Register
-        TextButton(onClick = {
-            navController.navigate("register")
+                    // Hipervínculo para ir a Register
+                    TextButton(
+                        onClick = {
+                            navController.navigate("register")
 
-        },
-            colors = ButtonDefaults.textButtonColors(
-                contentColor = Color.DarkGray
-            )
-            ) {
-            Text("¿No tienes cuenta? Regístrate aquí")
-        }
+                        },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = Color.DarkGray
+                        )
+                    ) {
+                        Text("¿No tienes cuenta? Regístrate aquí")
+                    }
 
-        // Navegar si login fue exitoso
-        LaunchedEffect(loginResult) {
-            if (loginResult.startsWith("Bienvenido")) {
-                // Extraer nombre del usuario desde el mensaje o del ViewModel
-                val name = viewModel.userName
-                navController.navigate("publicaciones")
-            }
-            else {
-                // Error en el login
-                coroutineScope.launch {
-                    snackbarHostState.showSnackbar(
-                        message = "Usuario y/o contraseña incorrectos",
-                        duration = SnackbarDuration.Short
-                    )
+                    // Navegar si login fue exitoso
+                    LaunchedEffect(loginResult) {
+                        if (loginResult.isNotEmpty()) {
+                            if (loginResult.startsWith("Bienvenido")) {
+                                val name = viewModel.userName
+                                navController.navigate("publicaciones")
+                            } else {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(
+                                        message = "Usuario y/o contraseña incorrectos",
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
     }
-        }
-    }
-}
 }

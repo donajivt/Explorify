@@ -61,6 +61,8 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.text.style.TextAlign
+import com.example.explorifyapp.data.remote.publications.RetrofitUsersInstance
+import com.example.explorifyapp.domain.repository.UserRepositoryImpl
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @SuppressLint("MissingPermission")
@@ -81,6 +83,8 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
 
     var selectedPublication by remember { mutableStateOf<PublicationMap?>(null) }
     val publications by viewModel::publications
+    val userRepo = remember { UserRepositoryImpl(RetrofitUsersInstance.api) }
+    var userMap by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
 
     // 🔐 Validar si hay sesión
     LaunchedEffect(Unit) {
@@ -94,9 +98,17 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
         userName=loginViewModel.userName
         val userId = loginViewModel.userId
         val token = loginViewModel.token
+
         // posiblemente también usar userId si lo tienes
         if (!token.isNullOrEmpty() && userId.isNotEmpty()) {
             viewModel.loadPublications(userId, token)
+            try {
+                println("🚀 Solicitando lista de usuarios...") // opcional
+                val users = userRepo.getAllUsers(token)
+                userMap = users.associate { u -> u.id to u.name }
+            } catch (e: Exception) {
+                println("❌ Error al obtener usuarios: ${e.message}")
+            }
         }
     }
 
@@ -110,6 +122,12 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
         mapView.setMultiTouchControls(true)
         mapView.controller.setZoom(14.0)
     }
+
+    // ✅ Forzar que el mapa se redibuje cuando cambie el userMap
+    LaunchedEffect(userMap) {
+        mapView.invalidate()
+    }
+
 
     // Obtener ubicación actual si tiene permiso
     LaunchedEffect(locationPermissionState.status) { // ⚠️ aquí usamos status
@@ -265,8 +283,13 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                                 verticalAlignment = Alignment.CenterVertically,
                                 //shape = RoundedCornerShape(16.dp),
                             ) {
+                                // ✅ Calcula dinámicamente el nombre del autor cuando cambie el mapa o el userId
+                                val authorName = remember(userMap, pub.userId) {
+                                    userMap[pub.userId] ?: "Usuario desconocido"
+                                }
+
                                 Text(
-                                    text = " ${pub.userId}",
+                                    text = authorName,
                                     style = MaterialTheme.typography.titleMedium,
                                     modifier = Modifier.weight(1f),
                                     color = Color.White

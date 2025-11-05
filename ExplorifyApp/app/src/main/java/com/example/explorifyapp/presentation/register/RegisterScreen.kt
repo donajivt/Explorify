@@ -39,11 +39,8 @@ fun RegisterScreen(navController: NavController) {
     val context = LocalContext.current
 
     // ✅ Expresión regular mejorada para emails válidos (incluye subdominios, letras, números, etc.)
-    val emailRegex = Regex("^[A-Za-z0-9._%+-]{1,40}@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$")
-
-    // ✅ Verificación central
     val isEmailValid = remember(email) {
-        emailRegex.matches(email) && email.length <= 20
+        email.contains("@") && email.length <= 100
     }
 
     Box(
@@ -94,11 +91,12 @@ fun RegisterScreen(navController: NavController) {
                     modifier = Modifier.fillMaxWidth(),
                     isError = email.isNotEmpty() && !isEmailValid,
                     supportingText = {
-                        when {
-                            email.isNotEmpty() && email.length > 60 ->
-                                Text("El correo es demasiado largo máx. 60 caracteres.", color = Color.Red, fontSize = 11.sp)
-                            email.isNotEmpty() && !emailRegex.matches(email) ->
-                                Text("Ingresa un correo válido", color = Color.Red, fontSize = 11.sp)
+                        if (email.isNotEmpty() && !email.contains("@")) {
+                            Text(
+                                "Ingresa un correo válido",
+                                color = Color.Red,
+                                fontSize = 11.sp
+                            )
                         }
                     },
                     colors = OutlinedTextFieldDefaults.colors(
@@ -180,7 +178,7 @@ fun RegisterScreen(navController: NavController) {
                                 errorMessage = "Debes aceptar los Términos y Condiciones"
                             else -> {
                                 errorMessage = null
-                                viewModel.register(email, name, password)
+                                viewModel.register(email.trim(), name.trim(), password.trim())
                             }
                         }
 
