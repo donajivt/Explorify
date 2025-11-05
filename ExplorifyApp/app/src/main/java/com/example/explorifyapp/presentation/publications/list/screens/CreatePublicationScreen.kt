@@ -38,12 +38,14 @@ import kotlinx.coroutines.withContext
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import com.example.explorifyapp.data.remote.publications.prepareFilePart
 import com.example.explorifyapp.domain.repository.MediaRepositoryImpl
 import okhttp3.MultipartBody
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import com.example.explorifyapp.data.remote.publications.MediaApi
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,6 +82,8 @@ fun CreatePublicationScreen(
     var uploadedImageUrl by rememberSaveable { mutableStateOf<String?>(null) }
     var isUploading by remember { mutableStateOf(false) }
     var imageUrl by remember { mutableStateOf<String?>(null) }
+    var showBottomSheet by remember { mutableStateOf(false) }
+    var cameraImageUri by remember { mutableStateOf<Uri?>(null) }
 
     // 🔹 Retrofit para Media API
     val mediaRepo = remember {
@@ -106,17 +110,30 @@ fun CreatePublicationScreen(
     }
 
     // 🔹 Permisos de galería
-    val permissionLauncher = rememberLauncherForActivityResult(
+    val galleryPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
-        if (!granted) {
-            scope.launch {
-                snackbarHostState.currentSnackbarData?.dismiss()
-                snackbarHostState.showSnackbar("Debes conceder permiso para acceder a tus imágenes")
-            }
-        }
+        if (!granted) scope.launch { snackbarHostState.showSnackbar("Permiso de galería denegado") }
     }
 
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) cameraImageUri?.let { selectedImageUri = it }
+    }
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            val photoFile = File(context.getExternalFilesDir(null), "photo_${System.currentTimeMillis()}.jpg")
+            val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", photoFile)
+            cameraImageUri = uri
+            cameraLauncher.launch(uri)
+        } else {
+            scope.launch { snackbarHostState.showSnackbar("Permiso de cámara denegado") }
+        }
+    }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -125,12 +142,9 @@ fun CreatePublicationScreen(
 
     // Solicitar permiso al entrar
     LaunchedEffect(Unit) {
-        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            Manifest.permission.READ_MEDIA_IMAGES
-        } else {
-            Manifest.permission.READ_EXTERNAL_STORAGE
-        }
-        permissionLauncher.launch(permission)
+        val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            Manifest.permission.READ_MEDIA_IMAGES else Manifest.permission.READ_EXTERNAL_STORAGE
+        galleryPermissionLauncher.launch(permission)
     }
 
 
@@ -188,25 +202,22 @@ fun CreatePublicationScreen(
                             }
 
                             // 📤 Subir imagen
-                            var finalImageUrl = uploadedImageUrl
-                            if (selectedImageUri != null) {
-                                isUploading = true
-                                try {
+                            isUploading = true
+                            var finalImageUrl: String? = null
+                            try {
                                 val filePart = context.prepareFilePart("file", selectedImageUri!!)
-                                    val uploadResult = mediaRepo.uploadImage(token ?: "", filePart)
-                                println("🌐 Media upload response: $uploadResult")
+                                val uploadResult = mediaRepo.uploadImage(token ?: "", filePart)
                                 if (uploadResult != null) {
                                     finalImageUrl = uploadResult.secureUrl
                                     snackbarHostState.showSnackbar("Imagen subida correctamente")
                                 } else {
-                                    snackbarHostState.showSnackbar("Error al subir la imagen")
-                                    return@launch // 🔸 evita crear la publicación si la imagen falló
-                                }
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
-                                    snackbarHostState.showSnackbar("Error al conectar con el servidor de imágenes ❌")
+                                    snackbarHostState.showSnackbar("Error al subir imagen")
                                     return@launch
                                 }
+                            } catch (e: Exception) {
+                                snackbarHostState.showSnackbar("Error al conectar con servidor")
+                                return@launch
+                            } finally {
                                 isUploading = false
                             }
 
@@ -266,35 +277,82 @@ fun CreatePublicationScreen(
         ) {
             Spacer(Modifier.height(20.dp))
 
-            val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                Manifest.permission.READ_MEDIA_IMAGES
-            } else {
-                Manifest.permission.READ_EXTERNAL_STORAGE
-            }
-
             Card(
                 modifier = Modifier
                     .size(180.dp)
                     .clip(RoundedCornerShape(16.dp))
-                    .clickable {
-                        if (ContextCompat.checkSelfPermission(context, permission)
-                            == PackageManager.PERMISSION_GRANTED
-                        ) {
-                            imagePickerLauncher.launch("image/*")
-                        } else {
-                            permissionLauncher.launch(permission)
-                        }
-                    },
+                    .clickable { showBottomSheet = true },
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
                 AsyncImage(
-                    model = selectedImageUri ?: imageUrl
-                    ?: "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg",
-                    contentDescription = null,
+                    model = selectedImageUri
+                        ?: "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg",
+                    contentDescription = "Vista previa",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
+            }
+
+            // Modal con opciones
+            if (showBottomSheet) {
+                ModalBottomSheet(
+                    onDismissRequest = { showBottomSheet = false },
+                    containerColor = Color.White,
+                    shape = RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp)
+                ) {
+                    Column(
+                        Modifier.fillMaxWidth().padding(vertical = 20.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("Seleccionar imagen", fontWeight = FontWeight.Bold, color = Color(0xFF2E473B))
+                        Spacer(Modifier.height(12.dp))
+                        Divider()
+                        Spacer(Modifier.height(12.dp))
+
+                        // Opción cámara
+                        TextButton(onClick = {
+                            showBottomSheet = false
+                            val permission = Manifest.permission.CAMERA
+                            if (ContextCompat.checkSelfPermission(context, permission)
+                                == PackageManager.PERMISSION_GRANTED
+                            ) {
+                                val photoFile = File(context.getExternalFilesDir(null),
+                                    "photo_${System.currentTimeMillis()}.jpg")
+                                val uri = FileProvider.getUriForFile(
+                                    context, "${context.packageName}.provider", photoFile
+                                )
+                                cameraImageUri = uri
+                                cameraLauncher.launch(uri)
+                            } else {
+                                cameraPermissionLauncher.launch(permission)
+                            }
+                        }) {
+                            Text("📸 Tomar foto", color = Color(0xFF3C9D6D), fontWeight = FontWeight.SemiBold)
+                        }
+
+                        Spacer(Modifier.height(8.dp))
+
+                        // Opción galería
+                        TextButton(onClick = {
+                            showBottomSheet = false
+                            val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                                Manifest.permission.READ_MEDIA_IMAGES
+                            else Manifest.permission.READ_EXTERNAL_STORAGE
+                            if (ContextCompat.checkSelfPermission(context, permission)
+                                == PackageManager.PERMISSION_GRANTED
+                            ) {
+                                imagePickerLauncher.launch("image/*")
+                            } else {
+                                galleryPermissionLauncher.launch(permission)
+                            }
+                        }) {
+                            Text("🖼️ Elegir desde galería", color = Color(0xFF3C9D6D), fontWeight = FontWeight.SemiBold)
+                        }
+
+                        Spacer(Modifier.height(16.dp))
+                    }
+                }
             }
 
             Spacer(Modifier.height(26.dp))
