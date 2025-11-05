@@ -1,5 +1,6 @@
 ﻿using Explorify.Api.Publications.Application.Dtos;
 using Explorify.Api.Publications.Application.Interfaces;
+using Explorify.Api.Publications.Infraestructure.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -13,10 +14,12 @@ namespace Explorify.Api.Plubications.Controllers
     public class PublicationController : ControllerBase
     {
         private readonly IPublicationService _service;
+        private readonly IReportService _reportService;
 
-        public PublicationController(IPublicationService service)
+        public PublicationController(IPublicationService service, IReportService reportService)
         {
             _service = service;
+            _reportService = reportService;
         }
 
         [HttpGet]
@@ -91,5 +94,63 @@ namespace Explorify.Api.Plubications.Controllers
 
             return Ok(new ResponseDto { Message = "Publicación actualizada correctamente" });
         }
+
+        /// <summary>
+        /// Crea un nuevo reporte sobre una publicación.
+        /// </summary>
+        [HttpPost("report")]
+        public async Task<IActionResult> CreateReport([FromBody] ReportPublicationRequestDto dto)
+        {
+            if (string.IsNullOrEmpty(dto.PublicationId) || string.IsNullOrEmpty(dto.ReportedByUserId))
+                return BadRequest("El ID de la publicación y del usuario son obligatorios.");
+
+            await _reportService.CreateReportAsync(dto.PublicationId, dto.ReportedByUserId, dto.Reason, dto.Description);
+            return Ok(new { message = "Reporte creado correctamente" });
+        }
+
+        /// <summary>
+        /// Obtiene todos los reportes registrados.
+        /// </summary>
+        [HttpGet("report")]
+        [Authorize(Roles = "Admin, ADMIN, admin")]
+        public async Task<IActionResult> GetAllReports()
+        {
+            var reports = await _reportService.GetAllReportsAsync();
+            return Ok(reports);
+        }
+
+        /// <summary>
+        /// Obtiene un reporte por su ID.
+        /// </summary>
+        [HttpGet("report/{id}")]
+        public async Task<IActionResult> GetReportById(string id)
+        {
+            var report = await _reportService.GetReportByIdAsync(id);
+            if (report == null)
+                return NotFound(new { message = "Reporte no encontrado" });
+
+            return Ok(report);
+        }
+
+        /// <summary>
+        /// Obtiene los reportes asociados a una publicación.
+        /// </summary>
+        [HttpGet("report/publication/{publicationId}")]
+        public async Task<IActionResult> GetReportsByPublication(string publicationId)
+        {
+            var reports = await _reportService.GetReportsByPublicationIdAsync(publicationId);
+            return Ok(reports);
+        }
+
+        /// <summary>
+        /// Obtiene los reportes creados por un usuario.
+        /// </summary>
+        [HttpGet("report/user/{userId}")]
+        public async Task<IActionResult> GetReportsByUser(string userId)
+        {
+            var reports = await _reportService.GetReportsByUserIdAsync(userId);
+            return Ok(reports);
+        }
     }
 }
+

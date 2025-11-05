@@ -1,9 +1,11 @@
 using Explorify.Api.Publications.Application.Interfaces;
 using Explorify.Api.Publications.Application.Services;
+using Explorify.Api.Publications.Domain.Interfaces;
+using Explorify.Api.Publications.Infraestructure.Extensions;
+using Explorify.Api.Publications.Infraestructure.Persistence;
 using Explorify.Api.Publications.Infraestructure.Publication;
 using Explorify.Api.Publications.Infraestructure.Repositories;
-using Explorify.Api.Publications.Infrastructure.Extensions;
-using Explorify.Api.Publications.Infrastructure.Persistence;
+using Explorify.Api.Publications.Infraestructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,6 +26,8 @@ builder.Services.AddCloudinaryService(builder.Configuration);
 // Repositorio y servicios
 builder.Services.AddScoped<IPublicationRepository, PublicationRepository>();
 builder.Services.AddScoped<IPublicationService, PublicationService>();
+builder.Services.AddScoped<IReportRepository, ReportRepository>();
+builder.Services.AddScoped<IReportService, ReportService>();
 
 // JWT y Swagger
 builder.AddAppAuthentication();

@@ -1,17 +1,12 @@
 ﻿using Explorify.Api.Publications.Domain.Entities;
-using Explorify.Api.Publications.Infrastructure.Persistence;
 using MongoDB.Driver;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Explorify.Api.Publications.Infrastructure.Persistence
+namespace Explorify.Api.Publications.Infraestructure.Persistence
 {
     public class MongoContext
     {
-        public IMongoCollection<Publication> Publication { get; }
+        public IMongoCollection<Domain.Entities.Publication> Publication { get; }
+        public IMongoCollection<PublicationReport> Reports { get; }
 
         public MongoContext(MongoOptions opts)
         {
@@ -19,11 +14,14 @@ namespace Explorify.Api.Publications.Infrastructure.Persistence
 
             var client = new MongoClient(opts.ConnectionString);
             var db = client.GetDatabase(opts.Database);
-            Publication = db.GetCollection<Publication>(opts.PublicationsCollection);
 
-            var idx = new CreateIndexModel<Publication>(
-                 Builders<Publication>.IndexKeys.Ascending(x => x.Title),
-                 new CreateIndexOptions { Unique = false });
+            Publication = db.GetCollection<Domain.Entities.Publication>(opts.PublicationsCollection);
+            Reports = db.GetCollection<PublicationReport>(opts.ReportsCollection);
+
+            var idx = new CreateIndexModel<Domain.Entities.Publication>(
+                Builders<Domain.Entities.Publication>.IndexKeys.Ascending(x => x.Title),
+                new CreateIndexOptions { Unique = false });
+
             Publication.Indexes.CreateOne(idx);
         }
     }

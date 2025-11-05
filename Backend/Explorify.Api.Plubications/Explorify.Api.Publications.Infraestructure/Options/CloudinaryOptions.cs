@@ -1,4 +1,4 @@
-﻿namespace Explorify.Api.Publications.Infrastructure.Options
+﻿namespace Explorify.Api.Publications.Infraestructure.Options
 {
     public class CloudinaryOptions
     {

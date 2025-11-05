@@ -1,5 +1,5 @@
 ﻿using Explorify.Api.Publications.Application.Interfaces;
-using Explorify.Api.Publications.Infrastructure.Persistence;
+using Explorify.Api.Publications.Infraestructure.Persistence;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;

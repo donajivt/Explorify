@@ -2,12 +2,12 @@
 using CloudinaryDotNet.Actions;
 using Explorify.Api.Publications.Application.Dtos;
 using Explorify.Api.Publications.Application.Interfaces;
-using Explorify.Api.Publications.Infrastructure.Options;
+using Explorify.Api.Publications.Infraestructure.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
 
-namespace Explorify.Api.Publications.Infrastructure.Services
+namespace Explorify.Api.Publications.Infraestructure.Services
 {
     public class CloudinaryService : ICloudinaryService
     {

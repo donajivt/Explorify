@@ -1,10 +1,10 @@
 ﻿using Explorify.Api.Publications.Application.Interfaces;
-using Explorify.Api.Publications.Infrastructure.Options;
-using Explorify.Api.Publications.Infrastructure.Services;
+using Explorify.Api.Publications.Infraestructure.Options;
+using Explorify.Api.Publications.Infraestructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Explorify.Api.Publications.Infrastructure.Extensions
+namespace Explorify.Api.Publications.Infraestructure.Extensions
 {
     public static class CloudinaryExtensions
     {
