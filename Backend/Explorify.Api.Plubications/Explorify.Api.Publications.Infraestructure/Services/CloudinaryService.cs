@@ -5,7 +5,8 @@ using Explorify.Api.Publications.Application.Interfaces;
 using Explorify.Api.Publications.Infraestructure.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-
+using System;
+using System.Linq;
 
 namespace Explorify.Api.Publications.Infraestructure.Services
 {
@@ -41,13 +42,30 @@ namespace Explorify.Api.Publications.Infraestructure.Services
                     .Quality("auto")
                     .FetchFormat("auto"),
                 UniqueFilename = true,
-                Overwrite = false
+                Overwrite = false,
+                Moderation = "aws_rek"
             };
 
             var result = await _cloudinary.UploadAsync(uploadParams);
 
             if (result.Error != null)
                 throw new Exception($"Error al subir imagen: {result.Error.Message}");
+
+            if (result.Moderation != null && result.Moderation.Count > 0)
+            {
+                var moderationResult = result.Moderation.FirstOrDefault(m => m.Kind == "aws_rek");
+
+                // --- CORREGIDO AQUÍ ---
+                // Se compara con el enum ModerationStatus.Rejected, no con el string "rejected"
+                if (moderationResult != null && moderationResult.Status == ModerationStatus.Rejected)
+                {
+                    // --- CORREGIDO AQUÍ ---
+                    // El orden de los argumentos es (ResourceType, PublicId)
+                    await _cloudinary.DeleteResourcesAsync(ResourceType.Image, result.PublicId);
+
+                    throw new Exception("La imagen fue rechazada por contener contenido inapropiado.");
+                }
+            }
 
             return new MediaResponseDto
             {
@@ -71,13 +89,29 @@ namespace Explorify.Api.Publications.Infraestructure.Services
                 Transformation = new Transformation()
                     .Quality("auto"),
                 UniqueFilename = true,
-                Overwrite = false
+                Overwrite = false,
+                Moderation = "aws_rek"
             };
 
             var result = await _cloudinary.UploadAsync(uploadParams);
 
             if (result.Error != null)
                 throw new Exception($"Error al subir video: {result.Error.Message}");
+
+            if (result.Moderation != null && result.Moderation.Count > 0)
+            {
+                var moderationResult = result.Moderation.FirstOrDefault(m => m.Kind == "aws_rek");
+
+                // --- CORREGIDO AQUÍ ---
+                if (moderationResult != null && moderationResult.Status == ModerationStatus.Rejected)
+                {
+                    // --- CORREGIDO AQUÍ ---
+                    // El orden de los argumentos es (ResourceType, PublicId)
+                    await _cloudinary.DeleteResourcesAsync(ResourceType.Video, result.PublicId);
+
+                    throw new Exception("El video fue rechazado por contener contenido inapropiado.");
+                }
+            }
 
             return new MediaResponseDto
             {
@@ -96,24 +130,56 @@ namespace Explorify.Api.Publications.Infraestructure.Services
 
             var deleteParams = new DeletionParams(publicId)
             {
-                ResourceType = ResourceType.Image
+                ResourceType = ResourceType.Auto
             };
 
             var result = await _cloudinary.DestroyAsync(deleteParams);
-            return result.Result == "ok";
+
+            return result.Result.ToLower() == "ok" || result.Result.ToLower() == "not found";
         }
 
         public async Task<MediaResponseDto> UpdateImageAsync(string publicId, IFormFile newFile)
         {
-            // Eliminar imagen anterior
-            await DeleteMediaAsync(publicId);
+            if (newFile == null || newFile.Length == 0)
+                throw new ArgumentException("El archivo es inválido");
+            if (string.IsNullOrWhiteSpace(publicId))
+                throw new ArgumentException("El PublicId es inválido para actualizar");
 
-            // Subir nueva imagen manteniendo la misma carpeta
-            var folder = publicId.Contains("/")
-                ? publicId.Substring(0, publicId.LastIndexOf("/"))
-                : _options.DefaultFolder;
+            var uploadParams = new ImageUploadParams
+            {
+                File = new FileDescription(newFile.FileName, newFile.OpenReadStream()),
+                PublicId = publicId,
+                Overwrite = true,
+                Invalidate = true,
+                Moderation = "aws_rek"
+            };
 
-            return await UploadImageAsync(newFile, folder);
+            var result = await _cloudinary.UploadAsync(uploadParams);
+
+            if (result.Error != null)
+                throw new Exception($"Error al actualizar imagen: {result.Error.Message}");
+
+            if (result.Moderation != null && result.Moderation.Count > 0)
+            {
+                var moderationResult = result.Moderation.FirstOrDefault(m => m.Kind == "aws_rek");
+
+                // --- CORREGIDO AQUÍ ---
+                if (moderationResult != null && moderationResult.Status == ModerationStatus.Rejected)
+                {
+                    // --- CORREGIDO AQUÍ ---
+                    await _cloudinary.DeleteResourcesAsync(ResourceType.Image, result.PublicId);
+                    throw new Exception("La nueva imagen fue rechazada por contener contenido inapropiado.");
+                }
+            }
+
+            return new MediaResponseDto
+            {
+                PublicId = result.PublicId,
+                Url = result.Url.ToString(),
+                SecureUrl = result.SecureUrl.ToString(),
+                Format = result.Format,
+                ResourceType = result.ResourceType
+            };
         }
 
         public string GetOptimizedUrl(string publicId, int width = 800, int height = 600)
@@ -122,6 +188,7 @@ namespace Explorify.Api.Publications.Infraestructure.Services
                 .Width(width)
                 .Height(height)
                 .Crop("fill")
+                .Gravity("auto")
                 .Quality("auto")
                 .FetchFormat("auto");
 
