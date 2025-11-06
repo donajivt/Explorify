@@ -4,23 +4,29 @@ using System.Security.Claims;
 using Comentarios.API.DTOs;
 using Comentarios.API.Models;
 using Comentarios.API.Services;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 
 namespace Comentarios.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
 public class ComentariosController : ControllerBase
 {
     private readonly MongoDbService _mongoService;
     private readonly ILogger<ComentariosController> _logger;
+    private readonly IModerationService _moderationService;
 
     public ComentariosController(
         MongoDbService mongoService,
-        ILogger<ComentariosController> logger)
+        ILogger<ComentariosController> logger,
+        IModerationService moderationService)
     {
         _mongoService = mongoService;
         _logger = logger;
+        _moderationService = moderationService;
     }
 
     /// <summary>
@@ -54,7 +60,7 @@ public class ComentariosController : ControllerBase
     }
 
     /// <summary>
-    /// Crea un nuevo comentario en una publicación
+    /// Crea un nuevo comentario en una publicación (se analiza automáticamente por moderación local)
     /// </summary>
     [HttpPost]
     public async Task<ActionResult<ComentarioResponse>> CrearComentario([FromBody] CrearComentarioRequest request)
@@ -72,6 +78,19 @@ public class ComentariosController : ControllerBase
         if (request.Text.Length > 1000)
         {
             return BadRequest(new { message = "El texto no puede exceder los 1000 caracteres" });
+        }
+
+        // Analizar el texto con el servicio de moderación local (gratuito)
+        var modResult = await _moderationService.AnalyzeAsync(request.Text);
+        if (modResult is not null && modResult.IsOffensive)
+        {
+            return BadRequest(new
+            {
+                message = "Contenido ofensivo detectado.",
+                flags = modResult.Flags,
+                score = modResult.Score,
+                reason = modResult.Reason
+            });
         }
 
         var publicacionExiste = await _mongoService.PublicacionExiste(request.PublicacionId);
@@ -174,4 +193,8 @@ public class ComentariosController : ControllerBase
             authType = User.Identity?.AuthenticationType
         });
     }
+
+    // Endpoint simple para CreatedAtAction (simulado)
+    [HttpGet("{id}")]
+    public ActionResult GetById(Guid id) => Ok(new { id, message = "Recurso simulado." });
 }

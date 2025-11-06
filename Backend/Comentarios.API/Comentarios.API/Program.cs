@@ -7,13 +7,13 @@ using Comentarios.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuración de MongoDB
+// Configuraciï¿½n de MongoDB
 builder.Services.Configure<MongoDbSettings>(
     builder.Configuration.GetSection("MongoDB"));
 
 builder.Services.AddSingleton<MongoDbService>();
 
-// Configuración de JWT
+// Configuraciï¿½n de JWT
 var jwtSettings = builder.Configuration.GetSection("Jwt");
 var secretKey = jwtSettings["Secret"] ?? throw new InvalidOperationException("JWT Secret no configurado");
 
@@ -36,7 +36,7 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero
     };
 
-    // Para leer el token automáticamente del header Authorization
+    // Para leer el token automï¿½ticamente del header Authorization
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
@@ -57,17 +57,17 @@ builder.Services.AddAuthorization();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
-// Configuración de Swagger con soporte JWT
+// Configuraciï¿½n de Swagger con soporte JWT
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "Comentarios API",
         Version = "v1",
-        Description = "API para gestión de comentarios en publicaciones"
+        Description = "API para gestiï¿½n de comentarios en publicaciones"
     });
 
-    // Configuración de seguridad JWT en Swagger
+    // Configuraciï¿½n de seguridad JWT en Swagger
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -75,7 +75,7 @@ builder.Services.AddSwaggerGen(c =>
         Scheme = "bearer",
         BearerFormat = "JWT",
         In = ParameterLocation.Header,
-        Description = "Ingresa tu token JWT en el campo de abajo. El prefijo 'Bearer' se agregará automáticamente."
+        Description = "Ingresa tu token JWT en el campo de abajo. El prefijo 'Bearer' se agregarï¿½ automï¿½ticamente."
     });
 
     c.AddSecurityRequirement(new OpenApiSecurityRequirement
@@ -104,6 +104,12 @@ builder.Services.AddCors(options =>
               .AllowAnyHeader();
     });
 });
+
+// Registrar servicio de moderaciÃ³n (implementaciÃ³n local gratuita)
+builder.Services.AddSingleton<IModerationService, ModerationService>();
+
+// Si usas el filtro global mostrado antes:
+// builder.Services.AddScoped<ModerationFilterAttribute>();
 
 var app = builder.Build();
 
