@@ -1,6 +1,5 @@
 package com.explorify.explorifyapp.presentation.buscar
 
-
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -8,12 +7,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -21,6 +15,7 @@ import androidx.navigation.NavController
 import com.explorify.explorifyapp.presentation.login.LoginViewModel
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Context
 import com.google.android.gms.location.LocationServices
 import androidx.compose.ui.platform.LocalContext
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -31,7 +26,7 @@ import org.osmdroid.config.Configuration
 import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
-import android.content.Context
+import android.location.Geocoder
 import com.explorify.explorifyapp.data.remote.publications.RetrofitPublicationsInstance
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.isGranted
@@ -51,14 +46,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.text.style.TextAlign
 import com.explorify.explorifyapp.data.remote.publications.RetrofitUsersInstance
 import com.explorify.explorifyapp.domain.repository.UserRepositoryImpl
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @SuppressLint("MissingPermission")
 @Composable
-fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = viewModel(),) {
-    var menuExpanded by remember { mutableStateOf(false) }
+fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = viewModel()) {
     var userName by remember { mutableStateOf("") }
-
     val repo = remember { PublicationsMapRepository(RetrofitPublicationsInstance.api) }
     val factory = remember { BuscarViewModelFactory(repo) }
     val viewModel: BuscarViewModel = viewModel(factory = factory)
@@ -70,9 +64,9 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
     val locationPermissionState = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
 
     var selectedPublication by remember { mutableStateOf<PublicationMap?>(null) }
-    val publications by viewModel::publications
     val userRepo = remember { UserRepositoryImpl(RetrofitUsersInstance.api) }
     var userMap by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+    var searchQuery by remember { mutableStateOf("") }
 
     // 🔐 Validar si hay sesión
     LaunchedEffect(Unit) {
@@ -82,25 +76,21 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                 popUpTo("buscar") { inclusive = true }
             }
         }
-        //permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-        userName=loginViewModel.userName
+
+        userName = loginViewModel.userName
         val userId = loginViewModel.userId
         val token = loginViewModel.token
 
-        // posiblemente también usar userId si lo tienes
         if (!token.isNullOrEmpty() && userId.isNotEmpty()) {
             viewModel.loadPublications(userId, token)
             try {
-                println("🚀 Solicitando lista de usuarios...") // opcional
                 val users = userRepo.getAllUsers(token)
                 userMap = users.associate { u -> u.id to u.name }
-            } catch (e: Exception) {
-                println("❌ Error al obtener usuarios: ${e.message}")
-            }
+            } catch (_: Exception) { }
         }
     }
 
-    // Configurar el mapa una sola vez
+    // Configurar el mapa
     LaunchedEffect(mapView) {
         Configuration.getInstance().load(
             context,
@@ -111,16 +101,8 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
         mapView.controller.setZoom(14.0)
     }
 
-    // ✅ Forzar que el mapa se redibuje cuando cambie el userMap
-    LaunchedEffect(userMap) {
-        mapView.invalidate()
-    }
-
-
-    // Obtener ubicación actual si tiene permiso
-    LaunchedEffect(locationPermissionState.status) { // ⚠️ aquí usamos status
-        if (locationPermissionState.status.isGranted) { // ✅ comprobar si está concedido
-            //val context = LocalContext.current
+    LaunchedEffect(locationPermissionState.status) {
+        if (locationPermissionState.status.isGranted) {
             val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                 location?.let {
@@ -129,7 +111,7 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                 }
             }
         } else {
-            locationPermissionState.launchPermissionRequest() // pedir permiso
+            locationPermissionState.launchPermissionRequest()
         }
     }
 
@@ -156,94 +138,136 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                     icon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
                     label = { Text("Buscar") },
                     selected = true,
-                    onClick = { navController.navigate("buscar") }
+                    onClick = { /* ya está aquí */ }
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
                     label = { Text("Perfil") },
                     selected = false,
-                    onClick = {navController.navigate("perfil")}
+                    onClick = { navController.navigate("perfil") }
                 )
             }
         }
     ) { paddingValues ->
-        Box(modifier = Modifier.padding(paddingValues)) {
-            AndroidView(
-                factory = { mapView },
-                modifier = Modifier.fillMaxSize()
-            ) { map ->
-
-                map.overlays.clear()
-
-                userLocation?.let { location ->
-                    // Centrar el mapa
-
-
-                    // Marcador de la ubicación del usuario
-                    val userMarker = Marker(map).apply {
-                        position = location
-                        title = "Tu ubicación"
-                        icon = ContextCompat.getDrawable(context, android.R.drawable.star_big_off)//ic_menu_mylocation
-                    }
-                    map.overlays.add(userMarker)
-                    map.controller.setZoom(15.0)
-                    map.controller.setCenter(location)
-                }
-                //map.invalidate()
-                // 🔍 Ejemplo: publicaciones cercanas (simuladas)
-               /* val publicaciones = listOf(
-                    GeoPoint(19.433, -99.133), // CDMX centro
-                    GeoPoint(19.440, -99.140), // Lugar cercano
-                )
-
-                publicaciones.forEachIndexed { index, pub ->
-                    val marker = Marker(map).apply {
-                        position = pub
-                        title = "Publicación #${index + 1}"
-                        snippet = "Cerca de ti"
-                        icon = ContextCompat.getDrawable(context, android.R.drawable.star_big_on)
-                    }
-                    map.overlays.add(marker)
-                }*/
-
-                // 🗺️ Agregar publicaciones del ViewModel al mapa
-                viewModel.publications.forEach { pub ->
-                    val lat = pub.latitud.toDoubleOrNull()
-                    val lon = pub.longitud.toDoubleOrNull()
-
-                    if (lat != null && lon != null) {
-                        val marker = Marker(map).apply {
-                            position = GeoPoint(lat, lon)
-                            title = pub.title
-                            snippet = pub.description
-                            icon = ContextCompat.getDrawable(context, android.R.drawable.star_big_on)
-                            setOnMarkerClickListener { _, _ ->
-                               /* Toast.makeText(
-                                    context,
-                                    "${pub.title}\n${pub.description}",
-                                    Toast.LENGTH_SHORT
-                                ).show()*/
-                                selectedPublication = pub
-                                true
-                            }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(Color(0xFFF5F5F5))
+        ) {
+            // 🔍 Barra de búsqueda
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = { Text("Buscar lugar o dirección...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+                singleLine = true,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = Color(0xFF3C9D6D),
+                    unfocusedBorderColor = Color.Gray,
+                    focusedContainerColor = Color.White,
+                    unfocusedContainerColor = Color.White,
+                    cursorColor = Color(0xFF3C9D6D),
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black
+                ),
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(Icons.Default.Close, contentDescription = "Limpiar")
                         }
-                        map.overlays.add(marker)
                     }
                 }
+            )
 
-                map.invalidate()
+            Button(
+                onClick = {
+                    if (searchQuery.isNotEmpty()) {
+                        val geocoder = Geocoder(context, Locale.getDefault())
+                        try {
+                            val results = geocoder.getFromLocationName(searchQuery, 1)
+                            if (!results.isNullOrEmpty()) {
+                                val loc = results[0]
+                                val point = GeoPoint(loc.latitude, loc.longitude)
+                                mapView.controller.setCenter(point)
+                                mapView.controller.setZoom(16.0)
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3C9D6D))
+            ) {
+                Text("Buscar", color = Color.White)
             }
 
-            // 🔄 Loading / error
-            if (viewModel.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            }
-            viewModel.errorMessage?.let {
-                Text(
-                    text = it,
-                    color = Color.Red,
-                    modifier = Modifier.align(Alignment.Center)
-                )
+            // 🗺️ Mapa
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(12.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color.White)
+            ) {
+                AndroidView(
+                    factory = { mapView },
+                    modifier = Modifier.fillMaxSize()
+                ) { map ->
+                    map.overlays.clear()
+
+                    userLocation?.let { location ->
+                        val userMarker = Marker(map).apply {
+                            position = location
+                            title = "Tu ubicación"
+                            icon = ContextCompat.getDrawable(context, android.R.drawable.star_big_off)
+                        }
+                        map.overlays.add(userMarker)
+                        map.controller.setCenter(location)
+                    }
+
+                    // ✅ Mostrar publicaciones cercanas
+                    viewModel.publications.forEach { pub ->
+                        val lat = pub.latitud.toDoubleOrNull()
+                        val lon = pub.longitud.toDoubleOrNull()
+                        if (lat != null && lon != null) {
+                            val marker = Marker(map).apply {
+                                position = GeoPoint(lat, lon)
+                                title = pub.title
+                                snippet = pub.description
+                                icon = ContextCompat.getDrawable(context, android.R.drawable.star_big_on)
+                                setOnMarkerClickListener { _, _ ->
+                                    selectedPublication = pub
+                                    true
+                                }
+                            }
+                            map.overlays.add(marker)
+                        }
+                    }
+
+                    map.invalidate()
+                }
+
+                if (viewModel.isLoading) {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+
+                viewModel.errorMessage?.let {
+                    Text(
+                        text = it,
+                        color = Color.Red,
+                        modifier = Modifier
+                            .align(Alignment.Center)
+                            .background(Color.White.copy(alpha = 0.9f))
+                            .padding(8.dp)
+                    )
+                }
             }
 
             // 🪟 Popup de publicación seleccionada
@@ -262,20 +286,17 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                                 .padding(16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            // 🧭 Encabezado con userId y botón "X"
+                            val authorName = remember(userMap, pub.userId) {
+                                userMap[pub.userId] ?: "Usuario desconocido"
+                            }
+
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                .background(Color(0xFF355031))
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                                    .background(Color(0xFF355031))
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
-                                //shape = RoundedCornerShape(16.dp),
                             ) {
-                                // ✅ Calcula dinámicamente el nombre del autor cuando cambie el mapa o el userId
-                                val authorName = remember(userMap, pub.userId) {
-                                    userMap[pub.userId] ?: "Usuario desconocido"
-                                }
-
                                 Text(
                                     text = authorName,
                                     style = MaterialTheme.typography.titleMedium,
@@ -297,20 +318,9 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                                         modifier = Modifier.size(18.dp)
                                     )
                                 }
-                               /* IconButton(
-                                    onClick = { selectedPublication = null },
-                                    modifier = Modifier.size(28.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "Cerrar",
-                                        tint = Color.Red
-                                    )
-                                }*/
                             }
 
                             Spacer(modifier = Modifier.height(8.dp))
-                            // 🖼 Imagen de la publicación
                             AsyncImage(
                                 model = pub.imageUrl,
                                 contentDescription = pub.title,
@@ -320,12 +330,10 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                                     .clip(RoundedCornerShape(12.dp)),
                                 contentScale = ContentScale.Crop
                             )
-
                             Spacer(modifier = Modifier.height(12.dp))
-                            Text(pub.title, style = MaterialTheme.typography.titleMedium, color = Color.Gray, textAlign = TextAlign.Start )
+                            Text(pub.title, style = MaterialTheme.typography.titleMedium, color = Color.Gray)
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(pub.description, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
-
                         }
                     }
                 }
