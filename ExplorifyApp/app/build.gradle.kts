@@ -7,11 +7,11 @@
 }
 
 android {
-    namespace = "com.example.explorifyapp"
+    namespace = "com.explorify.explorifyapp"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.explorifyapp"
+        applicationId = "com.explorify.explorifyapp"
         minSdk = 30
         targetSdk = 36
         versionCode = 1
