@@ -24,6 +24,7 @@ namespace Explorify.Api.Publications.Infraestructure.Repositories
         public async Task<Domain.Entities.Publication?> GetByIdAsync(string id) =>
             await _collection.Find(p => p.Id == id).FirstOrDefaultAsync();
 
+
         public async Task<Domain.Entities.Publication?> GetByLocationAsync(string location) =>
             await _collection.Find(p => p.Location == location).FirstOrDefaultAsync();
         public async Task<IEnumerable<Domain.Entities.Publication>> GetByUserIdAsync(string userId) =>

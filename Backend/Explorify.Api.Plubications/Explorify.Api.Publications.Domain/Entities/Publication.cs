@@ -4,6 +4,7 @@ using System;
 
 namespace Explorify.Api.Publications.Domain.Entities
 {
+    [BsonIgnoreExtraElements]
     public class Publication
     {
         [BsonId]
