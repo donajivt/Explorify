@@ -1,0 +1,6 @@
+@Explorify.Api.Likes_HostAddress = http://localhost:5230
+
+GET {{Explorify.Api.Likes_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
