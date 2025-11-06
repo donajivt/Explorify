@@ -4,6 +4,9 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -13,6 +16,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -27,7 +31,7 @@ fun RegisterScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-
+    var passwordVisible by remember { mutableStateOf(false) }
     var acceptedTerms by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
@@ -111,8 +115,21 @@ fun RegisterScreen(navController: NavController) {
                     value = password,
                     onValueChange = { password = it },
                     label = { Text("Contraseña") },
-                    visualTransformation = PasswordVisualTransformation(),
+                    visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                     modifier = Modifier.fillMaxWidth(),
+                    trailingIcon = {
+                        val image = if (passwordVisible)
+                            Icons.Filled.Visibility // icono "ojo abierto"
+                        else
+                            Icons.Filled.VisibilityOff // icono "ojo tachado"
+
+                        IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                            Icon(
+                                imageVector = image,
+                                contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
+                            )
+                        }
+                    },
                     colors = OutlinedTextFieldDefaults.colors(
                         unfocusedTextColor = Color.Gray,
                         focusedTextColor = Color.DarkGray

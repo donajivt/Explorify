@@ -16,8 +16,10 @@ import androidx.navigation.NavController
 import com.explorify.explorifyapp.R
 import kotlinx.coroutines.launch
 import androidx.compose.material3.MaterialTheme
-
-
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 
 @Composable
 fun LoginScreen(navController: NavController) {
@@ -25,7 +27,7 @@ fun LoginScreen(navController: NavController) {
 
     var userName by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-
+    var passwordVisible by remember { mutableStateOf(false) }
     var userNameError by remember { mutableStateOf(false) }
     var passwordError by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
@@ -105,9 +107,22 @@ fun LoginScreen(navController: NavController) {
                             if (passwordError) passwordError = false
                         },
                         label = { Text("Contraseña") },
-                        visualTransformation = PasswordVisualTransformation(),
+                        visualTransformation =  if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
                         isError = passwordError,
+                        trailingIcon = {
+                            val image = if (passwordVisible)
+                                Icons.Filled.Visibility // icono "ojo abierto"
+                            else
+                                Icons.Filled.VisibilityOff // icono "ojo tachado"
+
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(
+                                    imageVector = image,
+                                    contentDescription = if (passwordVisible) "Ocultar contraseña" else "Mostrar contraseña"
+                                )
+                            }
+                        },
                         supportingText = {
                             if (passwordError) {
                                 Text(
