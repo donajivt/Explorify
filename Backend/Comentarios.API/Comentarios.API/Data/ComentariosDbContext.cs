@@ -19,8 +19,8 @@ public class ComentariosDbContext : DbContext
         modelBuilder.Entity<Comentario>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Texto).IsRequired().HasMaxLength(1000);
-            entity.Property(e => e.UsuarioId).IsRequired();
+            entity.Property(e => e.Text).IsRequired().HasMaxLength(1000);
+            entity.Property(e => e.UserId).IsRequired();
             entity.Property(e => e.PublicacionId).IsRequired();
         });
     }
