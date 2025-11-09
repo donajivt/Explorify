@@ -1,4 +1,5 @@
-﻿using Logueo.Application.Interfaces;
+﻿using Logueo.Application.Dtos;
+using Logueo.Application.Interfaces;
 using Logueo.Domain.Entities;
 using Logueo.Infrastructure.Persistence;
 using MongoDB.Driver;
@@ -30,6 +31,11 @@ namespace Logueo.Infrastructure.Repositories
         {
             var u = await GetByEmailAsync(email);
             return u?.Roles ?? new List<string>();
+        }
+
+        public async Task<IEnumerable<User>> GetAllUsers()
+        {
+            return (IEnumerable<User>)await _col.Find(_ => true).ToListAsync();
         }
     }
 }

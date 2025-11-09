@@ -1,4 +1,5 @@
-﻿using Logueo.Domain.Entities;
+﻿using Logueo.Application.Dtos;
+using Logueo.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,5 +14,6 @@ namespace Logueo.Application.Interfaces
         Task AddAsync(User user);
         Task<bool> AddRoleAsync(string email, string roleName);
         Task<IReadOnlyList<string>> GetRolesAsync(string email);
+        Task<IEnumerable<User>> GetAllUsers();
     }
 }

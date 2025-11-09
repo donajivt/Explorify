@@ -1,6 +1,7 @@
 ﻿using Logueo.Application.Dtos;
 using Logueo.Application.Interfaces;
 using Logueo.Domain.Entities;
+using Logueo.Infrastructure.Repositories;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -61,5 +62,19 @@ namespace Logueo.Infrastructure.Auth
 
         public Task<bool> AssignRole(string email, string roleName)
             => _users.AddRoleAsync(email.Trim().ToLowerInvariant(), roleName.Trim());
+
+        public async Task<IEnumerable<UserDto>> GetUsers()
+        {
+            var users = await _users.GetAllUsers();
+
+            var userDtos = users.Select(u => new UserDto
+            {
+                Id = u.Id,
+                Name = u.Name,
+                Email = u.Email
+            }).ToList();
+
+            return userDtos;
+        }
     }
 }

@@ -294,6 +294,9 @@
         }
       },
       "Logueo.Domain/1.0.0": {
+        "dependencies": {
+          "MongoDB.Bson": "3.5.0"
+        },
         "runtime": {
           "Logueo.Domain.dll": {
             "assemblyVersion": "1.0.0.0",

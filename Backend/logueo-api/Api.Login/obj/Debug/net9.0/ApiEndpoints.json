@@ -1,6 +1,16 @@
 [
   {
     "ContainingType": "Api.Login.Controllers.AuthApiController",
+    "Method": "GetAll",
+    "RelativePath": "api/AuthApi",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Api.Login.Controllers.AuthApiController",
     "Method": "AssignRole",
     "RelativePath": "api/AuthApi/assign-role",
     "HttpMethod": "POST",

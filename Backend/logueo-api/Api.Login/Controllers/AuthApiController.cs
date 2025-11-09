@@ -64,5 +64,24 @@ namespace Api.Login.Controllers
             _response.Message = "Sesión cerrada correctamente";
             return Ok(_response);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAll()
+        {
+            var users = await _authService.GetUsers();
+
+            if (users == null || !users.Any())
+            {
+                _response.IsSuccess = false;
+                _response.Message = "No se encontraron usuarios";
+                return NotFound(_response);
+            }
+
+            _response.IsSuccess = true;
+            _response.Message = "Usuarios obtenidos correctamente";
+            _response.Result = users;
+            return Ok(_response);
+        }
+
     }
 }

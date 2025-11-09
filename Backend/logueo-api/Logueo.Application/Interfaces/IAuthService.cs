@@ -12,5 +12,6 @@ namespace Logueo.Application.Interfaces
         Task<string> Register(RegistrationRequestDto registrationRequestDto);
         Task<LoginResponseDto> Login(LoginRequestDto loginRequestDto);
         Task<bool> AssignRole(string email, string roleName);
+        Task<IEnumerable<UserDto>> GetUsers();
     }
 }
