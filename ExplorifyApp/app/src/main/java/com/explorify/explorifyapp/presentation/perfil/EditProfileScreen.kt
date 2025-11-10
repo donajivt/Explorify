@@ -284,6 +284,35 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
     }
 }
 
+
+
+@Composable
+fun ProfileField(
+    label: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    icon: ImageVector
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(label) },
+        trailingIcon = {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = Color(0xFF3E4D2E)
+            )
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        shape = RoundedCornerShape(12.dp),
+        singleLine = true,
+
+    )
+}
+
 /*
 @Composable
 fun ProfileField(
@@ -328,31 +357,3 @@ colors = OutlinedTextFieldDefaults.colors(
         )
 
 */
-
-@Composable
-fun ProfileField(
-    label: String,
-    value: String,
-    onValueChange: (String) -> Unit,
-    icon: ImageVector
-) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label) },
-        trailingIcon = {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                tint = Color(0xFF3E4D2E)
-            )
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 6.dp),
-        shape = RoundedCornerShape(12.dp),
-        singleLine = true,
-
-    )
-}
-

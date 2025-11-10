@@ -34,7 +34,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.ExitToApp
 import com.explorify.explorifyapp.data.remote.users.RetrofitUsersInstance
 import com.explorify.explorifyapp.domain.repository.UserRepository
-
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -199,7 +200,7 @@ fun PerfilScreen(navController: NavController,
     }
 
     // 🗑️ Diálogo de eliminar cuenta
-    if (showDeleteDialog) {
+    /*if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
             confirmButton = {
@@ -231,7 +232,113 @@ fun PerfilScreen(navController: NavController,
             text = { Text("¿Seguro que deseas eliminar tu cuenta? Esta acción no se puede deshacer.") }
         )
     }
+    */
+
+    // 🗑️ Diálogo de eliminar cuenta con validación de contraseña
+    if (showDeleteDialog) {
+        var passwordInput by remember { mutableStateOf("") }
+        var deleteMessage by remember { mutableStateOf("") }
+        val userEmail = userData?.userEmail ?: ""
+
+        AlertDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            title = { Text("Confirmar eliminación") },
+            text = {
+                Column {
+                    Text("Para confirmar la eliminación, ingresa tu contraseña:")
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = passwordInput,
+                        onValueChange = { passwordInput = it },
+                        label = { Text("Contraseña") },
+                        visualTransformation = PasswordVisualTransformation(),
+                        singleLine = true
+                    )
+                    if (deleteMessage.isNotEmpty()) {
+                        Text(
+                            deleteMessage,
+                            color = Color.Red,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        if (passwordInput.isBlank()) {
+                            deleteMessage = "Por favor, ingresa tu contraseña"
+                            return@TextButton
+                        }
+
+                        // 1️⃣ Verificar credenciales sin guardar token
+                        viewModel.verifyCredentials(userEmail, passwordInput) { success, msg ->
+
+                            if (success) {
+                                val currentToken = userData?.token ?: ""
+                                Log.d("DeleteAccount", "Token: $currentToken")
+                                // 2️⃣ Si login correcto → eliminar cuenta
+                                perfilViewModel.deleteAccount("$currentToken") { ok, message ->
+                                    if (ok) {
+                                        deleteMessage = "Cuenta eliminada correctamente"
+                                        showDeleteDialog = false
+                                        // 3️⃣ Cerrar sesión y volver al login
+                                        viewModel.logout {
+                                            navController.navigate("login") {
+                                                popUpTo("inicio") { inclusive = true }
+                                            }
+                                        }
+                                    } else {
+                                        deleteMessage = "Error al eliminar: $message"
+                                    }
+                                }
+                            } else {
+                                deleteMessage = msg
+                            }
+                        }
+
+                       /* viewModel.verifyCredentials(userEmail, passwordInput) { success, msg, tokenTemp ->
+                            Log.d("DeleteAccount", "Token temporal: $tokenTemp")
+                            if (success && tokenTemp != null) {
+                                // 2️⃣ Si login correcto → eliminar cuenta
+                                perfilViewModel.deleteAccount("Bearer $tokenTemp") { ok, message ->
+                                    if (ok) {
+                                        deleteMessage = "Cuenta eliminada correctamente"
+                                        showDeleteDialog = false
+                                        // 3️⃣ Cerrar sesión y volver al login
+                                        viewModel.logout {
+                                            navController.navigate("login") {
+                                                popUpTo("inicio") { inclusive = true }
+                                            }
+                                        }
+                                    } else {
+                                        deleteMessage = "Error al eliminar: $message"
+                                    }
+                                }
+                            } else {
+                                deleteMessage = msg
+                            }
+                        }
+                        */
+                    }
+                ) {
+                    Text("Eliminar", color = Color.Red)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
 }
+
+
+
+
 
 
 // 👇 Aquí va el botón reutilizable

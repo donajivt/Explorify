@@ -67,6 +67,40 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     var role:String? =""
         private set
 
+   fun verifyCredentials(email: String, password: String, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val response = repository.login(email, password)
+                if (response.isSuccess && response.result != null) {
+                    val tempToken = response.result.token
+                    onResult(true, "Credenciales válidas")
+                } else {
+                    onResult(false, response.message ?: "Contraseña incorrectos")
+                }
+            } catch (e: Exception) {
+                onResult(false, "Error: ${e.localizedMessage}")
+            }
+        }
+    }
+
+
+ /* fun verifyCredentials(email: String, password: String, onResult: (Boolean, String, String?) -> Unit) {
+      viewModelScope.launch {
+          try {
+              val response = repository.login(email, password)
+              if (response.isSuccess && response.result != null) {
+                  val tempToken = response.result.token
+                  onResult(true, "Credenciales válidas", tempToken)
+              } else {
+                  onResult(false, response.message ?: "Correo o contraseña incorrectos", null)
+              }
+          } catch (e: Exception) {
+              onResult(false, "Error de red: ${e.localizedMessage}", null)
+          }
+      }
+  }
+*/
+
     fun login(username: String, password: String) {
         if (_isLoading.value) return
         viewModelScope.launch {

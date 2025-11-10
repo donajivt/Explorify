@@ -32,3 +32,14 @@ data class User(
     @SerializedName("name")
     val name: String
 )
+
+data class EmailResponse(
+    @SerializedName("result")
+    val result: List<User>,
+
+    @SerializedName("isSuccess")
+    val isSuccess: Boolean,
+
+    @SerializedName("message")
+    val message: String?
+)

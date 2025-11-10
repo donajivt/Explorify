@@ -19,7 +19,7 @@ class PerfilViewModel(
                 if (response.isSuccessful) {
                     onResult(true, "Cuenta eliminada correctamente")
                 } else {
-                    onResult(false, "Error: ${response.code()}")
+                    onResult(false, "Error de deleteAccount: ${response.message()}")
                 }
             } catch (e: IOException) {
                 onResult(false, "Error de conexión")

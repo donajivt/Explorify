@@ -1,10 +1,12 @@
 package com.explorify.explorifyapp.data.remote.auth
 
+import com.explorify.explorifyapp.data.remote.dto.EmailResponse
 import com.explorify.explorifyapp.data.remote.dto.LoginRequest
 import com.explorify.explorifyapp.data.remote.dto.LoginResponse
 import com.explorify.explorifyapp.data.remote.dto.RegisterRequest
 import retrofit2.http.Body
 import retrofit2.http.POST
+import retrofit2.http.GET
 
 interface ApiService {
     @POST("api/AuthApi/login") // Ruta de tu API
@@ -13,4 +15,6 @@ interface ApiService {
     @POST("api/AuthApi/register")
     suspend fun register(@Body request: RegisterRequest): LoginResponse
 
+    @GET("api/AuthApi")
+    suspend fun getUsers(): EmailResponse
 }

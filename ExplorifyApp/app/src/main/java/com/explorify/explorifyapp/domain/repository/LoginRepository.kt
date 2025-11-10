@@ -5,12 +5,16 @@ import com.explorify.explorifyapp.data.remote.auth.RetrofitInstance
 import com.explorify.explorifyapp.data.remote.room.AppDatabase
 import com.explorify.explorifyapp.data.remote.room.AuthToken
 import android.content.Context
+import com.explorify.explorifyapp.data.remote.dto.EmailResponse
 
 class LoginRepository(context: Context) {
 
     suspend fun login(username: String, password: String) =
         RetrofitInstance.api.login(LoginRequest(username, password))
 
+    suspend fun getUsers(): EmailResponse {
+       return RetrofitInstance.api.getUsers()
+    }
     //ROOM
     private val tokenDao = AppDatabase.getInstance(context).authTokenDao()
 

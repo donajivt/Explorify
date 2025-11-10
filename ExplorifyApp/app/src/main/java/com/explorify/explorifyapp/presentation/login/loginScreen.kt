@@ -45,6 +45,7 @@ fun LoginScreen(navController: NavController) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
+               // .height(300.dp)
                 .padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
@@ -58,7 +59,8 @@ fun LoginScreen(navController: NavController) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
-                    .wrapContentHeight(),
+                    .height(460.dp),
+                    //.wrapContentHeight(),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
             ) {
@@ -78,7 +80,7 @@ fun LoginScreen(navController: NavController) {
                             userName = it
                             if (userNameError) userNameError = false
                         },
-                        label = { Text("Usuario") },
+                        label = { Text("Correo Electrónico") },
                         modifier = Modifier.fillMaxWidth(),
                         isError = userNameError, // ← activa borde rojo
                         supportingText = {
