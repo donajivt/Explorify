@@ -174,10 +174,10 @@ C:\Users\vania\OneDrive\Documentos\Explorify\Explorify\Backend\logueo-api\Api.Lo
 C:\Users\vania\OneDrive\Documentos\Explorify\Explorify\Backend\logueo-api\Api.Login\obj\Debug\net9.0\staticwebassets.build.json.cache
 C:\Users\vania\OneDrive\Documentos\Explorify\Explorify\Backend\logueo-api\Api.Login\obj\Debug\net9.0\staticwebassets.development.json
 C:\Users\vania\OneDrive\Documentos\Explorify\Explorify\Backend\logueo-api\Api.Login\obj\Debug\net9.0\staticwebassets.build.endpoints.json
-C:\Users\vania\OneDrive\Documentos\Explorify\Explorify\Backend\logueo-api\Api.Login\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
 C:\Users\vania\OneDrive\Documentos\Explorify\Explorify\Backend\logueo-api\Api.Login\obj\Debug\net9.0\Api.Login.csproj.Up2Date
 C:\Users\vania\OneDrive\Documentos\Explorify\Explorify\Backend\logueo-api\Api.Login\obj\Debug\net9.0\Api.Login.dll
 C:\Users\vania\OneDrive\Documentos\Explorify\Explorify\Backend\logueo-api\Api.Login\obj\Debug\net9.0\refint\Api.Login.dll
 C:\Users\vania\OneDrive\Documentos\Explorify\Explorify\Backend\logueo-api\Api.Login\obj\Debug\net9.0\Api.Login.pdb
 C:\Users\vania\OneDrive\Documentos\Explorify\Explorify\Backend\logueo-api\Api.Login\obj\Debug\net9.0\Api.Login.genruntimeconfig.cache
 C:\Users\vania\OneDrive\Documentos\Explorify\Explorify\Backend\logueo-api\Api.Login\obj\Debug\net9.0\ref\Api.Login.dll
+C:\Users\vania\OneDrive\Documentos\Explorify\Explorify\Backend\logueo-api\Api.Login\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt

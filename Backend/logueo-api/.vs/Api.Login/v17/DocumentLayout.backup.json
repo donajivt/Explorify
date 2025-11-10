@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{9C52BE3B-6775-4E09-B85F-CE7FEF811DB6}|Api.Login\\Api.Login.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\api.login\\properties\\publishprofiles\\ftpprofile.pubxml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
+      "RelativeMoniker": "D:0:0:{9C52BE3B-6775-4E09-B85F-CE7FEF811DB6}|Api.Login\\Api.Login.csproj|solutionrelative:api.login\\properties\\publishprofiles\\ftpprofile.pubxml||{FA3CD31E-987B-443A-9B81-186104E8DAC1}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{9C52BE3B-6775-4E09-B85F-CE7FEF811DB6}|Api.Login\\Api.Login.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\api.login\\controllers\\authapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{9C52BE3B-6775-4E09-B85F-CE7FEF811DB6}|Api.Login\\Api.Login.csproj|solutionrelative:api.login\\controllers\\authapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -58,7 +62,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Bookmark",
@@ -66,7 +70,20 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 0,
+              "Title": "FTPProfile.pubxml",
+              "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Api.Login\\Properties\\PublishProfiles\\FTPProfile.pubxml",
+              "RelativeDocumentMoniker": "Api.Login\\Properties\\PublishProfiles\\FTPProfile.pubxml",
+              "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Api.Login\\Properties\\PublishProfiles\\FTPProfile.pubxml",
+              "RelativeToolTip": "Api.Login\\Properties\\PublishProfiles\\FTPProfile.pubxml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003576|",
+              "WhenOpened": "2025-11-09T16:41:20.344Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "UserRepository.cs",
               "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Infrastructure\\Repositories\\UserRepository.cs",
               "RelativeDocumentMoniker": "Logueo.Infrastructure\\Repositories\\UserRepository.cs",
@@ -74,12 +91,11 @@
               "RelativeToolTip": "Logueo.Infrastructure\\Repositories\\UserRepository.cs",
               "ViewState": "AgIAABcAAAAAAAAAAAAIwCMAAAAqAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T16:30:49.288Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-05T16:30:49.288Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "AuthApiController.cs",
               "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Api.Login\\Controllers\\AuthApiController.cs",
               "RelativeDocumentMoniker": "Api.Login\\Controllers\\AuthApiController.cs",
@@ -92,7 +108,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "AuthService.cs",
               "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Infrastructure\\Auth\\AuthService.cs",
               "RelativeDocumentMoniker": "Logueo.Infrastructure\\Auth\\AuthService.cs",
@@ -100,12 +116,11 @@
               "RelativeToolTip": "Logueo.Infrastructure\\Auth\\AuthService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAEkAAAAfAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-09T08:05:15.959Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-09T08:05:15.959Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "IUserRepository.cs",
               "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Interfaces\\IUserRepository.cs",
               "RelativeDocumentMoniker": "Logueo.Application\\Interfaces\\IUserRepository.cs",
@@ -113,12 +128,11 @@
               "RelativeToolTip": "Logueo.Application\\Interfaces\\IUserRepository.cs",
               "ViewState": "AgIAAAYAAAAAAAAAAAAAABAAAAAdAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-09T08:04:11.539Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-09T08:04:11.539Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "RegistrationRequestDto.cs",
               "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Dtos\\RegistrationRequestDto.cs",
               "RelativeDocumentMoniker": "Logueo.Application\\Dtos\\RegistrationRequestDto.cs",
@@ -126,12 +140,11 @@
               "RelativeToolTip": "Logueo.Application\\Dtos\\RegistrationRequestDto.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-09T08:02:46.091Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-09T08:02:46.091Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "RegisterRequestDto.cs",
               "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Dtos\\RegisterRequestDto.cs",
               "RelativeDocumentMoniker": "Logueo.Application\\Dtos\\RegisterRequestDto.cs",
@@ -139,12 +152,11 @@
               "RelativeToolTip": "Logueo.Application\\Dtos\\RegisterRequestDto.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-09T08:02:37.014Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-09T08:02:37.014Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "LoginResponseDto.cs",
               "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Dtos\\LoginResponseDto.cs",
               "RelativeDocumentMoniker": "Logueo.Application\\Dtos\\LoginResponseDto.cs",
@@ -152,12 +164,11 @@
               "RelativeToolTip": "Logueo.Application\\Dtos\\LoginResponseDto.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-09T08:02:33.68Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-09T08:02:33.68Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
+              "DocumentIndex": 8,
               "Title": "LoginRequestDto.cs",
               "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Dtos\\LoginRequestDto.cs",
               "RelativeDocumentMoniker": "Logueo.Application\\Dtos\\LoginRequestDto.cs",
@@ -165,12 +176,11 @@
               "RelativeToolTip": "Logueo.Application\\Dtos\\LoginRequestDto.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-09T08:02:28.012Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-09T08:02:28.012Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 9,
               "Title": "User.cs",
               "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Domain\\Entities\\User.cs",
               "RelativeDocumentMoniker": "Logueo.Domain\\Entities\\User.cs",
@@ -178,12 +188,11 @@
               "RelativeToolTip": "Logueo.Domain\\Entities\\User.cs",
               "ViewState": "AgIAAAMAAAAAAAAAAAAAAA4AAAA4AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T02:52:24.747Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-03T02:52:24.747Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 11,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Api.Login\\appsettings.json",
               "RelativeDocumentMoniker": "Api.Login\\appsettings.json",
@@ -195,7 +204,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
+              "DocumentIndex": 10,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Api.Login\\Program.cs",
               "RelativeDocumentMoniker": "Api.Login\\Program.cs",
@@ -207,7 +216,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 11,
+              "DocumentIndex": 12,
               "Title": "launchSettings.json",
               "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Api.Login\\Properties\\launchSettings.json",
               "RelativeDocumentMoniker": "Api.Login\\Properties\\launchSettings.json",
