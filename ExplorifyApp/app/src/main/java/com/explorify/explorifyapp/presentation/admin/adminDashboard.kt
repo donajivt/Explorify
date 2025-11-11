@@ -19,13 +19,67 @@ import androidx.compose.material.icons.filled.BorderColor
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
+import com.explorify.explorifyapp.data.remote.model.Publication
+import java.time.OffsetDateTime
+import java.time.format.DateTimeFormatter
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import kotlinx.coroutines.launch
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.explorify.explorifyapp.data.remote.room.AppDatabase
+import com.explorify.explorifyapp.presentation.publications.list.PublicationsListModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import android.net.Uri
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.text.font.FontWeight
+import com.explorify.explorifyapp.data.remote.publications.RetrofitUsersInstance
+import com.explorify.explorifyapp.domain.repository.UserRepositoryImpl
+import com.explorify.explorifyapp.presentation.admin.AdminDashboard
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AdminDashboard(navController: NavController,
+fun AdminDashboard( vm: PublicationsListModel,
+                    navController: NavController,
+                    //onCreateClick: (String) -> Unit,
+                    onOpenDetail: (String) -> Unit,
                  viewModel: LoginViewModel = viewModel()) {
     var menuExpanded by remember { mutableStateOf(false) }
 
+    val context = LocalContext.current
+    val state = vm.uiState
+    val swipeState = rememberSwipeRefreshState(isRefreshing = state.loading)
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    // 🧠 Mapa de usuarios (id → nombre)
+    val userRepo = remember { UserRepositoryImpl(RetrofitUsersInstance.api) }
+    var userMap by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+
+    // 🔹 Obtener token para cargar publicaciones y usuarios
+    var token by remember { mutableStateOf<String?>(null) }
     // 🔐 Validar si hay sesión
     LaunchedEffect(Unit) {
         val isLoggedIn = viewModel.isLoggedIn()
@@ -36,10 +90,53 @@ fun AdminDashboard(navController: NavController,
         }
     }
 
+    // 🔹 Carga inicial de publicaciones y usuarios
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO) {
+            val dao = AppDatabase.getInstance(context).authTokenDao()
+            token = dao.getToken()?.token
+        }
+        token?.let {
+            vm.load(it)
+            try {
+                val users = userRepo.getAllUsers(it)
+                userMap = users.associate { u -> u.id to u.name }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    println("🧭 MAP: ${userMap.keys}")
+    println("📋 POSTS: ${state.items.map { it.userId }}")
+
+    // 🔹 Manejo de errores con Snackbar
+    LaunchedEffect(state.error) {
+        state.error?.let { msg ->
+            val readable = when {
+                msg.contains("Unable to resolve host", true) ||
+                        msg.contains("Failed to connect", true) ||
+                        msg.contains("timeout", true) -> "Sin conexión a internet. Verifica tu red."
+                else -> "Error: $msg"
+            }
+            scope.launch {
+                snackbarHostState.showSnackbar(readable, withDismissAction = true)
+            }
+        }
+    }
+
+    // 🔹 Obtener userId del Room (para crear)
+    val userId by produceState<String?>(initialValue = null) {
+        val id: String? = withContext(Dispatchers.IO) {
+            AppDatabase.getInstance(context).authTokenDao().getToken()?.userId
+        }
+        value = id
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Admin") },
+                title = { Text("Panel Lista de Aventuras") },
                 actions = {
                     // Menú de perfil con logout
                     Box {
@@ -92,19 +189,209 @@ fun AdminDashboard(navController: NavController,
                     icon = { Icon(Icons.Default.BorderColor, contentDescription = "Buscar") },
                     label = { Text("Reportes") },
                     selected = false,
-                    onClick = {  } //navController.navigate("buscar")
+                    onClick = {  } //navController.navigate("reportesList")
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
                     label = { Text("Perfil") },
                     selected = false,
-                    onClick = { }//navController.navigate("perfil")
+                    onClick = { navController.navigate("perfilAdmin")}//
                 )
             }
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
-            // Tu contenido de publicaciones va aquí
+        Box(/*modifier = Modifier.padding(innerPadding)*/) {
+            SwipeRefresh(
+                state = swipeState,
+                onRefresh = {
+                    scope.launch {
+                        if (!token.isNullOrEmpty()) {
+                            vm.refresh(token!!)
+                            try {
+                                val users = userRepo.getAllUsers(token!!)
+                                userMap = users.associate { u -> u.id to u.name }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                            }
+                        }
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+            ) {
+                when {
+                    state.loading && state.items.isEmpty() -> {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                    state.error != null && state.items.isEmpty() -> {
+                        Column(
+                            Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text("Error: ${state.error}", color = MaterialTheme.colorScheme.error)
+                            Spacer(Modifier.height(8.dp))
+                            OutlinedButton(onClick = {
+                                scope.launch {
+                                    if (!token.isNullOrEmpty()) {
+                                        vm.refresh(token!!)
+                                    }
+                                }
+                            }) {
+                                Text("Reintentar")
+                            }
+                        }
+                    }
+                    else -> {
+                        LazyColumn(
+                            contentPadding = PaddingValues(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            items(state.items, key = { it.id }) { pub ->
+                                PublicationCard(
+                                    publication = pub,
+                                    onOpen = { onOpenDetail(pub.id) },
+                                    onViewMap = {
+                                        val lat = pub.latitud.toString()
+                                        val lon = pub.longitud.toString()
+                                        val name = Uri.encode(pub.location)
+                                        navController.navigate("map/$lat/$lon/$name")
+                                    },
+                                    authorName = userMap[pub.userId] ?: "Usuario desconocido"
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
         }
     }
+
+@Composable
+private fun PublicationCard(
+    publication: Publication,
+    onOpen: () -> Unit,
+    onViewMap: () -> Unit,
+    authorName: String
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onOpen() }
+            .shadow(6.dp, shape = RoundedCornerShape(20.dp), clip = false)
+            .background(Color.Transparent)
+            .border(
+                width = 1.2.dp,
+                color = Color(0xFFBFAE94).copy(alpha = 0.8f),
+                shape = RoundedCornerShape(20.dp)
+            ),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1B1C)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+    ) {
+        Column {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(220.dp)
+                    .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+            ) {
+                AsyncImage(
+                    model = publication.imageUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.matchParentSize()
+                )
+                Box(
+                    Modifier
+                        .matchParentSize()
+                        .background(
+                            brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    Color.Black.copy(alpha = 0.55f)
+                                ),
+                                startY = 150f
+                            )
+                        )
+                )
+                Text(
+                    text = publication.title,
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleLarge.copy(
+                        fontWeight = FontWeight.Bold
+                    ),
+                    modifier = Modifier
+                        .align(Alignment.BottomStart)
+                        .padding(16.dp)
+                )
+            }
+
+            Column(Modifier.padding(16.dp)) {
+                Text(
+                    text = publication.description,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+
+                Spacer(Modifier.height(10.dp))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Column {
+                            Text(
+                                text = authorName,
+                                style = MaterialTheme.typography.labelLarge.copy(color = Color.White)
+                            )
+                            Text(
+                                text = publication.createdAt.formatAsDate(),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.outline
+                            )
+                        }
+                    }
+
+                    TextButton(onClick = onViewMap) {
+                        Icon(
+                            Icons.Outlined.LocationOn,
+                            contentDescription = "Ver en mapa",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            text = "Ver ubicación",
+                            color = MaterialTheme.colorScheme.primary,
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun String.formatAsDate(): String = try {
+    val odt = OffsetDateTime.parse(this)
+    odt.toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+} catch (_: Exception) {
+    this
 }

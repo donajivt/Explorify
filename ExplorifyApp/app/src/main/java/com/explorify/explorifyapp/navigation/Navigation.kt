@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import com.explorify.explorifyapp.data.remote.publications.RetrofitPublicationsInstance
 import com.explorify.explorifyapp.domain.repository.PublicationRepositoryImpl
 import com.explorify.explorifyapp.domain.usecase.publications.PublicationUseCases
+import com.explorify.explorifyapp.presentation.admin.listUsers.UserListScreen
 import com.explorify.explorifyapp.presentation.publications.list.PublicationsListModel
 import com.explorify.explorifyapp.presentation.main.MainScaffold
 import com.explorify.explorifyapp.presentation.publications.list.screens.EditPublicationScreen
@@ -26,6 +27,7 @@ import com.explorify.explorifyapp.presentation.publications.list.CreatePublicati
 import com.explorify.explorifyapp.presentation.publications.list.screens.CreatePublicationScreen
 import com.explorify.explorifyapp.presentation.publications.list.screens.MapPickerScreen
 import com.explorify.explorifyapp.presentation.publications.list.screens.PublicationMapScreen
+import com.explorify.explorifyapp.presentation.admin.perfil.PerfilAdminScreen
 
 @Composable
 fun AppNavigation() {
@@ -72,7 +74,18 @@ fun AppNavigation() {
         }
 
         composable("adminDashboard") {
-            AdminDashboard( navController = navController)
+            AdminDashboard( vm = publicationsVM,
+                navController = navController,
+                onOpenDetail = { /* luego se implementa detalle */
+                })
+        }
+
+        composable("perfilAdmin"){
+            PerfilAdminScreen( navController = navController)
+        }
+
+        composable("userlist"){
+            UserListScreen( navController = navController)
         }
 
         composable("perfil") {

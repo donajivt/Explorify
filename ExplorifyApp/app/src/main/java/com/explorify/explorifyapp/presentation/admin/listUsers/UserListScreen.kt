@@ -1,0 +1,193 @@
+package com.explorify.explorifyapp.presentation.admin.listUsers
+
+import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.Divider
+import androidx.compose.foundation.lazy.items
+import com.explorify.explorifyapp.data.remote.dto.User
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.unit.dp
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.BorderColor
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.navigation.NavController
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun UserListScreen(navController: NavController,
+    userListViewModel: UserListViewModel = viewModel()
+) {
+    val users by userListViewModel.users.collectAsState() // Observamos el flujo de usuarios
+
+    // Llamamos a getUsers() cuando se entra por primera vez a la pantalla
+    LaunchedEffect(Unit) {
+        userListViewModel.getUsers()
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Lista de Usuarios") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                    }
+                },
+            )
+        },
+        bottomBar = {
+            NavigationBar {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
+                    label = { Text("Inicio") },
+                    selected = false,
+                    onClick = { navController.navigate("adminDashboard") }
+                )
+                /* NavigationBarItem(
+                     icon = { Icon(Icons.Default.BarChart, contentDescription = "Buscar") },
+                     label = { Text("Estadisticas") },
+                     selected = false,
+                     onClick = { } //navController.navigate("buscar")
+                 )*/
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.BorderColor, contentDescription = "Buscar") },
+                    label = { Text("Reportes") },
+                    selected = false,
+                    onClick = {  } //navController.navigate("reportesList")
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
+                    label = { Text("Perfil") },
+                    selected = true,
+                    onClick = { navController.navigate("perfilAdmin")}//
+                )
+            }
+        }
+    ) { paddingValues ->
+        if (users.isEmpty()) {
+            // Si no hay usuarios, mostramos un texto
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("No hay usuarios disponibles")
+            }
+        } else {
+            // Lista de usuarios
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                items(users) { user ->
+                    UserItem(user)
+                    Divider() // separa visualmente los usuarios
+                }
+            }
+        }
+    }
+}
+
+
+
+@Composable
+fun UserItem(user: User) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // Icono al lado del nombre
+        /*
+          Box(
+            modifier = Modifier
+                .size(50.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFE0E0E0)),
+            contentAlignment = Alignment.Center
+        ) {
+            if (user.imageUrl?.isNotBlank() == true) {
+                AsyncImage(
+                    model = user.imageUrl,
+                    contentDescription = "Foto de ${user.name}",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                )
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Usuario sin foto",
+                    tint = Color.Gray,
+                    modifier = Modifier.size(28.dp)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+        */
+        Box(
+            modifier = Modifier
+                .size(50.dp)
+                .clip(CircleShape)
+                .background(Color(0xFFE0E0E0)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Default.Person,
+                contentDescription = "Usuario",
+                tint =Color.Gray, // MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .size(40.dp)
+                    .padding(end = 12.dp)
+            )
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Column {
+            Text(
+                text = user.name,
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Text(
+                text = user.email,
+                style = MaterialTheme.typography.bodyMedium,
+                color = Color.Gray
+            )
+        }
+    }
+}

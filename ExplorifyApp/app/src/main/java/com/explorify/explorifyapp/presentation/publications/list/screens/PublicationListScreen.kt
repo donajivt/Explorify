@@ -97,7 +97,6 @@ fun PublicationListScreen(
     println("🧭 MAP: ${userMap.keys}")
     println("📋 POSTS: ${state.items.map { it.userId }}")
 
-
     // 🔹 Manejo de errores con Snackbar
     LaunchedEffect(state.error) {
         state.error?.let { msg ->
