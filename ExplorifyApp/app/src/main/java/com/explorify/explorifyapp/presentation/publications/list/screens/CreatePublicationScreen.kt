@@ -2,6 +2,7 @@ package com.explorify.explorifyapp.presentation.publications.list.screens
 
 import android.net.Uri
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -196,44 +197,83 @@ fun CreatePublicationScreen(
                                 return@launch
                             }
 
-                            // 📤 Subir imagen
+                            // ⚙️ Mostrar loader temporal
                             isUploading = true
+                            snackbarHostState.showSnackbar("⏳ Subiendo y verificando imagen...")
+
+                            // 📦 Comprimir imagen antes de subir
+                            fun compressImage(context: Context, uri: Uri): File {
+                                val bitmap = android.provider.MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
+                                val file = File(context.cacheDir, "compressed_${System.currentTimeMillis()}.jpg")
+                                val outputStream = java.io.FileOutputStream(file)
+                                bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 75, outputStream)
+                                outputStream.flush()
+                                outputStream.close()
+                                return file
+                            }
+
                             var finalImageUrl: String? = null
+
                             try {
-                                val filePart = context.prepareFilePart("file", selectedImageUri!!)
+                                val compressedFile = compressImage(context, selectedImageUri!!)
+                                val compressedUri = Uri.fromFile(compressedFile)
+                                val filePart = context.prepareFilePart("file", compressedUri)
+
                                 val uploadResult = mediaRepo.uploadImage(token ?: "", filePart)
                                 if (uploadResult != null) {
                                     finalImageUrl = uploadResult.secureUrl
                                     snackbarHostState.showSnackbar("Imagen subida correctamente")
                                 } else {
-                                    snackbarHostState.showSnackbar("Error al subir imagen")
+                                    snackbarHostState.showSnackbar("No se pudo subir la imagen. Intenta con otra.")
                                     return@launch
                                 }
                             } catch (e: Exception) {
-                                snackbarHostState.showSnackbar("Error al conectar con servidor")
+                                val lowerMsg = e.message?.lowercase() ?: ""
+                                when {
+                                    "rechazada" in lowerMsg || "inapropiado" in lowerMsg -> {
+                                        snackbarHostState.showSnackbar(
+                                            "Esta imagen fue rechazada por contener contenido inapropiado."
+                                        )
+                                    }
+                                    "timeout" in lowerMsg || "failed to connect" in lowerMsg -> {
+                                        snackbarHostState.showSnackbar("No se pudo conectar con el servidor. Inténtalo más tarde.")
+                                    }
+                                    else -> {
+                                        snackbarHostState.showSnackbar("Ocurrió un error al subir la imagen. Intenta con otra foto.")
+                                    }
+                                }
                                 return@launch
                             } finally {
                                 isUploading = false
                             }
 
-                            // 🧾 Crear publicación
+                            // 🧾 Crear publicación solo si la imagen se subió correctamente
+                            if (finalImageUrl == null) return@launch
+
                             isPublishing = true
+                            snackbarHostState.showSnackbar("Publicando aventura...")
+
                             vm.createPublication(
                                 context = context,
-                                imageUrl = finalImageUrl
-                                    ?: "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg",
+                                imageUrl = finalImageUrl,
                                 title = title,
                                 description = description,
                                 location = location,
                                 latitud = latitud,
                                 longitud = longitud,
                                 userId = userIdState!!,
-                                onDone = { onPublishDone() }
+                                onDone = {
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Aventura publicada con éxito")
+                                    }
+                                    onPublishDone()
+                                }
                             )
+
                             isPublishing = false
                         }
                     },
-                    enabled = !ui.loading && !isPublishing && !isUploading,
+                            enabled = !ui.loading && !isPublishing && !isUploading,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(56.dp)
