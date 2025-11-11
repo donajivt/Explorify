@@ -77,5 +77,11 @@ namespace Explorify.Api.User.Api.Controllers
             var response = await _userService.DeleteProfileAsync(userId);
             return Ok(response);
         }
+        [HttpDelete]
+        public async Task<IActionResult> DeleteProfileById(string userId)
+        {
+            var response = await _userService.DeleteProfileAsync(userId);
+            return Ok(response);
+        }
     }
 }
