@@ -1,0 +1,169 @@
+# Pipeline de CI/CD para Comentarios.API
+# Automatiza la construcción, pruebas y despliegue
+
+name: Comentarios.API - CI/CD Pipeline
+
+on:
+  # Se ejecuta en push a las ramas principales
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'Backend/Comentarios.API/**'
+      - '.github/workflows/**'
+  
+  # Se ejecuta en Pull Requests hacia main o develop
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'Backend/Comentarios.API/**'
+  
+  # Permite ejecución manual desde la interfaz de GitHub
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  PROJECT_PATH: Backend/Comentarios.API
+  SOLUTION_FILE: Comentarios.API.sln
+  BUILD_CONFIGURATION: Release
+
+jobs:
+  
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Paso 1: Checkout del código fuente
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      # Paso 2: Configurar .NET SDK
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+      # Paso 3: Cache de paquetes NuGet
+      - name: Cache NuGet packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+      
+      # Paso 4: Restaurar dependencias
+      - name: Restore dependencies
+        run: dotnet restore ${{ env.PROJECT_PATH }}/${{ env.SOLUTION_FILE }}
+      
+      # Paso 5: Construcción del proyecto
+      - name: Build solution
+        run: dotnet build ${{ env.PROJECT_PATH }}/${{ env.SOLUTION_FILE }} --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
+      
+      # Paso 6: Ejecutar pruebas unitarias
+      - name: Run unit tests
+        run: dotnet test ${{ env.PROJECT_PATH }}/${{ env.SOLUTION_FILE }} --configuration ${{ env.BUILD_CONFIGURATION }} --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
+        continue-on-error: true
+      
+      # Paso 7: Publicar resultados de pruebas
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: '**/test-results.trx'
+        continue-on-error: true
+      
+      # Paso 8: Publicar la aplicación
+      - name: Publish application
+        run: dotnet publish ${{ env.PROJECT_PATH }}/Comentarios.API/Comentarios.API.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --output ${{ env.PROJECT_PATH }}/publish --no-build
+      
+      # Paso 9: Subir artefactos
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: comentarios-api-build
+          path: ${{ env.PROJECT_PATH }}/publish
+          retention-days: 7
+
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+    needs: build
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      
+      # Análisis de seguridad
+      - name: Security scan
+        run: dotnet list ${{ env.PROJECT_PATH }}/${{ env.SOLUTION_FILE }} package --vulnerable --include-transitive
+        continue-on-error: true
+      
+      # Verificación de formato de código
+      - name: Check code formatting
+        run: dotnet format ${{ env.PROJECT_PATH }}/${{ env.SOLUTION_FILE }} --verify-no-changes --verbosity diagnostic
+        continue-on-error: true
+
+  deploy-dev:
+    name: Deploy to Development
+    runs-on: ubuntu-latest
+    needs: [build, code-quality]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    environment:
+      name: development
+      url: https://dev-api.explorify.com
+    
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: comentarios-api-build
+          path: ./publish
+      
+      - name: Deploy to development server
+        run: |
+          echo "Desplegando Comentarios.API a servidor de desarrollo..."
+          # Aquí iría tu comando real de despliegue (scp, rsync, kubectl, etc.)
+        env:
+          DEPLOY_KEY: ${{ secrets.DEV_DEPLOY_KEY }}
+
+  deploy-prod:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build, code-quality]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://api.explorify.com
+    
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: comentarios-api-build
+          path: ./publish
+      
+      - name: Deploy to production server
+        run: |
+          echo "Desplegando Comentarios.API a servidor de producción..."
+          # Aquí iría tu script de despliegue real
+        env:
+          DEPLOY_KEY: ${{ secrets.PROD_DEPLOY_KEY }}
+      
+      - name: Notify deployment success
+        if: success()
+        run: |
+          echo "Despliegue exitoso de Comentarios.API en producción 🎉"
