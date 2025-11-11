@@ -6,12 +6,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,6 +34,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import android.net.Uri
 import androidx.compose.foundation.border
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.text.font.FontWeight
@@ -93,10 +91,6 @@ fun PublicationListScreen(
             }
         }
     }
-
-    println("🧭 MAP: ${userMap.keys}")
-    println("📋 POSTS: ${state.items.map { it.userId }}")
-
 
     // 🔹 Manejo de errores con Snackbar
     LaunchedEffect(state.error) {
@@ -154,9 +148,10 @@ fun PublicationListScreen(
                 onClick = {
                     if (userId != null)
                         onCreateClick(userId!!)
-                }
+                },
+                containerColor = Color(0xFF355E3B)
             ) {
-                Icon(Icons.Default.Add, contentDescription = "Nueva publicación")
+                Icon(Icons.Default.Add, contentDescription = "Nueva publicación", tint = Color.White)
             }
         }
     ) { padding ->
@@ -208,8 +203,8 @@ fun PublicationListScreen(
                 }
                 else -> {
                     LazyColumn(
-                        contentPadding = PaddingValues(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                        contentPadding = PaddingValues(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         items(state.items, key = { it.id }) { pub ->
                             PublicationCard(
@@ -220,6 +215,14 @@ fun PublicationListScreen(
                                     val lon = pub.longitud.toString()
                                     val name = Uri.encode(pub.location)
                                     navController.navigate("map/$lat/$lon/$name")
+                                },
+                                onViewProfile = {
+                                    navController.navigate("perfilUsuario/${pub.userId}")
+                                },
+                                // ✅ Aquí la navegación hacia comentarios:
+                                onViewComments = {
+                                    println("🟡 Navegando a comentarios/${pub.id}")
+                                    navController.navigate("comentarios/${pub.id}")
                                 },
                                 authorName = userMap[pub.userId] ?: "Usuario desconocido"
                             )
@@ -232,33 +235,85 @@ fun PublicationListScreen(
 }
 
 @Composable
-private fun PublicationCard(
+fun PublicationCard(
     publication: Publication,
     onOpen: () -> Unit,
     onViewMap: () -> Unit,
+    onViewProfile: () -> Unit,
+    onViewComments: () -> Unit,
     authorName: String
 ) {
+    val isDark = isSystemInDarkTheme()
+
+    val backgroundColor = if (isDark) Color(0xFF2B2F2D) else Color(0xFFF7F8F5)
+    val textPrimary = if (isDark) Color.White else Color(0xFF1A1A1A)
+    val textSecondary = if (isDark) Color(0xFFDADADA) else Color(0xFF4F4F4F)
+    val locationBg = if (isDark) Color(0xFF374038) else Color(0xFFE8F5E9)
+    val locationText = if (isDark) Color(0xFFC8FACC) else Color(0xFF1B5E20)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onOpen() }
-            .shadow(6.dp, shape = RoundedCornerShape(20.dp), clip = false)
-            .background(Color.Transparent)
-            .border(
-                width = 1.2.dp,
-                color = Color(0xFFBFAE94).copy(alpha = 0.8f),
-                shape = RoundedCornerShape(20.dp)
-            ),
+            .shadow(8.dp, shape = RoundedCornerShape(20.dp), clip = false),
         shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1B1C)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+        colors = CardDefaults.cardColors(containerColor = backgroundColor),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column {
+            // 👤 Header con autor
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onViewProfile() }
+                    .padding(14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Avatar
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .background(color = Color(0xFF3C9D6D), shape = CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(26.dp)
+                    )
+                }
+
+                Spacer(Modifier.width(10.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = authorName,
+                        color = textPrimary,
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
+                    )
+                    Text(
+                        text = publication.createdAt.formatAsDate(),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = textSecondary
+                    )
+                }
+
+                // Botón más opciones (futuro menú)
+                IconButton(onClick = { /* TODO: Menú */ }) {
+                    Icon(
+                        imageVector = Icons.Default.MoreVert,
+                        contentDescription = "Más opciones",
+                        tint = textSecondary
+                    )
+                }
+            }
+
+            // 🖼️ Imagen
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(220.dp)
-                    .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+                    .height(260.dp)
+                    .clickable { onOpen() }
             ) {
                 AsyncImage(
                     model = publication.imageUrl,
@@ -266,81 +321,79 @@ private fun PublicationCard(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.matchParentSize()
                 )
+
+                // Sombra suave inferior
                 Box(
                     Modifier
                         .matchParentSize()
                         .background(
                             brush = androidx.compose.ui.graphics.Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.Transparent,
-                                    Color.Black.copy(alpha = 0.55f)
-                                ),
-                                startY = 150f
+                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.55f))
                             )
                         )
                 )
+
                 Text(
                     text = publication.title,
                     color = Color.White,
-                    style = MaterialTheme.typography.titleLarge.copy(
-                        fontWeight = FontWeight.Bold
-                    ),
+                    style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
                     modifier = Modifier
                         .align(Alignment.BottomStart)
                         .padding(16.dp)
                 )
             }
 
-            Column(Modifier.padding(16.dp)) {
+            // 📝 Descripción
+            Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
                 Text(
                     text = publication.description,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
+                    color = textPrimary,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.4f,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(Modifier.height(10.dp))
+                Spacer(Modifier.height(16.dp))
 
+                // 📍 Ubicación
                 Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(locationBg)
+                        .clickable { onViewMap() }
+                        .padding(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Default.AccountCircle,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(22.dp)
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Column {
-                            Text(
-                                text = authorName,
-                                style = MaterialTheme.typography.labelLarge.copy(color = Color.White)
-                            )
-                            Text(
-                                text = publication.createdAt.formatAsDate(),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.outline
-                            )
-                        }
-                    }
+                    Icon(
+                        imageVector = Icons.Outlined.LocationOn,
+                        contentDescription = null,
+                        tint = if (isDark) Color(0xFF80E89B) else Color(0xFF388E3C),
+                        modifier = Modifier.size(22.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = publication.location,
+                        style = MaterialTheme.typography.bodyMedium.copy(color = locationText),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Icon(
+                        imageVector = Icons.Default.ChevronRight,
+                        contentDescription = null,
+                        tint = if (isDark) Color(0xFF9E9E9E) else Color(0xFF4E4E4E),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
 
-                    TextButton(onClick = onViewMap) {
-                        Icon(
-                            Icons.Outlined.LocationOn,
-                            contentDescription = "Ver en mapa",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        Text(
-                            text = "Ver ubicación",
-                            color = MaterialTheme.colorScheme.primary,
-                            style = MaterialTheme.typography.labelLarge
-                        )
-                    }
+                Spacer(Modifier.height(14.dp))
+
+                TextButton(onClick = onViewComments) {
+                    Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = null, tint = Color(0xFF3C9D6D))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Comentarios", color = Color(0xFF3C9D6D))
                 }
             }
         }

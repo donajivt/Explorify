@@ -3,7 +3,9 @@ package com.explorify.explorifyapp.presentation.publications.list.screens
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.LocationManager
 import android.view.MotionEvent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,6 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
@@ -47,6 +52,12 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.tasks.await
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.window.Dialog
+import android.provider.Settings
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -57,6 +68,7 @@ fun MapPickerScreen(
     val mapView = remember { MapView(context) }
     val permission = rememberPermissionState(Manifest.permission.ACCESS_FINE_LOCATION)
     val scope = rememberCoroutineScope()
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     var searchText by remember { mutableStateOf(TextFieldValue("")) }
     val searchFlow = remember { MutableStateFlow("") }
@@ -64,6 +76,155 @@ fun MapPickerScreen(
     var selectedPoint by remember { mutableStateOf<GeoPoint?>(null) }
     var selectedPlaceName by remember { mutableStateOf("") }
     var searching by remember { mutableStateOf(false) }
+
+    // Modal elegante
+    var showLocationDialog by remember { mutableStateOf(false) }
+
+    // Control de reintentos automáticos tras conceder permiso / activar GPS
+    var pendingLocateAction by remember { mutableStateOf(false) }
+    var awaitingGpsEnable by remember { mutableStateOf(false) }
+
+    var userLocation by remember { mutableStateOf<GeoPoint?>(null) }
+
+    // Función para verificar si la ubicación está habilitada
+    fun isLocationEnabled(): Boolean {
+        val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }
+
+    // Función para obtener ubicación del usuario
+    @SuppressLint("MissingPermission")
+    fun getUserLocation() {
+        // 1) Permisos
+        if (!permission.status.isGranted) {
+            pendingLocateAction = true
+            permission.launchPermissionRequest()
+            return
+        }
+
+        // 2) Estado del GPS
+        if (!isLocationEnabled()) {
+            pendingLocateAction = true
+            showLocationDialog = true
+            return
+        }
+
+        // 3) Ya con todo OK, obtener ubicación
+        val fine = ContextCompat.checkSelfPermission(
+            context, Manifest.permission.ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        val coarse = ContextCompat.checkSelfPermission(
+            context, Manifest.permission.ACCESS_COARSE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+        if (!fine && !coarse) return
+
+        val fused = LocationServices.getFusedLocationProviderClient(context)
+
+        try {
+            // Primero intentar con lastLocation
+            fused.lastLocation.addOnSuccessListener { loc ->
+                if (loc != null) {
+                    val p = GeoPoint(loc.latitude, loc.longitude)
+                    userLocation = p
+                    selectedPoint = p
+                    updateMarker(mapView, context, p)
+                    mapView.controller.setZoom(16.0)
+                    mapView.controller.animateTo(p)
+                    scope.launch(Dispatchers.IO) {
+                        val name = getPlaceNameFromOSM(context, loc.latitude, loc.longitude)
+                        withContext(Dispatchers.Main) {
+                            selectedPlaceName = name ?: "Mi ubicación actual"
+                        }
+                    }
+                }
+            }
+        } catch (_: SecurityException) { }
+
+        // Luego obtener ubicación fresca (rápido, con timeout)
+        scope.launch(Dispatchers.IO) {
+            try {
+                val cts = CancellationTokenSource()
+                val fresh = withTimeoutOrNull(2000L) {
+                    fused.getCurrentLocation(
+                        Priority.PRIORITY_BALANCED_POWER_ACCURACY, cts.token
+                    ).await()
+                }
+                fresh?.let {
+                    val p = GeoPoint(it.latitude, it.longitude)
+                    userLocation = p
+                    withContext(Dispatchers.Main) {
+                        selectedPoint = p
+                        updateMarker(mapView, context, p)
+                        mapView.controller.setZoom(16.0)
+                        mapView.controller.animateTo(p)
+                    }
+                    val name = getPlaceNameFromOSM(context, it.latitude, it.longitude)
+                    withContext(Dispatchers.Main) {
+                        selectedPlaceName = name ?: "Mi ubicación actual"
+                    }
+                }
+            } catch (_: Exception) { }
+        }
+    }
+
+    // Reaccionar cuando el permiso cambia a concedido y había una acción pendiente
+    LaunchedEffect(permission.status.isGranted) {
+        if (permission.status.isGranted && pendingLocateAction) {
+            getUserLocation()
+            pendingLocateAction = false
+        }
+    }
+
+    // Detectar cuando el usuario regresa desde Configuración y ya activó el GPS
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                if (awaitingGpsEnable && isLocationEnabled()) {
+                    scope.launch {
+                        // Esperar un poco a que el GPS recupere señal
+                        kotlinx.coroutines.delay(1500)
+
+                        val fused = LocationServices.getFusedLocationProviderClient(context)
+                        try {
+                            val cts = CancellationTokenSource()
+                            val fresh = withTimeoutOrNull(4000L) {
+                                fused.getCurrentLocation(
+                                    Priority.PRIORITY_HIGH_ACCURACY,
+                                    cts.token
+                                ).await()
+                            }
+
+                            if (fresh != null) {
+                                val p = GeoPoint(fresh.latitude, fresh.longitude)
+                                userLocation = p
+                                selectedPoint = p
+                                updateMarker(mapView, context, p)
+                                mapView.controller.setZoom(16.0)
+                                mapView.controller.animateTo(p)
+                                withContext(Dispatchers.IO) {
+                                    val name = getPlaceNameFromOSM(context, p.latitude, p.longitude)
+                                    withContext(Dispatchers.Main) {
+                                        selectedPlaceName = name ?: "Mi ubicación actual"
+                                    }
+                                }
+                            } else {
+                                // Si no obtiene nada, reintenta una vez más
+                                kotlinx.coroutines.delay(1200)
+                                getUserLocation()
+                            }
+                        } catch (_: Exception) { }
+
+                        awaitingGpsEnable = false
+                        pendingLocateAction = false
+                    }
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
 
 
     // ---------- OSMDroid configuración rápida ----------
@@ -73,73 +234,23 @@ fun MapPickerScreen(
             context.getSharedPreferences("osmdroid", Context.MODE_PRIVATE)
         )
         Configuration.getInstance().userAgentValue = context.packageName
-        // Hilos extra para descargar tiles y cache más grande (mejora fluidez)
         Configuration.getInstance().tileDownloadThreads = 4
-        Configuration.getInstance().tileFileSystemCacheMaxBytes = 1024L * 1024 * 128 // 128MB
-        Configuration.getInstance().tileFileSystemCacheTrimBytes = 1024L * 1024 * 96  // 96MB
+        Configuration.getInstance().tileFileSystemCacheMaxBytes = 1024L * 1024 * 128
+        Configuration.getInstance().tileFileSystemCacheTrimBytes = 1024L * 1024 * 96
 
         mapView.setTileSource(TileSourceFactory.MAPNIK)
         mapView.setMultiTouchControls(true)
         mapView.controller.setZoom(6.0)
-        mapView.controller.setCenter(GeoPoint(19.43, -99.13)) // fallback CDMX
 
-        // pide permiso la primera vez
-        permission.launchPermissionRequest()
-    }
+        // Por defecto CDMX
+        mapView.controller.setCenter(GeoPoint(19.43, -99.13))
 
-    // ---------- Centrar en tu ubicación: paralelo y rápido ----------
-    @SuppressLint("MissingPermission")
-    LaunchedEffect(permission.status.isGranted) {
-        if (!permission.status.isGranted) return@LaunchedEffect
-        val fine = ContextCompat.checkSelfPermission(
-            context, Manifest.permission.ACCESS_FINE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-        val coarse = ContextCompat.checkSelfPermission(
-            context, Manifest.permission.ACCESS_COARSE_LOCATION
-        ) == PackageManager.PERMISSION_GRANTED
-        if (!fine && !coarse) return@LaunchedEffect
-
-        val fused = LocationServices.getFusedLocationProviderClient(context)
-
-        try {
-            fused.lastLocation.addOnSuccessListener { loc ->
-                if (loc != null && selectedPoint == null) {
-                    val p = GeoPoint(loc.latitude, loc.longitude)
-                    selectedPoint = p
-                    updateMarker(mapView, context, p)
-                    mapView.controller.setZoom(15.0)
-                    mapView.controller.setCenter(p)
-                    scope.launch(Dispatchers.IO) {
-                        val name = getPlaceNameFromOSM(context, loc.latitude, loc.longitude)
-                        withContext(Dispatchers.Main) {
-                            selectedPlaceName = name ?: "Mi ubicación actual"
-                        }
-                    }
-                }
-            }
-        } catch (_: SecurityException) { /* no-op */ }
-
-        // 2) getCurrentLocation (fresco) con timeout
-        scope.launch(Dispatchers.IO) {
-            try {
-                val cts = CancellationTokenSource()
-                val fresh = withTimeoutOrNull(1500L) {
-                    fused.getCurrentLocation(
-                        Priority.PRIORITY_BALANCED_POWER_ACCURACY, cts.token
-                    ).await()
-                }
-                fresh?.let {
-                    val p = GeoPoint(it.latitude, it.longitude)
-                    withContext(Dispatchers.Main) {
-                        selectedPoint = p
-                        updateMarker(mapView, context, p)
-                        mapView.controller.setZoom(16.0)
-                        mapView.controller.animateTo(p)
-                    }
-                    val name = getPlaceNameFromOSM(context, it.latitude, it.longitude)
-                    withContext(Dispatchers.Main) { selectedPlaceName = name ?: "Mi ubicación actual" }
-                }
-            } catch (_: Exception) { /* ignore */ }
+        // Intentar obtener ubicación si hay permisos y GPS activo
+        if (permission.status.isGranted && isLocationEnabled()) {
+            getUserLocation()
+        } else {
+            // Si no hay permisos o ubicación, mostrar CDMX
+            mapView.controller.setZoom(12.0)
         }
     }
 
@@ -147,7 +258,9 @@ fun MapPickerScreen(
     LaunchedEffect(Unit) {
         searchFlow.debounce(300L).collectLatest { q ->
             if (q.length < 3) return@collectLatest
+            searching = true
             val result = fetchCoordinatesFromOSM(context, q)
+            searching = false
             result?.let { (lat, lon, name) ->
                 val p = GeoPoint(lat, lon)
                 selectedPoint = p
@@ -155,6 +268,84 @@ fun MapPickerScreen(
                 updateMarker(mapView, context, p)
                 mapView.controller.setZoom(16.0)
                 mapView.controller.animateTo(p)
+            }
+        }
+    }
+
+    // 🌍 Modal elegante para activar ubicación (versión mejorada visualmente)
+    if (showLocationDialog) {
+        Dialog(onDismissRequest = { showLocationDialog = false }) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                shape = RoundedCornerShape(22.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF9FAF8)),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .padding(28.dp)
+                        .fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.LocationOn,
+                        contentDescription = "Ubicación",
+                        tint = Color(0xFF3C9D6D),
+                        modifier = Modifier.size(65.dp)
+                    )
+                    Spacer(modifier = Modifier.height(18.dp))
+                    Text(
+                        text = "Activa tu ubicación",
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            color = Color(0xFF2E473B)
+                        ),
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = "Explorify necesita acceso a tu ubicación para mostrarte lugares cercanos y mejorar tu experiencia. Activa los servicios de ubicación para continuar.",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = Color(0xFF5E4C3A),
+                            lineHeight = 20.sp
+                        ),
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(modifier = Modifier.height(26.dp))
+                    Button(
+                        onClick = {
+                            showLocationDialog = false
+                            awaitingGpsEnable = true
+                            context.startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS))
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3C9D6D))
+                    ) {
+                        Text(
+                            "Abrir configuración",
+                            color = Color.White,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    TextButton(
+                        onClick = {
+                            showLocationDialog = false
+                            pendingLocateAction = false
+                            awaitingGpsEnable = false
+                        }
+                    ) {
+                        Text(
+                            "Cancelar",
+                            color = Color(0xFF3C9D6D),
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
             }
         }
     }
@@ -176,7 +367,7 @@ fun MapPickerScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            // 🗺️ Mapa principal (tap para colocar marcador + reverse geocoding)
+            // 🗺️ Mapa principal
             AndroidView(factory = { mapView }, modifier = Modifier.fillMaxSize()) { map ->
                 map.setOnTouchListener { _, event ->
                     if (event.action == MotionEvent.ACTION_UP) {
@@ -187,17 +378,18 @@ fun MapPickerScreen(
                         ) as GeoPoint
                         selectedPoint = point
                         updateMarker(map, context, point)
-                        // reverse geocoding en segundo plano
                         scope.launch(Dispatchers.IO) {
                             val place = getPlaceNameFromOSM(context, point.latitude, point.longitude)
-                            withContext(Dispatchers.Main) { selectedPlaceName = place ?: "Ubicación seleccionada" }
+                            withContext(Dispatchers.Main) {
+                                selectedPlaceName = place ?: "Ubicación seleccionada"
+                            }
                         }
                     }
                     false
                 }
             }
 
-            // 🔍 Campo de búsqueda con debounce
+            // 🔍 Campo de búsqueda
             Column(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
@@ -212,7 +404,7 @@ fun MapPickerScreen(
                     value = searchText,
                     onValueChange = {
                         searchText = it
-                        searchFlow.value = it.text  // dispara búsqueda por debounce
+                        searchFlow.value = it.text
                     },
                     label = { Text("Buscar lugar...") },
                     singleLine = true,
@@ -223,13 +415,20 @@ fun MapPickerScreen(
                     ),
                     trailingIcon = {
                         if (searching) {
-                            CircularProgressIndicator(strokeWidth = 2.dp, modifier = Modifier.size(18.dp))
+                            CircularProgressIndicator(
+                                strokeWidth = 2.dp,
+                                modifier = Modifier.size(18.dp)
+                            )
                         } else {
                             TextButton(onClick = {
                                 val q = searchText.text.trim()
-                                if (q.isNotEmpty()) {
+                                // Si el campo está vacío, regresar a ubicación del usuario
+                                if (q.isEmpty()) {
+                                    // Marca que el usuario quiere ir a su ubicación
+                                    pendingLocateAction = true
+                                    getUserLocation()
+                                } else {
                                     searching = true
-                                    // ✔️ Usar corutina, no LaunchedEffect
                                     scope.launch {
                                         val result = fetchCoordinatesFromOSM(context, q)
                                         searching = false
@@ -249,40 +448,11 @@ fun MapPickerScreen(
                 )
             }
 
+            // 📍 FAB ir a mi ubicación (usa la misma lógica centralizada)
             FloatingActionButton(
                 onClick = {
-                    if (!permission.status.isGranted) {
-                        permission.launchPermissionRequest()
-                        return@FloatingActionButton
-                    }
-
-                    // ✅ Guard explícito para el linter
-                    val fine = ContextCompat.checkSelfPermission(
-                        context, Manifest.permission.ACCESS_FINE_LOCATION
-                    ) == PackageManager.PERMISSION_GRANTED
-                    val coarse = ContextCompat.checkSelfPermission(
-                        context, Manifest.permission.ACCESS_COARSE_LOCATION
-                    ) == PackageManager.PERMISSION_GRANTED
-                    if (!fine && !coarse) return@FloatingActionButton
-
-                    val fused = LocationServices.getFusedLocationProviderClient(context)
-                    try {
-                        fused.lastLocation.addOnSuccessListener { loc ->
-                            loc?.let {
-                                val p = GeoPoint(it.latitude, it.longitude)
-                                selectedPoint = p
-                                updateMarker(mapView, context, p)
-                                mapView.controller.setZoom(16.0)
-                                mapView.controller.animateTo(p)
-                                scope.launch(Dispatchers.IO) {
-                                    val place = getPlaceNameFromOSM(context, it.latitude, it.longitude)
-                                    withContext(Dispatchers.Main) {
-                                        selectedPlaceName = place ?: "Mi ubicación actual"
-                                    }
-                                }
-                            }
-                        }
-                    } catch (_: SecurityException) { /* no-op */ }
+                    pendingLocateAction = true
+                    getUserLocation()
                 },
                 containerColor = Color(0xFF355E3B),
                 contentColor = Color.White,
@@ -315,15 +485,35 @@ fun MapPickerScreen(
 
             // 📝 Lugar seleccionado
             if (selectedPlaceName.isNotEmpty()) {
-                Text(
-                    text = "📍 $selectedPlaceName",
+                Box(
                     modifier = Modifier
-                        .align(Alignment.BottomStart)
-                        .padding(16.dp)
-                        .background(Color.White.copy(alpha = 0.8f), RoundedCornerShape(8.dp))
-                        .padding(8.dp),
-                    color = Color.Black
-                )
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 160.dp) // Espacio para no tapar el botón
+                        .fillMaxWidth(0.9f)
+                        .background(
+                            Color.White.copy(alpha = 0.92f),
+                            RoundedCornerShape(12.dp)
+                        )
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Start
+                    ) {
+                        Text(
+                            text = "📍",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Text(
+                            text = selectedPlaceName,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color.Black,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
             }
         }
     }

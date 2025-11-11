@@ -7,12 +7,15 @@ import android.content.pm.PackageManager
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.navigation.NavController
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -26,6 +29,7 @@ import org.osmdroid.views.overlay.Marker
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun PublicationMapScreen(
+    navController: NavController,
     latitud: String,
     longitud: String,
     locationName: String
@@ -72,7 +76,19 @@ fun PublicationMapScreen(
     }
 
     Scaffold(
-        topBar = { TopAppBar(title = { Text("Ubicación de la publicación") }) }
+        topBar = {
+            TopAppBar(
+                title = { Text("Ubicación de la publicación") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Regresar"
+                        )
+                    }
+                }
+            )
+        }
     ) { padding ->
         Box( modifier = Modifier
             .fillMaxSize()
@@ -81,10 +97,8 @@ fun PublicationMapScreen(
                 factory = { mapView },
                 modifier = Modifier.fillMaxSize()
             ) { map ->
-                // Limpia overlays para evitar duplicados en recomposición
                 map.overlays.clear()
 
-                // Marcador de la publicación
                 val pubMarker = Marker(map).apply {
                     position = pubPoint
                     title = locationName
@@ -93,7 +107,6 @@ fun PublicationMapScreen(
                 }
                 map.overlays.add(pubMarker)
 
-                // Marcador de "Tu ubicación" si ya la tenemos
                 userLocation?.let { loc ->
                     val userMarker = Marker(map).apply {
                         position = loc
@@ -102,18 +115,14 @@ fun PublicationMapScreen(
                         setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
                     }
                     map.overlays.add(userMarker)
-
-                    // 👉 Centrar en TU ubicación (lo que pediste)
-                    map.controller.setZoom(15.0)
-                    map.controller.setCenter(loc)
-                } ?: run {
-                    // Fallback: si aún no hay lastLocation, centra en la publicación
-                    map.controller.setZoom(15.0)
-                    map.controller.setCenter(pubPoint)
                 }
-
-                map.invalidate()
-            }
+                // 🔧 Forzar centrado con pequeña espera (OSMDroid necesita inicializar primero)
+                map.postDelayed({
+                    map.controller.setZoom(16.0)
+                    map.controller.setCenter(pubPoint)
+                    map.invalidate()
+                }, 600)
+        }
         }
     }
 }

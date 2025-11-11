@@ -7,5 +7,6 @@
         <domain includeSubdomains="true">explorify-users.runasp.net</domain>
         <domain includeSubdomains="true">explorify.somee.com</domain>
         <domain includeSubdomains="true">explorify-users.somee.com</domain>
+        <domain includeSubdomains="true">explorify-comments.somee.com</domain>
     </domain-config>
 </network-security-config>

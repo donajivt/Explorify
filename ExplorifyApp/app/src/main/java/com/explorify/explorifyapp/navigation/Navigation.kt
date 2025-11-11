@@ -23,9 +23,11 @@ import com.explorify.explorifyapp.presentation.main.MainScaffold
 import com.explorify.explorifyapp.presentation.publications.list.screens.EditPublicationScreen
 import com.explorify.explorifyapp.presentation.publications.list.screens.PublicationListScreen
 import com.explorify.explorifyapp.presentation.publications.list.CreatePublicationViewModel
+import com.explorify.explorifyapp.presentation.publications.list.screens.CommentsScreen
 import com.explorify.explorifyapp.presentation.publications.list.screens.CreatePublicationScreen
 import com.explorify.explorifyapp.presentation.publications.list.screens.MapPickerScreen
 import com.explorify.explorifyapp.presentation.publications.list.screens.PublicationMapScreen
+import com.explorify.explorifyapp.presentation.publications.list.screens.UsersProfileScreen
 
 @Composable
 fun AppNavigation() {
@@ -147,12 +149,29 @@ fun AppNavigation() {
             val lat = backStack.arguments?.getString("lat") ?: "0.0"
             val lon = backStack.arguments?.getString("lon") ?: "0.0"
             val name = backStack.arguments?.getString("name") ?: "Ubicación desconocida"
-            PublicationMapScreen(latitud = lat, longitud = lon, locationName = name)
+            PublicationMapScreen(navController = navController,latitud = lat, longitud = lon, locationName = name)
         }
 
         composable("map_picker") {
             MapPickerScreen(navController = navController)
         }
+
+        composable(
+            route = "perfilUsuario/{userId}"
+        ) { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+            UsersProfileScreen(navController = navController, userId = userId)
+        }
+
+
+        composable("comentarios/{publicacionId}") { backStackEntry ->
+            val publicacionId = backStackEntry.arguments?.getString("publicacionId") ?: ""
+            CommentsScreen(
+                navController = navController,
+                publicacionId = publicacionId
+            )
+        }
+
 
     }
 }
