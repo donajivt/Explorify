@@ -1,7 +1,5 @@
-# Pipeline de CI/CD para Explorify.Api.User
-# Automatiza la construcción, pruebas y despliegue
-
-name: Explorify.Api.User - CI/CD Pipeline
+# Pipeline de CI/CD para Explorify.Api.Likes
+name: Api-Likes - CI/CD Pipeline
 
 on:
   # Se ejecuta en push a las ramas principales
@@ -10,7 +8,7 @@ on:
       - main
       - develop
     paths:
-      - 'Backend/Explorify.Api.User/**'
+      - 'Backend/api-likes/**'
       - '.github/workflows/**'
   
   # Se ejecuta en Pull Requests hacia main o develop
@@ -19,15 +17,15 @@ on:
       - main
       - develop
     paths:
-      - 'Backend/Explorify.Api.User/**'
+      - 'Backend/api-likes/**'
   
   # Permite ejecución manual desde la interfaz de GitHub
   workflow_dispatch:
 
 env:
   DOTNET_VERSION: '9.0.x'
-  PROJECT_PATH: Backend/Explorify.Api.User
-  SOLUTION_FILE: Explorify.Api.User.sln
+  PROJECT_PATH: Backend/api-likes
+  SOLUTION_FILE: api-likes.sln
   BUILD_CONFIGURATION: Release
 
 jobs:
@@ -81,13 +79,13 @@ jobs:
       
       # Paso 8: Publicar la aplicación
       - name: Publish application
-        run: dotnet publish ${{ env.PROJECT_PATH }}/Explorify.Api.User/Explorify.Api.User.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --output ${{ env.PROJECT_PATH }}/publish --no-build
+        run: dotnet publish ${{ env.PROJECT_PATH }}/Explorify.Api.Likes/Explorify.Api.Likes.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --output ${{ env.PROJECT_PATH }}/publish --no-build
       
       # Paso 9: Subir artefactos
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: explorify-api-user-build
+          name: explorify-api-likes-build
           path: ${{ env.PROJECT_PATH }}/publish
           retention-days: 7
 
@@ -130,12 +128,12 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: explorify-api-user-build
+          name: explorify-api-likes-build
           path: ./publish
       
       - name: Deploy to development server
         run: |
-          echo "Desplegando Explorify.Api.User a servidor de desarrollo..."
+          echo "Desplegando Explorify.Api.Likes a servidor de desarrollo..."
           # Aquí iría tu comando real de despliegue (scp, rsync, kubectl, etc.)
         env:
           DEPLOY_KEY: ${{ secrets.DEV_DEPLOY_KEY }}
@@ -153,12 +151,12 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: explorify-api-user-build
+          name: explorify-api-likes-build
           path: ./publish
       
       - name: Deploy to production server
         run: |
-          echo "Desplegando Explorify.Api.User a servidor de producción..."
+          echo "Desplegando Explorify.Api.Likes a servidor de producción..."
           # Aquí iría tu script de despliegue real
         env:
           DEPLOY_KEY: ${{ secrets.PROD_DEPLOY_KEY }}
@@ -166,4 +164,4 @@ jobs:
       - name: Notify deployment success
         if: success()
         run: |
-          echo "Despliegue exitoso de Explorify.Api.User en producción 🎉"
+          echo "Despliegue exitoso de Explorify.Api.Likes en producción 🎉"
