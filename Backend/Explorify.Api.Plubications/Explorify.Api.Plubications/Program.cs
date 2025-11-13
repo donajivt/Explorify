@@ -8,6 +8,18 @@ using Explorify.Api.Publications.Infraestructure.Repositories;
 using Explorify.Api.Publications.Infraestructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+var corsPolicy = "AllowAll";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: corsPolicy, policy =>
+    {
+        policy
+            .AllowAnyOrigin()   
+            .AllowAnyHeader()   
+            .AllowAnyMethod();  
+    });
+});
 
 // MongoDB Options
 builder.Services.Configure<MongoOptions>(
@@ -48,6 +60,7 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseCors(corsPolicy);
 app.MapControllers();
 
 app.Run();
