@@ -337,10 +337,6 @@ fun PerfilScreen(navController: NavController,
 }
 
 
-
-
-
-
 // 👇 Aquí va el botón reutilizable
 @Composable
 fun PerfilOptionButton(

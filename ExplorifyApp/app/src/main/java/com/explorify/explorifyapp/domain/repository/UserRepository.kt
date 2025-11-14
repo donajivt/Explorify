@@ -7,6 +7,7 @@ import retrofit2.Response
 import com.explorify.explorifyapp.data.remote.dto.users.UserRequest
 import com.explorify.explorifyapp.data.remote.dto.users.UserResponse
 import com.explorify.explorifyapp.data.remote.dto.users.SimpleResponse
+import java.util.StringJoiner
 
 
 class UserRepository(private val api: UsersApiService) {
@@ -24,6 +25,10 @@ class UserRepository(private val api: UsersApiService) {
     // 🔹 Editar el usuario actual
     suspend fun editCurrentUser(token: String, userRequest: UserRequest): Response<SimpleResponse> {
         return api.editUser(userRequest, "Bearer $token")
+    }
+    //Traer por id
+    suspend fun getUserById(token: String, userId: String): Response<UserResponse> {
+        return api.getById("Bearer $token", userId)
     }
 
     // 🔹 Eliminar el usuario actual

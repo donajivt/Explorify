@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.filled.ArrowBack
@@ -41,6 +42,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.navigation.NavController
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material.icons.filled.Search
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,6 +54,14 @@ fun UserListScreen(navController: NavController,
     userListViewModel: UserListViewModel = viewModel()
 ) {
     val users by userListViewModel.users.collectAsState() // Observamos el flujo de usuarios
+    var searchQuery by remember { mutableStateOf("") }
+
+    // Filtrar los usuarios por nombre según la búsqueda
+    val filteredUsers = if (searchQuery.isEmpty()) {
+        users
+    } else {
+        users.filter { it.name.contains(searchQuery, ignoreCase = true) }
+    }
 
     // Llamamos a getUsers() cuando se entra por primera vez a la pantalla
     LaunchedEffect(Unit) {
@@ -56,14 +70,28 @@ fun UserListScreen(navController: NavController,
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Lista de Usuarios") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
-                    }
-                },
-            )
+            Column {
+                TopAppBar(
+                    title = { Text("Lista de Usuarios") },
+                    navigationIcon = {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        }
+                    },
+                )
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    label = { Text("Buscar usuario...") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    leadingIcon = {
+                        Icon(Icons.Default.Search, contentDescription = "Buscar")
+                    },
+                    singleLine = true
+                )
+            }
         },
         bottomBar = {
             NavigationBar {
@@ -94,7 +122,7 @@ fun UserListScreen(navController: NavController,
             }
         }
     ) { paddingValues ->
-        if (users.isEmpty()) {
+        if (filteredUsers.isEmpty()) {
             // Si no hay usuarios, mostramos un texto
             Box(
                 modifier = Modifier
@@ -111,8 +139,10 @@ fun UserListScreen(navController: NavController,
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                items(users) { user ->
-                    UserItem(user)
+                items(filteredUsers) { user ->
+                    UserItem(user){
+                        navController.navigate("perfilUsuario/${user.id}")
+                    }
                     Divider() // separa visualmente los usuarios
                 }
             }
@@ -123,10 +153,11 @@ fun UserListScreen(navController: NavController,
 
 
 @Composable
-fun UserItem(user: User) {
+fun UserItem(user: User,onClick:()->Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .clickable{ onClick()}
             .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

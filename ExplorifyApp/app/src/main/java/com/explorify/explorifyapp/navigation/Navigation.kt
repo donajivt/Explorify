@@ -28,6 +28,9 @@ import com.explorify.explorifyapp.presentation.publications.list.screens.CreateP
 import com.explorify.explorifyapp.presentation.publications.list.screens.MapPickerScreen
 import com.explorify.explorifyapp.presentation.publications.list.screens.PublicationMapScreen
 import com.explorify.explorifyapp.presentation.publications.list.screens.UsersProfileScreen
+import com.explorify.explorifyapp.presentation.admin.listUsers.UserListScreen
+import com.explorify.explorifyapp.presentation.admin.perfil.PerfilAdminScreen
+import com.explorify.explorifyapp.presentation.admin.perfil.PerfilUsuarioScreen
 
 @Composable
 fun AppNavigation() {
@@ -74,7 +77,23 @@ fun AppNavigation() {
         }
 
         composable("adminDashboard") {
-            AdminDashboard( navController = navController)
+            AdminDashboard( vm = publicationsVM,
+                navController = navController,
+                onOpenDetail = { /* luego se implementa detalle */
+                })
+        }
+
+        composable("perfilAdmin"){
+            PerfilAdminScreen( navController = navController)
+        }
+
+        composable("userlist"){
+            UserListScreen( navController = navController)
+        }
+
+        composable("perfilUsuario/{userId}") { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId")
+            /*PerfilUsuarioScreen(/*userId = userId*/)*/
         }
 
         composable("perfil") {

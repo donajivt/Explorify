@@ -10,6 +10,7 @@ import com.explorify.explorifyapp.data.remote.dto.users.UsersResponse
 import com.explorify.explorifyapp.data.remote.dto.users.UserRequest
 import com.explorify.explorifyapp.data.remote.dto.users.UserResponse
 import com.explorify.explorifyapp.data.remote.dto.users.SimpleResponse
+import retrofit2.http.Path
 
 interface UsersApiService {
 
@@ -31,6 +32,12 @@ interface UsersApiService {
         @Body body: UserRequest,
         @Header("Authorization") token: String
     ): Response<SimpleResponse>
+    //Traer por id
+    @GET("api/Users/{id}")
+    suspend fun getById(
+        @Header("Authorization") token: String,
+        @Path("id") userId: String
+    ): Response<UserResponse>
 
     // 🔹 Eliminar usuario actual
     @DELETE("api/Users/me")
