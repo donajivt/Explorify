@@ -9,7 +9,10 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.LocationOn
@@ -29,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.font.FontWeight
 import androidx.core.content.ContextCompat
 import com.explorify.explorifyapp.domain.repository.MediaRepositoryImpl
@@ -66,7 +70,9 @@ fun EditPublicationScreen(
     var uploadedImageUrl by remember { mutableStateOf<String?>(null) }
     var publicId by remember { mutableStateOf<String?>(null) }
     var isUploading by remember { mutableStateOf(false) }
-
+    var showBottomSheet by remember { mutableStateOf(false) }
+    val scrollState = rememberScrollState()
+    val focusManager = LocalFocusManager.current
 
     var hasLoadedOnce by rememberSaveable { mutableStateOf(false) }
 
@@ -90,6 +96,37 @@ fun EditPublicationScreen(
             }
         }
     }
+
+    // 🚀 Abrir cámara
+    val cameraImageUri = remember { mutableStateOf<Uri?>(null) }
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success) cameraImageUri.value?.let { selectedImageUri = it }
+    }
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            val photoFile = java.io.File(
+                navController.context.getExternalFilesDir(null),
+                "photo_${System.currentTimeMillis()}.jpg"
+            )
+            val uri = androidx.core.content.FileProvider.getUriForFile(
+                navController.context,
+                "${navController.context.packageName}.provider",
+                photoFile
+            )
+            cameraImageUri.value = uri
+            cameraLauncher.launch(uri)
+        } else {
+            coroutineScope.launch {
+                snackbarHostState.showSnackbar("Permiso de cámara denegado")
+            }
+        }
+    }
+
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
@@ -148,6 +185,11 @@ fun EditPublicationScreen(
     }
 
     Scaffold(
+        modifier = Modifier
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) { focusManager.clearFocus() },
         topBar = {
             TopAppBar(
                 title = {
@@ -184,6 +226,7 @@ fun EditPublicationScreen(
             Column(
                 Modifier
                     .fillMaxSize()
+                    .verticalScroll(scrollState)
                     .background(
                         brush = androidx.compose.ui.graphics.Brush.verticalGradient(
                             listOf(
@@ -203,20 +246,7 @@ fun EditPublicationScreen(
                     modifier = Modifier
                         .size(180.dp)
                         .clip(MaterialTheme.shapes.large)
-                        .clickable {
-                            val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                Manifest.permission.READ_MEDIA_IMAGES
-                            } else {
-                                Manifest.permission.READ_EXTERNAL_STORAGE
-                            }
-                            if (ContextCompat.checkSelfPermission(navController.context, permission)
-                                == PackageManager.PERMISSION_GRANTED
-                            ) {
-                                imagePickerLauncher.launch("image/*")
-                            } else {
-                                permissionLauncher.launch(permission)
-                            }
-                        },
+                        .clickable { showBottomSheet = true },
                     elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                     colors = CardDefaults.cardColors(containerColor = Color(0xFFF2F0EC))
                 ) {
@@ -234,13 +264,78 @@ fun EditPublicationScreen(
                     )
                 }
 
+// 🧭 Modal inferior con opciones
+                if (showBottomSheet) {
+                    ModalBottomSheet(
+                        onDismissRequest = { showBottomSheet = false },
+                        containerColor = Color.White,
+                        shape = MaterialTheme.shapes.large
+                    ) {
+                        Column(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 20.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text("Seleccionar imagen", fontWeight = FontWeight.Bold, color = Color(0xFF2E473B))
+                            Spacer(Modifier.height(12.dp))
+                            Divider()
+                            Spacer(Modifier.height(12.dp))
+
+                            TextButton(onClick = {
+                                showBottomSheet = false
+                                val permission = Manifest.permission.CAMERA
+                                if (ContextCompat.checkSelfPermission(navController.context, permission)
+                                    == PackageManager.PERMISSION_GRANTED
+                                ) {
+                                    val photoFile = java.io.File(
+                                        navController.context.getExternalFilesDir(null),
+                                        "photo_${System.currentTimeMillis()}.jpg"
+                                    )
+                                    val uri = androidx.core.content.FileProvider.getUriForFile(
+                                        navController.context,
+                                        "${navController.context.packageName}.provider",
+                                        photoFile
+                                    )
+                                    cameraImageUri.value = uri
+                                    cameraLauncher.launch(uri)
+                                } else {
+                                    cameraPermissionLauncher.launch(permission)
+                                }
+                            }) {
+                                Text("📸 Tomar foto", color = Color(0xFF3C9D6D), fontWeight = FontWeight.SemiBold)
+                            }
+
+                            Spacer(Modifier.height(8.dp))
+
+                            TextButton(onClick = {
+                                showBottomSheet = false
+                                val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                                    Manifest.permission.READ_MEDIA_IMAGES
+                                else Manifest.permission.READ_EXTERNAL_STORAGE
+                                if (ContextCompat.checkSelfPermission(navController.context, permission)
+                                    == PackageManager.PERMISSION_GRANTED
+                                ) {
+                                    imagePickerLauncher.launch("image/*")
+                                } else {
+                                    permissionLauncher.launch(permission)
+                                }
+                            }) {
+                                Text("🖼️ Elegir desde galería", color = Color(0xFF3C9D6D), fontWeight = FontWeight.SemiBold)
+                            }
+                        }
+                    }
+                }
+
                 Spacer(Modifier.height(24.dp))
 
                 // Campos
                 OutlinedTextField(
                     value = title,
-                    onValueChange = { title = it },
+                    onValueChange = { if (it.length <= 50) title = it },
                     label = { Text("Título") },
+                    supportingText = { Text("${title.length}/50", color = Color.Gray) },
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = Color(0xFFDDF5E3),
@@ -259,8 +354,10 @@ fun EditPublicationScreen(
 
                 OutlinedTextField(
                     value = description,
-                    onValueChange = { description = it },
+                    onValueChange = { if (it.length <= 200) description = it },
                     label = { Text("Descripción") },
+                    supportingText = { Text("${description.length}/200", color = Color.Gray) },
+                    maxLines = 6,
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 100.dp),
@@ -321,22 +418,30 @@ fun EditPublicationScreen(
                         coroutineScope.launch {
                             try {
                                 var finalImageUrl = imageUrl
+
                                 if (selectedImageUri != null) {
                                     isUploading = true
-                                    // 📤 Subir nueva imagen
+                                    snackbarHostState.showSnackbar("⏳ Subiendo nueva imagen...")
+
                                     val filePart = navController.context.prepareFilePart("file", selectedImageUri!!)
-                                    val uploadResult = mediaRepo.uploadImage(token, filePart)
-                                    if (uploadResult != null) {
-                                        finalImageUrl = uploadResult.secureUrl
-                                        uploadedImageUrl = uploadResult.secureUrl
-                                        // 🔥 Si tienes publicId anterior, elimínalo
+                                    val uploadResult = retrySuspend(times = 3) {
+                                        mediaRepo.uploadImage(token, filePart)
+                                    }
+
+                                    val uploadedUrl = uploadResult.result?.secureUrl
+                                    if (!uploadedUrl.isNullOrEmpty()) {
+                                        finalImageUrl = uploadedUrl
+                                        uploadedImageUrl = uploadedUrl
+
                                         publicId?.let {
                                             mediaRepo.deleteImage(token, it)
                                         }
+
                                         snackbarHostState.showSnackbar("Imagen actualizada correctamente")
                                     } else {
-                                        snackbarHostState.showSnackbar("Error al subir la nueva imagen")
+                                        snackbarHostState.showSnackbar("Error al subir la imagen")
                                     }
+
                                     isUploading = false
                                 }
 
@@ -359,6 +464,7 @@ fun EditPublicationScreen(
                                 snackbarHostState.showSnackbar("Error al actualizar publicación")
                             } finally {
                                 isSaving = false
+                                isUploading = false
                             }
                         }
                     },
@@ -369,7 +475,7 @@ fun EditPublicationScreen(
                         .clip(MaterialTheme.shapes.large),
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3C9D6D))
                 ) {
-                    if (isSaving)
+                    if (isSaving || isUploading)
                         CircularProgressIndicator(
                             color = Color.White,
                             strokeWidth = 2.dp,

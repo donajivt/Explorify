@@ -33,14 +33,24 @@ import com.explorify.explorifyapp.presentation.publications.list.PublicationsLis
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import android.net.Uri
-import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.window.Dialog
 import com.explorify.explorifyapp.data.remote.publications.RetrofitUsersInstance
 import com.explorify.explorifyapp.domain.repository.UserRepositoryImpl
+import kotlinx.coroutines.flow.distinctUntilChanged
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.res.painterResource
+import coil.request.CachePolicy
+import coil.request.ImageRequest
+import kotlinx.coroutines.async
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -62,6 +72,7 @@ fun PublicationListScreen(
     // 🧠 Mapa de usuarios (id → nombre)
     val userRepo = remember { UserRepositoryImpl(RetrofitUsersInstance.api) }
     var userMap by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+    val listState = rememberLazyListState()
 
     // 🔹 Obtener token para cargar publicaciones y usuarios
     var token by remember { mutableStateOf<String?>(null) }
@@ -76,18 +87,35 @@ fun PublicationListScreen(
     }
 
     // 🔹 Carga inicial de publicaciones y usuarios
+    // 🔹 Carga inicial optimizada de publicaciones y usuarios
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
             val dao = AppDatabase.getInstance(context).authTokenDao()
             token = dao.getToken()?.token
         }
-        token?.let {
-            vm.load(it)
+
+        token?.let { tk ->
             try {
-                val users = userRepo.getAllUsers(it)
+                // 🚀 Cargar en paralelo para evitar “Usuario desconocido”
+                val usersDeferred = async(Dispatchers.IO) { userRepo.getAllUsers(tk) }
+                val pubsDeferred = async(Dispatchers.IO) { vm.load(tk) }
+
+                val users = usersDeferred.await()
+                pubsDeferred.await()
+
+                // 🔁 Actualiza el mapa de usuarios en Compose
                 userMap = users.associate { u -> u.id to u.name }
+
+                println("✅ Usuarios cargados: ${userMap.keys}")
             } catch (e: Exception) {
                 e.printStackTrace()
+                scope.launch {
+                    snackbarHostState.showSnackbar("Error al cargar usuarios o publicaciones.")
+                }
+            }
+        } ?: run {
+            scope.launch {
+                snackbarHostState.showSnackbar("Token no encontrado. Inicia sesión nuevamente.")
             }
         }
     }
@@ -180,6 +208,7 @@ fun PublicationListScreen(
                         CircularProgressIndicator()
                     }
                 }
+
                 state.error != null && state.items.isEmpty() -> {
                     Column(
                         Modifier
@@ -201,8 +230,10 @@ fun PublicationListScreen(
                         }
                     }
                 }
+
                 else -> {
                     LazyColumn(
+                        state = listState,
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
@@ -217,16 +248,34 @@ fun PublicationListScreen(
                                     navController.navigate("map/$lat/$lon/$name")
                                 },
                                 onViewProfile = {
-                                    navController.navigate("perfilUsuario/${pub.userId}")
+                                    if (pub.userId == userId)
+                                        navController.navigate("mispublicaciones")
+                                    else
+                                        navController.navigate("perfilUsuario/${pub.userId}")
                                 },
-                                // ✅ Aquí la navegación hacia comentarios:
                                 onViewComments = {
-                                    println("🟡 Navegando a comentarios/${pub.id}")
                                     navController.navigate("comentarios/${pub.id}")
                                 },
                                 authorName = userMap[pub.userId] ?: "Usuario desconocido"
                             )
                         }
+                    }
+
+                    // 🚀 Monitorear el final del scroll (solo para mostrar feedback visual)
+                    LaunchedEffect(listState) {
+                        snapshotFlow {
+                            val lastVisible = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index
+                            val total = listState.layoutInfo.totalItemsCount
+                            lastVisible to total
+                        }.distinctUntilChanged()
+                            .collect { (lastVisible, total) ->
+                                if (lastVisible != null && total > 0 && lastVisible >= total - 3) {
+                                    // No carga más, solo da retroalimentación visual
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("Llegaste al final 🏁")
+                                    }
+                                }
+                            }
                     }
                 }
             }
@@ -250,6 +299,8 @@ fun PublicationCard(
     val textSecondary = if (isDark) Color(0xFFDADADA) else Color(0xFF4F4F4F)
     val locationBg = if (isDark) Color(0xFF374038) else Color(0xFFE8F5E9)
     val locationText = if (isDark) Color(0xFFC8FACC) else Color(0xFF1B5E20)
+    var showFullScreen by remember { mutableStateOf(false) }
+    var imageAspectRatio by remember { mutableStateOf(1f) }
 
     Card(
         modifier = Modifier
@@ -313,16 +364,30 @@ fun PublicationCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(260.dp)
-                    .clickable { onOpen() }
+                    .clickable { showFullScreen = true } // 👈 Al tocar se abre el visor
             ) {
                 AsyncImage(
-                    model = publication.imageUrl,
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(publication.imageUrl)
+                        .crossfade(true)
+                        .diskCachePolicy(CachePolicy.ENABLED)
+                        .memoryCachePolicy(CachePolicy.ENABLED)
+                        .build(),
                     contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.matchParentSize()
+                    modifier = Modifier.matchParentSize(),
+                    contentScale = if (imageAspectRatio < 1f) ContentScale.Crop else ContentScale.Crop,
+                    onSuccess = { success ->
+                        success.painter.intrinsicSize.let {
+                            if (it.width > 0 && it.height > 0) {
+                                imageAspectRatio = it.width / it.height
+                            }
+                        }
+                    },
+                    placeholder = painterResource(id = android.R.drawable.ic_menu_gallery),
+                    error = painterResource(id = android.R.drawable.ic_delete)
                 )
 
-                // Sombra suave inferior
+                // 🌒 Sombra inferior con título encima de la imagen
                 Box(
                     Modifier
                         .matchParentSize()
@@ -341,6 +406,76 @@ fun PublicationCard(
                         .align(Alignment.BottomStart)
                         .padding(16.dp)
                 )
+            }
+
+            // 🪟 Dialog para vista completa con zoom estilo Facebook
+            // 🪟 Dialog para vista completa con zoom controlado (como Facebook)
+            if (showFullScreen) {
+                Dialog(
+                    onDismissRequest = { showFullScreen = false },
+                    properties = androidx.compose.ui.window.DialogProperties(
+                        usePlatformDefaultWidth = false // 🔥 Pantalla completa real
+                    )
+                ) {
+                    var scale by remember { mutableStateOf(1f) }
+                    var offsetX by remember { mutableStateOf(0f) }
+                    var offsetY by remember { mutableStateOf(0f) }
+
+                    val transformState = rememberTransformableState { zoomChange, panChange, _ ->
+                        val newScale = (scale * zoomChange).coerceIn(1f, 4f)
+
+                        // Calcula límites del movimiento
+                        val maxOffsetX = (newScale - 1f) * 400f
+                        val maxOffsetY = (newScale - 1f) * 600f
+
+                        offsetX = (offsetX + panChange.x).coerceIn(-maxOffsetX, maxOffsetX)
+                        offsetY = (offsetY + panChange.y).coerceIn(-maxOffsetY, maxOffsetY)
+                        scale = newScale
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black)
+                            .transformable(transformState),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(publication.imageUrl)
+                                .crossfade(true)
+                                .diskCachePolicy(CachePolicy.ENABLED)
+                                .memoryCachePolicy(CachePolicy.ENABLED)
+                                .build(),
+                            contentDescription = null,
+                            contentScale = ContentScale.Fit,
+                            modifier = Modifier
+                                .graphicsLayer(
+                                    scaleX = scale,
+                                    scaleY = scale,
+                                    translationX = offsetX,
+                                    translationY = offsetY
+                                )
+                                .fillMaxSize()
+                        )
+
+                        // ❌ Botón de cerrar
+                        IconButton(
+                            onClick = { showFullScreen = false },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(16.dp)
+                                .size(40.dp)
+                                .background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Cerrar imagen",
+                                tint = Color.White
+                            )
+                        }
+                    }
+                }
             }
 
             // 📝 Descripción

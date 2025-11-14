@@ -9,8 +9,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
@@ -34,14 +37,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.explorify.explorifyapp.data.remote.publications.prepareFilePart
 import com.explorify.explorifyapp.domain.repository.MediaRepositoryImpl
-import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import com.explorify.explorifyapp.data.remote.publications.MediaApi
 import java.io.File
+import okhttp3.Interceptor
+import okhttp3.OkHttpClient
+import okhttp3.Response
+import retrofit2.Retrofit
+import java.io.IOException
+import java.util.concurrent.TimeUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,7 +68,6 @@ fun CreatePublicationScreen(
     var token by remember { mutableStateOf<String?>(null) }
     var userIdState by remember { mutableStateOf<String?>(null) }
 
-    // 🔹 Carga de token y usuario
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
             val dao = AppDatabase.getInstance(context).authTokenDao()
@@ -68,7 +76,6 @@ fun CreatePublicationScreen(
         }
     }
 
-    // 🔹 Campos de la publicación
     var title by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
     var location by rememberSaveable { mutableStateOf("") }
@@ -80,12 +87,21 @@ fun CreatePublicationScreen(
     var imageUrl by remember { mutableStateOf<String?>(null) }
     var showBottomSheet by remember { mutableStateOf(false) }
     var cameraImageUri by remember { mutableStateOf<Uri?>(null) }
+    val scrollState = rememberScrollState()
+    val focusManager = LocalFocusManager.current
 
-    // 🔹 Retrofit para Media API
     val mediaRepo = remember {
+        val okHttp = OkHttpClient.Builder()
+            .connectTimeout(45, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
+            .build()
+
         MediaRepositoryImpl(
             Retrofit.Builder()
                 .baseUrl("http://explorify.somee.com/")
+                .client(okHttp)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(MediaApi::class.java)
@@ -95,7 +111,6 @@ fun CreatePublicationScreen(
     val ui = vm.uiState
     var isPublishing by remember { mutableStateOf(false) }
 
-    // 🔹 Ubicación seleccionada (desde MapPicker)
     LaunchedEffect(navController.currentBackStackEntry?.savedStateHandle?.get<String>("selected_location_name")) {
         val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
         savedStateHandle?.get<String>("selected_location_name")?.let {
@@ -105,7 +120,6 @@ fun CreatePublicationScreen(
         }
     }
 
-    // 🔹 Permisos de galería
     val galleryPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
@@ -136,7 +150,6 @@ fun CreatePublicationScreen(
         onResult = { uri -> uri?.let { selectedImageUri = it } }
     )
 
-    // Solicitar permiso al entrar
     LaunchedEffect(Unit) {
         val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
             Manifest.permission.READ_MEDIA_IMAGES else Manifest.permission.READ_EXTERNAL_STORAGE
@@ -146,6 +159,11 @@ fun CreatePublicationScreen(
 
 
     Scaffold(
+        modifier = Modifier
+            .clickable(
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) { focusManager.clearFocus() },
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
@@ -179,98 +197,78 @@ fun CreatePublicationScreen(
                 Button(
                     onClick = {
                         if (isPublishing || ui.loading) return@Button
-                        scope.launch {
+                        scope.launch(Dispatchers.IO) {
                             snackbarHostState.currentSnackbarData?.dismiss()
 
                             if (selectedImageUri == null) {
-                                snackbarHostState.showSnackbar("Debes seleccionar una imagen antes de publicar")
+                                withContext(Dispatchers.Main) { snackbarHostState.showSnackbar("Debes seleccionar una imagen antes de publicar") }
                                 return@launch
                             }
 
                             if (description.isBlank() || location.isBlank()) {
-                                snackbarHostState.showSnackbar("Debes llenar descripción y ubicación")
+                                withContext(Dispatchers.Main) { snackbarHostState.showSnackbar("Debes llenar descripción y ubicación") }
                                 return@launch
                             }
 
                             if (userIdState.isNullOrEmpty()) {
-                                snackbarHostState.showSnackbar("No se encontró el usuario autenticado")
+                                withContext(Dispatchers.Main) { snackbarHostState.showSnackbar("No se encontró el usuario autenticado") }
                                 return@launch
                             }
 
-                            // ⚙️ Mostrar loader temporal
-                            isUploading = true
-                            snackbarHostState.showSnackbar("⏳ Subiendo y verificando imagen...")
-
-                            // 📦 Comprimir imagen antes de subir
-                            fun compressImage(context: Context, uri: Uri): File {
-                                val bitmap = android.provider.MediaStore.Images.Media.getBitmap(context.contentResolver, uri)
-                                val file = File(context.cacheDir, "compressed_${System.currentTimeMillis()}.jpg")
-                                val outputStream = java.io.FileOutputStream(file)
-                                bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 75, outputStream)
-                                outputStream.flush()
-                                outputStream.close()
-                                return file
-                            }
-
-                            var finalImageUrl: String? = null
-
                             try {
+                                isUploading = true
+                                withContext(Dispatchers.Main) {
+                                    snackbarHostState.showSnackbar("⏳ Subiendo y verificando imagen...")
+                                }
+
                                 val compressedFile = compressImage(context, selectedImageUri!!)
                                 val compressedUri = Uri.fromFile(compressedFile)
                                 val filePart = context.prepareFilePart("file", compressedUri)
 
-                                val uploadResult = mediaRepo.uploadImage(token ?: "", filePart)
-                                if (uploadResult != null) {
-                                    finalImageUrl = uploadResult.secureUrl
-                                    snackbarHostState.showSnackbar("Imagen subida correctamente")
-                                } else {
-                                    snackbarHostState.showSnackbar("No se pudo subir la imagen. Intenta con otra.")
-                                    return@launch
+                                val uploadResult = retrySuspend(times = 3) {
+                                    mediaRepo.uploadImage(token ?: "", filePart)
                                 }
+
+                                val finalImageUrl = uploadResult.result?.secureUrl
+                                    ?: throw Exception("No se recibió URL segura del servidor")
+
+
+                                isUploading = false
+                                isPublishing = true
+
+                                withContext(Dispatchers.Main) {
+                                    snackbarHostState.showSnackbar("Publicando aventura...")
+                                }
+
+                                vm.createPublication(
+                                    context = context,
+                                    imageUrl = finalImageUrl,
+                                    title = title,
+                                    description = description,
+                                    location = location,
+                                    latitud = latitud,
+                                    longitud = longitud,
+                                    userId = userIdState!!,
+                                    onDone = {
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar("Aventura publicada con éxito")
+                                            onPublishDone()
+                                        }
+                                    }
+                                )
                             } catch (e: Exception) {
-                                val lowerMsg = e.message?.lowercase() ?: ""
-                                when {
-                                    "rechazada" in lowerMsg || "inapropiado" in lowerMsg -> {
-                                        snackbarHostState.showSnackbar(
-                                            "Esta imagen fue rechazada por contener contenido inapropiado."
-                                        )
+                                withContext(Dispatchers.Main) {
+                                    val msg = when {
+                                        "timeout" in (e.message ?: "") -> "Conexión lenta. Reintentando..."
+                                        "host" in (e.message ?: "") -> "Sin conexión. Intenta más tarde."
+                                        else -> "Error inesperado: ${e.message}"
                                     }
-                                    "timeout" in lowerMsg || "failed to connect" in lowerMsg -> {
-                                        snackbarHostState.showSnackbar("No se pudo conectar con el servidor. Inténtalo más tarde.")
-                                    }
-                                    else -> {
-                                        snackbarHostState.showSnackbar("Ocurrió un error al subir la imagen. Intenta con otra foto.")
-                                    }
+                                    snackbarHostState.showSnackbar(msg)
                                 }
-                                return@launch
                             } finally {
                                 isUploading = false
+                                isPublishing = false
                             }
-
-                            // 🧾 Crear publicación solo si la imagen se subió correctamente
-                            if (finalImageUrl == null) return@launch
-
-                            isPublishing = true
-                            snackbarHostState.showSnackbar("Publicando aventura...")
-
-                            vm.createPublication(
-                                context = context,
-                                imageUrl = finalImageUrl,
-                                title = title,
-                                description = description,
-                                location = location,
-                                latitud = latitud,
-                                longitud = longitud,
-                                userId = userIdState!!,
-                                onDone = {
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar("Aventura publicada con éxito")
-                                    }
-                                    onPublishDone()
-                                }
-                            )
-
-                            isPublishing = false
                         }
                     },
                             enabled = !ui.loading && !isPublishing && !isUploading,
@@ -301,6 +299,7 @@ fun CreatePublicationScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .verticalScroll(scrollState)
                 .background(
                     brush = androidx.compose.ui.graphics.Brush.verticalGradient(
                         listOf(Color(0xFFF6F4EF), Color(0xFFDDF5E3))
@@ -395,11 +394,13 @@ fun CreatePublicationScreen(
             // 🎯 Título
             OutlinedTextField(
                 value = title,
-                onValueChange = { title = it },
+                onValueChange = { if (it.length <= 50) title = it },
                 label = { Text("Título (opcional)") },
                 leadingIcon = {
                     Icon(imageVector = Icons.Default.Add, contentDescription = null, tint = Color(0xFF3C9D6D))
                 },
+                supportingText = { Text("${title.length}/50", color = Color.Gray) }, // 🔹 Contador visual
+                singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFFDDF5E3),
@@ -420,11 +421,13 @@ fun CreatePublicationScreen(
             // 📝 Descripción
             OutlinedTextField(
                 value = description,
-                onValueChange = { description = it },
+                onValueChange = { if (it.length <= 200) description = it },
                 label = { Text("Descripción") },
                 leadingIcon = {
                     Icon(imageVector = Icons.Default.Add, contentDescription = null, tint = Color(0xFF3C9D6D))
                 },
+                supportingText = { Text("${description.length}/200", color = Color.Gray) }, // 🔹 Contador visual
+                maxLines = 6,
                 modifier = Modifier.fillMaxWidth().heightIn(min = 100.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFFDDF5E3),
@@ -479,4 +482,100 @@ fun CreatePublicationScreen(
             Spacer(Modifier.height(30.dp))
         }
     }
+}
+
+fun compressImage(context: Context, uri: Uri): File {
+    // 1) Lee dimensiones sin cargar todo en memoria
+    val options = android.graphics.BitmapFactory.Options().apply {
+        inJustDecodeBounds = true
+    }
+    context.contentResolver.openInputStream(uri)?.use {
+        android.graphics.BitmapFactory.decodeStream(it, null, options)
+    }
+
+    // 2) Calcula inSampleSize para un máximo de ~1920px (suficiente para móvil)
+    val maxDim = 1920
+    var inSampleSize = 1
+    var width = options.outWidth
+    var height = options.outHeight
+    while (width / inSampleSize > maxDim || height / inSampleSize > maxDim) {
+        inSampleSize *= 2
+    }
+
+    // 3) Decodifica ya escalado
+    val decodeOpts = android.graphics.BitmapFactory.Options().apply {
+        inSampleSize = inSampleSize
+        inPreferredConfig = android.graphics.Bitmap.Config.RGB_565 // menos memoria/peso
+    }
+    val bitmap = context.contentResolver.openInputStream(uri)?.use {
+        android.graphics.BitmapFactory.decodeStream(it, null, decodeOpts)
+    } ?: throw IllegalArgumentException("No se pudo decodificar la imagen")
+
+    // 4) (Opcional) re-escala fino si aún supera el máximo
+    val scale = (maxOf(bitmap.width, bitmap.height).toFloat() / maxDim).coerceAtLeast(1f)
+    val resized = if (scale > 1f) {
+        android.graphics.Bitmap.createScaledBitmap(
+            bitmap,
+            (bitmap.width / scale).toInt(),
+            (bitmap.height / scale).toInt(),
+            true
+        )
+    } else bitmap
+
+    // 5) Comprime a JPEG ~70 (buena calidad/peso)
+    val outFile = File(context.cacheDir, "compressed_${System.currentTimeMillis()}.jpg")
+    java.io.FileOutputStream(outFile).use { fos ->
+        resized.compress(android.graphics.Bitmap.CompressFormat.JPEG, 70, fos)
+        fos.flush()
+    }
+
+    if (resized !== bitmap) bitmap.recycle()
+    return outFile
+}
+
+class RetryInterceptor(
+    private val maxRetries: Int = 3,
+    private val initialDelayMs: Long = 1500L
+) : Interceptor {
+    override fun intercept(chain: Interceptor.Chain): Response {
+        var tryCount = 0
+        var lastException: IOException? = null
+        var delay = initialDelayMs
+
+        while (tryCount <= maxRetries) {
+            try {
+                return chain.proceed(chain.request())
+            } catch (e: IOException) {
+                lastException = e
+                if (tryCount == maxRetries) break
+                tryCount++
+                try { Thread.sleep(delay) } catch (_: InterruptedException) {}
+                delay = (delay * 2).coerceAtMost(8000L) // backoff exponencial
+            }
+        }
+        throw lastException ?: IOException("Upload failed with unknown error")
+    }
+}
+
+suspend fun <T> retrySuspend(
+    times: Int = 3,
+    initialDelayMs: Long = 1500L,
+    factor: Double = 2.0,
+    block: suspend () -> T
+): T {
+    var currentDelay = initialDelayMs
+    repeat(times - 1) {
+        try {
+            return block()
+        } catch (e: Exception) {
+            val msg = e.message?.lowercase() ?: ""
+            val retryable = e is java.net.SocketTimeoutException ||
+                    e is java.io.IOException ||
+                    "timeout" in msg || "failed to connect" in msg || "host" in msg
+            if (!retryable) throw e
+        }
+        kotlinx.coroutines.delay(currentDelay)
+        currentDelay = (currentDelay * factor).toLong().coerceAtMost(8000L)
+    }
+    return block()
 }
