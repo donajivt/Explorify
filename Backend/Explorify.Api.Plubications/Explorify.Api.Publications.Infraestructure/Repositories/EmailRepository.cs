@@ -16,7 +16,7 @@ namespace Explorify.Api.Publications.Infraestructure.Repositories
             _config = config;
         }
 
-        public async Task<bool> SendEmailAsync(Email email)
+        public async Task<(bool Success, string ErrorMessage)> SendEmailAsync(Email email)
         {
             try
             {
@@ -44,11 +44,19 @@ namespace Explorify.Api.Publications.Infraestructure.Repositories
                 message.To.Add(email.To);
 
                 await client.SendMailAsync(message);
-                return true;
+                return (true, "");
             }
-            catch
+            catch (SmtpFailedRecipientException ex)
             {
-                return false;
+                return (false, $"El correo del destinatario no existe o no está disponible: {ex.FailedRecipient}");
+            }
+            catch (SmtpException ex)
+            {
+                return (false, $"Error SMTP: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                return (false, $"Error desconocido: {ex.Message}");
             }
         }
     }

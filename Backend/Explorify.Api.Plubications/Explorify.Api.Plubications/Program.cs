@@ -1,5 +1,6 @@
 using Explorify.Api.Publications.Application.Interfaces;
 using Explorify.Api.Publications.Application.Services;
+using Explorify.Api.Publications.Domain.Entities;
 using Explorify.Api.Publications.Domain.Interfaces;
 using Explorify.Api.Publications.Infraestructure.Extensions;
 using Explorify.Api.Publications.Infraestructure.Persistence;
@@ -20,6 +21,11 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod();  
     });
 });
+
+//configuracion del apikey
+builder.Services.Configure<ZeroBounceSettings>(
+    builder.Configuration.GetSection("ZeroBounce")
+);
 
 // MongoDB Options
 builder.Services.Configure<MongoOptions>(
@@ -42,7 +48,8 @@ builder.Services.AddScoped<IReportRepository, ReportRepository>();
 builder.Services.AddScoped<IReportService, ReportService>();
 builder.Services.AddScoped<IEmailRepository, EmailRepository>();
 builder.Services.AddScoped<IEmailService, EmailService>();
-
+builder.Services.AddHttpClient<IEmailVerificationRepository, EmailVerificationRepository>();
+builder.Services.AddScoped<IEmailVerificationService, EmailVerificationService>();
 
 // JWT y Swagger
 builder.AddAppAuthentication();

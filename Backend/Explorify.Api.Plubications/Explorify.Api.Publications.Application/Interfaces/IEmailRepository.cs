@@ -5,6 +5,6 @@ namespace Explorify.Api.Publications.Application.Interfaces
 {
     public interface IEmailRepository
     {
-        Task<bool> SendEmailAsync(Email email);
+        Task<(bool Success, string ErrorMessage)> SendEmailAsync(Email email);
     }
 }
