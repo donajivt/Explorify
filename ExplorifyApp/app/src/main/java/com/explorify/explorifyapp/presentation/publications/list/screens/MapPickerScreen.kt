@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -83,6 +84,8 @@ fun MapPickerScreen(
     // Control de reintentos automáticos tras conceder permiso / activar GPS
     var pendingLocateAction by remember { mutableStateOf(false) }
     var awaitingGpsEnable by remember { mutableStateOf(false) }
+    var mapReady by remember { mutableStateOf(false) }
+    var mapLoaded by remember { mutableStateOf(false) }
 
     var userLocation by remember { mutableStateOf<GeoPoint?>(null) }
 
@@ -96,21 +99,19 @@ fun MapPickerScreen(
     // Función para obtener ubicación del usuario
     @SuppressLint("MissingPermission")
     fun getUserLocation() {
-        // 1) Permisos
         if (!permission.status.isGranted) {
             pendingLocateAction = true
             permission.launchPermissionRequest()
             return
         }
 
-        // 2) Estado del GPS
         if (!isLocationEnabled()) {
             pendingLocateAction = true
             showLocationDialog = true
             return
         }
 
-        // 3) Ya con todo OK, obtener ubicación
+        val fused = LocationServices.getFusedLocationProviderClient(context)
         val fine = ContextCompat.checkSelfPermission(
             context, Manifest.permission.ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
@@ -119,49 +120,33 @@ fun MapPickerScreen(
         ) == PackageManager.PERMISSION_GRANTED
         if (!fine && !coarse) return
 
-        val fused = LocationServices.getFusedLocationProviderClient(context)
-
-        try {
-            // Primero intentar con lastLocation
-            fused.lastLocation.addOnSuccessListener { loc ->
-                if (loc != null) {
-                    val p = GeoPoint(loc.latitude, loc.longitude)
-                    userLocation = p
-                    selectedPoint = p
-                    updateMarker(mapView, context, p)
-                    mapView.controller.setZoom(16.0)
-                    mapView.controller.animateTo(p)
-                    scope.launch(Dispatchers.IO) {
-                        val name = getPlaceNameFromOSM(context, loc.latitude, loc.longitude)
+        scope.launch(Dispatchers.IO) {
+            try {
+                // 🔁 Reintento automático 3 veces si falla
+                repeat(3) { attempt ->
+                    val cts = CancellationTokenSource()
+                    val fresh = withTimeoutOrNull(2000L) {
+                        fused.getCurrentLocation(
+                            Priority.PRIORITY_BALANCED_POWER_ACCURACY,
+                            cts.token
+                        ).await()
+                    }
+                    if (fresh != null) {
+                        val p = GeoPoint(fresh.latitude, fresh.longitude)
+                        userLocation = p
+                        withContext(Dispatchers.Main) {
+                            selectedPoint = p
+                            updateMarker(mapView, context, p)
+                            mapView.controller.setZoom(16.0)
+                            mapView.controller.animateTo(p)
+                        }
+                        val name = getPlaceNameFromOSM(context, p.latitude, p.longitude)
                         withContext(Dispatchers.Main) {
                             selectedPlaceName = name ?: "Mi ubicación actual"
                         }
-                    }
-                }
-            }
-        } catch (_: SecurityException) { }
-
-        // Luego obtener ubicación fresca (rápido, con timeout)
-        scope.launch(Dispatchers.IO) {
-            try {
-                val cts = CancellationTokenSource()
-                val fresh = withTimeoutOrNull(2000L) {
-                    fused.getCurrentLocation(
-                        Priority.PRIORITY_BALANCED_POWER_ACCURACY, cts.token
-                    ).await()
-                }
-                fresh?.let {
-                    val p = GeoPoint(it.latitude, it.longitude)
-                    userLocation = p
-                    withContext(Dispatchers.Main) {
-                        selectedPoint = p
-                        updateMarker(mapView, context, p)
-                        mapView.controller.setZoom(16.0)
-                        mapView.controller.animateTo(p)
-                    }
-                    val name = getPlaceNameFromOSM(context, it.latitude, it.longitude)
-                    withContext(Dispatchers.Main) {
-                        selectedPlaceName = name ?: "Mi ubicación actual"
+                        return@launch // 🔚 exit loop si ya logró
+                    } else {
+                        delay(500L * (attempt + 1)) // espera antes de reintentar
                     }
                 }
             } catch (_: Exception) { }
@@ -183,7 +168,7 @@ fun MapPickerScreen(
                 if (awaitingGpsEnable && isLocationEnabled()) {
                     scope.launch {
                         // Esperar un poco a que el GPS recupere señal
-                        kotlinx.coroutines.delay(1500)
+                        kotlinx.coroutines.delay((1200..2200).random().toLong())
 
                         val fused = LocationServices.getFusedLocationProviderClient(context)
                         try {
@@ -235,8 +220,8 @@ fun MapPickerScreen(
         )
         Configuration.getInstance().userAgentValue = context.packageName
         Configuration.getInstance().tileDownloadThreads = 4
-        Configuration.getInstance().tileFileSystemCacheMaxBytes = 1024L * 1024 * 128
-        Configuration.getInstance().tileFileSystemCacheTrimBytes = 1024L * 1024 * 96
+        Configuration.getInstance().tileFileSystemCacheMaxBytes = 1024L * 1024 * 256
+        Configuration.getInstance().tileFileSystemCacheTrimBytes = 1024L * 1024 * 200
 
         mapView.setTileSource(TileSourceFactory.MAPNIK)
         mapView.setMultiTouchControls(true)
@@ -387,8 +372,21 @@ fun MapPickerScreen(
                     }
                     false
                 }
+                if (!mapLoaded) {
+                    map.postDelayed({ mapLoaded = true }, 1000)
+                }
             }
 
+            if (!mapLoaded) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color(0xFFF4F6F4)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color(0xFF3C9D6D))
+                }
+            }
             // 🔍 Campo de búsqueda
             Column(
                 modifier = Modifier
@@ -519,6 +517,13 @@ fun MapPickerScreen(
     }
 
     BackHandler { navController.popBackStack() }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            mapView.onPause()
+            mapView.onDetach()
+        }
+    }
 }
 
 // ------- Helper: actualizar marcador sin parpadeos -------
@@ -540,6 +545,16 @@ private val httpClient by lazy {
         .callTimeout(6, TimeUnit.SECONDS)
         .connectTimeout(3, TimeUnit.SECONDS)
         .readTimeout(5, TimeUnit.SECONDS)
+        .addInterceptor { chain ->
+            var attempt = 0
+            var response = chain.proceed(chain.request())
+            while (!response.isSuccessful && attempt < 2) {
+                attempt++
+                response.close()
+                response = chain.proceed(chain.request())
+            }
+            response
+        }
         .build()
 }
 
@@ -565,23 +580,26 @@ suspend fun getPlaceNameFromOSM(context: Context, lat: Double, lon: Double): Str
 suspend fun fetchCoordinatesFromOSM(context: Context, query: String): Triple<Double, Double, String>? =
     withContext(Dispatchers.IO) {
         try {
-            val url = "https://nominatim.openstreetmap.org/search?format=json&q=${query}"
-            val req = Request.Builder()
-                .url(url)
-                .header("User-Agent", context.packageName)
-                .header("Accept-Language", "es")
-                .build()
-            httpClient.newCall(req).execute().use { resp ->
-                if (!resp.isSuccessful) return@use null
-                val body = resp.body?.string() ?: return@use null
-                val array = JSONArray(body)
-                if (array.length() == 0) return@use null
-                val obj = array.getJSONObject(0)
-                Triple(
-                    obj.getDouble("lat"),
-                    obj.getDouble("lon"),
-                    obj.getString("display_name")
-                )
+            withTimeoutOrNull(4000L) {
+                val url = "https://nominatim.openstreetmap.org/search?format=json&q=${query}"
+                val req = Request.Builder()
+                    .url(url)
+                    .header("User-Agent", "${context.packageName}/1.0 (ExplorifyApp)")
+                    .header("Accept-Language", "es")
+                    .header("Accept-Encoding", "gzip")
+                    .build()
+                httpClient.newCall(req).execute().use { resp ->
+                    if (!resp.isSuccessful) return@use null
+                    val body = resp.body?.string() ?: return@use null
+                    val array = JSONArray(body)
+                    if (array.length() == 0) return@use null
+                    val obj = array.getJSONObject(0)
+                    Triple(
+                        obj.getDouble("lat"),
+                        obj.getDouble("lon"),
+                        obj.getString("display_name")
+                    )
+                }
             }
         } catch (e: Exception) { null }
     }

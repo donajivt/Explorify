@@ -181,7 +181,9 @@ fun UsersProfileScreen(
                                     navController.navigate("map/$lat/$lon/$name")
                                 },
                                 onViewProfile = { /* ya estamos en perfil */ },
-                                onViewComments = { /* pendiente */ },
+                                onViewComments = {
+                                    navController.navigate("comentarios/${pub.id}")
+                                },
                                 authorName = userName ?: "Usuario"
                             )
                             Spacer(Modifier.height(12.dp))

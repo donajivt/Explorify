@@ -33,7 +33,12 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalFocusManager
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -53,6 +58,7 @@ fun CommentsScreen(
     var newComment by remember { mutableStateOf("") }
     var sending by remember { mutableStateOf(false) }
     var confirmDeleteId by remember { mutableStateOf<String?>(null) }
+    val focusManager = LocalFocusManager.current
 
     // Cache estable de IDs temporales (evita claves duplicadas)
     val keyCache = remember { mutableStateMapOf<String, String>() }
@@ -96,7 +102,12 @@ fun CommentsScreen(
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .imePadding(),
+            .imePadding()
+            .clickable(
+                // 👇 al tocar fuera, cierra teclado
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            ) { focusManager.clearFocus() },
         topBar = {
             TopAppBar(
                 title = { Text("Comentarios") },
@@ -110,27 +121,38 @@ fun CommentsScreen(
         bottomBar = {
             Surface(
                 tonalElevation = 8.dp,
-                shadowElevation = 4.dp
+                shadowElevation = 4.dp,
+                modifier = Modifier.navigationBarsPadding()
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                        .padding(horizontal = 12.dp, vertical = 8.dp)
+                    . imePadding (),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     BasicTextField(
                         value = newComment,
-                        onValueChange = { newComment = it },
+                        onValueChange = {
+                            if (it.length <= 500) newComment = it
+                        },
                         modifier = Modifier
                             .weight(1f)
+                            .heightIn(min = 40.dp, max = 120.dp)
                             .clip(RoundedCornerShape(16.dp))
                             .background(Color(0xFFF1F1F1))
                             .padding(horizontal = 16.dp, vertical = 10.dp),
                         decorationBox = { innerTextField ->
-                            if (newComment.isEmpty()) {
-                                Text("Escribe un comentario...", color = Color.Gray)
+                            Box(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .verticalScroll(rememberScrollState())
+                            ) {
+                                if (newComment.isEmpty()) {
+                                    Text("Escribe un comentario...", color = Color.Gray)
+                                }
+                                innerTextField()
                             }
-                            innerTextField()
                         }
                     )
 
