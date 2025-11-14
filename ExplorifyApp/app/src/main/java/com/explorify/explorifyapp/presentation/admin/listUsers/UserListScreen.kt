@@ -141,7 +141,7 @@ fun UserListScreen(navController: NavController,
             ) {
                 items(filteredUsers) { user ->
                     UserItem(user){
-                        navController.navigate("perfilUsuario/${user.id}")
+                        navController.navigate("perfilAdminUsuario/${user.id}")
                     }
                     Divider() // separa visualmente los usuarios
                 }

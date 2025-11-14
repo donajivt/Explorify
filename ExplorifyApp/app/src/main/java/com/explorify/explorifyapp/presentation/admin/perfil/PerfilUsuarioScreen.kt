@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.filled.BorderColor
 import androidx.compose.material.icons.filled.ExitToApp
 import com.explorify.explorifyapp.data.remote.users.RetrofitUsersInstance
 import com.explorify.explorifyapp.domain.repository.UserRepository
@@ -72,7 +73,7 @@ fun PerfilUsuarioScreen(navController: NavController,
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Mi Perfil") },
+                title = { Text("Perfil de ") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
@@ -86,19 +87,25 @@ fun PerfilUsuarioScreen(navController: NavController,
                     icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
                     label = { Text("Inicio") },
                     selected = false,
-                    onClick = { navController.navigate("publicaciones") }
+                    onClick = { navController.navigate("adminDashboard") }
                 )
+                /* NavigationBarItem(
+                     icon = { Icon(Icons.Default.BarChart, contentDescription = "Buscar") },
+                     label = { Text("Estadisticas") },
+                     selected = false,
+                     onClick = { } //navController.navigate("buscar")
+                 )*/
                 NavigationBarItem(
-                    icon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
-                    label = { Text("Buscar") },
+                    icon = { Icon(Icons.Default.BorderColor, contentDescription = "Buscar") },
+                    label = { Text("Reportes") },
                     selected = false,
-                    onClick = { navController.navigate("buscar") }
+                    onClick = {  } //navController.navigate("reportesList")
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
                     label = { Text("Perfil") },
                     selected = true,
-                    onClick = {}
+                    onClick = { navController.navigate("perfilAdmin")}//
                 )
             }
         }
