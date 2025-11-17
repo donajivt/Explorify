@@ -40,6 +40,10 @@ namespace Explorify.Api.User.Infrastructure.Repositories
         {
             await _users.ReplaceOneAsync(u => u.Id == user.Id, user);
         }
+        public async Task UpdatePasswordAsync(Domain.Entities.User user)
+        {
+            await _users.ReplaceOneAsync(u => u.Id == user.Id, user);
+        }
 
         public async Task DeleteAsync(string id)
         {

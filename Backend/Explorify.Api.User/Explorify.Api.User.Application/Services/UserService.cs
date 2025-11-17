@@ -3,7 +3,9 @@ using Explorify.Api.User.Application.Dtos;
 using Explorify.Api.User.Application.Interfaces;
 using Explorify.Api.User.Domain.Entities;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using System;
+using BCrypt.Net;
 using System.Threading.Tasks;
 
 namespace Explorify.Api.User.Application.Services
@@ -12,11 +14,13 @@ namespace Explorify.Api.User.Application.Services
     {
         private readonly IUserRepository _userRepository;
         private readonly ICloudinaryService _cloudinary;
+        private readonly PasswordHasher<Domain.Entities.User> _passwordHasher;
 
         public UserService(IUserRepository userRepository, ICloudinaryService cloudinary)
         {
             _userRepository = userRepository;
             _cloudinary = cloudinary;
+            _passwordHasher = new PasswordHasher<Domain.Entities.User>();
         }
 
         public async Task<ResponseDto> GetProfileAsync(string userId)
@@ -66,7 +70,35 @@ namespace Explorify.Api.User.Application.Services
 
             return new ResponseDto { Result = "Perfil actualizado correctamente" };
         }
+        public async Task<ResponseDto> UpdatePasswordAsync(string userId, UserPasswordDto dto)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                return new ResponseDto { IsSuccess = false, Message = "Usuario no encontrado" };
 
+            // 1. Validar contraseña anterior usando BCrypt
+            bool isPasswordCorrect = BCrypt.Net.BCrypt.Verify(dto.OldPassword, user.PasswordHash);
+
+            if (!isPasswordCorrect)
+            {
+                return new ResponseDto
+                {
+                    IsSuccess = false,
+                    Message = "La contraseña anterior no es correcta."
+                };
+            }
+
+            // 2. Hashear la nueva contraseña
+            string newHashedPassword = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+
+            // 3. Guardar el nuevo hash
+            user.PasswordHash = newHashedPassword;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _userRepository.UpdateAsync(user);
+
+            return new ResponseDto { Result = "Contraseña actualizada correctamente" };
+        }
         public async Task<ResponseDto> DeleteProfileAsync(string userId)
         {
             var user = await _userRepository.GetByIdAsync(userId);

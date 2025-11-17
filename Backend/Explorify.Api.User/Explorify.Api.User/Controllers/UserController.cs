@@ -1,6 +1,5 @@
 ﻿using Explorify.Api.User.Application.Dtos;
 using Explorify.Api.User.Application.Interfaces;
-using Explorify.Api.User.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
@@ -63,6 +62,13 @@ namespace Explorify.Api.User.Api.Controllers
         {
             var userId = GetUserIdFromToken();
             var response = await _userService.UpdateProfileAsync(userId, dto, profileImage);
+            return Ok(response);
+        }
+        [HttpPut("password")]
+        public async Task<IActionResult> UpdatePassword([FromBody] UserPasswordDto dto)
+        {
+            var userId = GetUserIdFromToken();
+            var response = await _userService.UpdatePasswordAsync(userId, dto);
             return Ok(response);
         }
 

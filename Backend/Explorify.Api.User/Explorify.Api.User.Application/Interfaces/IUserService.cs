@@ -11,6 +11,6 @@ namespace Explorify.Api.User.Application.Interfaces
         Task<ResponseDto> DeleteProfileAsync(string userId);
         Task<ResponseDto> GetAllUsersAsync();
         Task<ResponseDto> GetUserByIdAsync(string id);
-
+        Task<ResponseDto> UpdatePasswordAsync(string userId, UserPasswordDto dto);
     }
 }
