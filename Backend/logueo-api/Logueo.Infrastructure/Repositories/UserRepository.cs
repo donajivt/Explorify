@@ -19,12 +19,6 @@ namespace Logueo.Infrastructure.Repositories
 
         public Task AddAsync(User user) => _col.InsertOneAsync(user);
 
-        public async Task<bool> UpdateAsync(User user)
-        {
-            var result = await _col.ReplaceOneAsync(u => u.Id == user.Id, user);
-            return result.ModifiedCount > 0;
-        }
-
         public async Task<bool> AddRoleAsync(string email, string roleName)
         {
             var update = Builders<User>.Update.AddToSet(u => u.Roles, roleName);

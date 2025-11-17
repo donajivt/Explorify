@@ -2,7 +2,6 @@
 using Logueo.Infrastructure.Auth;
 using Logueo.Infrastructure.Persistence;
 using Logueo.Infrastructure.Repositories;
-using Logueo.Infrastructure.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,15 +22,9 @@ namespace Logueo.Infrastructure
             cfg.GetSection("ApiSettings:JwtOptions").Bind(jwt);
             services.AddSingleton(jwt);
 
-            // Cloudinary
-            var cloudinary = new CloudinaryOptions();
-            cfg.GetSection(CloudinaryOptions.SectionName).Bind(cloudinary);
-            services.AddSingleton(cloudinary);
-
             // Repos + servicios
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IJwtGenerator, JwtGenerator>();
-            services.AddScoped<ICloudinaryService, CloudinaryService>();
             services.AddScoped<IAuthService, AuthService>();
 
             return services;

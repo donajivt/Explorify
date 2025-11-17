@@ -11,6 +11,5 @@ namespace Logueo.Domain.Entities
         public string PasswordHash { get; set; } = string.Empty;
         public List<string> Roles { get; set; } = new();
         public string? ProfileImageUrl { get; set; }
-        public string? CloudinaryPublicId { get; set; }
     }
 }

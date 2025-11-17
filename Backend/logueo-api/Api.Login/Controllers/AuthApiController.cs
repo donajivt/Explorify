@@ -19,9 +19,9 @@ namespace Api.Login.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromForm] RegistrationRequestDto model, IFormFile? profileImage)
+        public async Task<IActionResult> Register([FromBody] RegistrationRequestDto model)
         {
-            var errorMessage = await _authService.Register(model, profileImage);
+            var errorMessage = await _authService.Register(model);
             if (!string.IsNullOrEmpty(errorMessage))
             {
                 _response.IsSuccess = false;
@@ -99,24 +99,6 @@ namespace Api.Login.Controllers
             _response.IsSuccess = true;
             _response.Message = "Usuario obtenido correctamente";
             _response.Result = user;
-            return Ok(_response);
-        }
-
-        [HttpPut("{userId}")]
-        public async Task<IActionResult> UpdateUser(string userId, [FromForm] UpdateUserDto model, IFormFile? profileImage)
-        {
-            var updatedUser = await _authService.UpdateUser(userId, model, profileImage);
-
-            if (updatedUser == null)
-            {
-                _response.IsSuccess = false;
-                _response.Message = "No se pudo actualizar el usuario. Verifica que el email no esté en uso.";
-                return BadRequest(_response);
-            }
-
-            _response.IsSuccess = true;
-            _response.Message = "Usuario actualizado correctamente";
-            _response.Result = updatedUser;
             return Ok(_response);
         }
     }

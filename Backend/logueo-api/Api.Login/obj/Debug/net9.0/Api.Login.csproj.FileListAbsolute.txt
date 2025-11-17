@@ -181,3 +181,5 @@ C:\Users\vania\OneDrive\Documentos\Explorify\Explorify\Backend\logueo-api\Api.Lo
 C:\Users\vania\OneDrive\Documentos\Explorify\Explorify\Backend\logueo-api\Api.Login\obj\Debug\net9.0\Api.Login.genruntimeconfig.cache
 C:\Users\vania\OneDrive\Documentos\Explorify\Explorify\Backend\logueo-api\Api.Login\obj\Debug\net9.0\ref\Api.Login.dll
 C:\Users\vania\OneDrive\Documentos\Explorify\Explorify\Backend\logueo-api\Api.Login\obj\Debug\net9.0\staticwebassets.upToDateCheck.txt
+C:\Users\vania\OneDrive\Documentos\Explorify\Explorify\Backend\logueo-api\Api.Login\bin\Debug\net9.0\CloudinaryDotNet.dll
+C:\Users\vania\OneDrive\Documentos\Explorify\Explorify\Backend\logueo-api\Api.Login\bin\Debug\net9.0\Newtonsoft.Json.dll
