@@ -1,6 +1,8 @@
-﻿using Explorify.Api.User.Application.Dtos;
+﻿using CloudinaryDotNet;
+using Explorify.Api.User.Application.Dtos;
 using Explorify.Api.User.Application.Interfaces;
 using Explorify.Api.User.Domain.Entities;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Threading.Tasks;
 
@@ -9,10 +11,12 @@ namespace Explorify.Api.User.Application.Services
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly ICloudinaryService _cloudinary;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(IUserRepository userRepository, ICloudinaryService cloudinary)
         {
             _userRepository = userRepository;
+            _cloudinary = cloudinary;
         }
 
         public async Task<ResponseDto> GetProfileAsync(string userId)
@@ -26,21 +30,37 @@ namespace Explorify.Api.User.Application.Services
                 Id = user.Id,
                 Username = user.Name,
                 Email = user.Email,
-                Role = string.Join(", ", user.Roles)
+                Role = string.Join(", ", user.Roles),
+                ProfileImageUrl = user.ProfileImageUrl,
+                CloudinaryPublicId = user.CloudinaryPublicId,
             };
 
             return new ResponseDto { Result = dto };
         }
 
-        public async Task<ResponseDto> UpdateProfileAsync(string userId, UserUpdateDto dto)
+        public async Task<ResponseDto> UpdateProfileAsync(string userId, UserUpdateDto dto, IFormFile? profileImage)
         {
             var user = await _userRepository.GetByIdAsync(userId);
             if (user == null)
                 return new ResponseDto { IsSuccess = false, Message = "Usuario no encontrado" };
 
+            string? profileImageUrl = null;
+            string? cloudinaryPublicId = null;
+            // Si hay imagen, subirla a Cloudinary
+            if (profileImage != null)
+            {
+                var uploadResult = await _cloudinary.UploadImageAsync(profileImage);
+                if (uploadResult.HasValue)
+                {
+                    profileImageUrl = uploadResult.Value.imageUrl;
+                    cloudinaryPublicId = uploadResult.Value.publicId;
+                }
+            }
             user.Name = dto.Username;
             user.Email = dto.Email;
             user.UpdatedAt = DateTime.UtcNow;
+            user.ProfileImageUrl = profileImageUrl;
+            user.CloudinaryPublicId = cloudinaryPublicId;
 
             await _userRepository.UpdateAsync(user);
 

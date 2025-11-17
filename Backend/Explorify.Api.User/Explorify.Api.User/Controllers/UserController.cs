@@ -28,7 +28,6 @@ namespace Explorify.Api.User.Api.Controllers
         //}
         private string GetUserIdFromToken()
         {
-            // Buscar primero en el claim "sub"
             var subClaim = User.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Sub)?.Value;
             if (!string.IsNullOrEmpty(subClaim))
                 return subClaim;
@@ -36,16 +35,13 @@ namespace Explorify.Api.User.Api.Controllers
             return User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
         }
 
-        // Obtener todos los usuarios (solo accesible por administrador si lo deseas)
         [HttpGet]
-        [Authorize]
         public async Task<IActionResult> GetAllUsers()
         {
             var response = await _userService.GetAllUsersAsync();
             return Ok(response);
         }
 
-        // Obtener usuario por Id
         [HttpGet("{id:length(24)}")]
         [AllowAnonymous]
         public async Task<IActionResult> GetUserById(string id)
@@ -63,10 +59,10 @@ namespace Explorify.Api.User.Api.Controllers
         }
 
         [HttpPut("me")]
-        public async Task<IActionResult> UpdateProfile([FromBody] UserUpdateDto dto)
+        public async Task<IActionResult> UpdateProfile([FromForm] UserUpdateDto dto, IFormFile? profileImage)
         {
             var userId = GetUserIdFromToken();
-            var response = await _userService.UpdateProfileAsync(userId, dto);
+            var response = await _userService.UpdateProfileAsync(userId, dto, profileImage);
             return Ok(response);
         }
 

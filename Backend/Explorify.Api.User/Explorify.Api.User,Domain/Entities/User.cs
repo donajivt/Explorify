@@ -22,11 +22,16 @@ namespace Explorify.Api.User.Domain.Entities
 
         [BsonElement("Roles")]
         public List<string> Roles { get; set; } = new();
+        [BsonElement("ProfileImageUrl")]
+        public string? ProfileImageUrl { get; set; }
+        [BsonElement("CloudinaryPublicId")]
+        public string? CloudinaryPublicId { get; set; }
 
         [BsonElement("CreatedAt")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
         [BsonElement("UpdatedAt")]
         public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
     }
 }
