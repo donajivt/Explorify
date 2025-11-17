@@ -1,13 +1,14 @@
 ﻿using Api.Login.Contract;
 using Logueo.Application.Dtos;
 using Logueo.Application.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Login.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AuthApiController:ControllerBase
+    public class AuthApiController : ControllerBase
     {
         private readonly IAuthService _authService;
         private readonly ApiResponse _response = new();
@@ -18,9 +19,9 @@ namespace Api.Login.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegistrationRequestDto model)
+        public async Task<IActionResult> Register([FromForm] RegistrationRequestDto model, IFormFile? profileImage)
         {
-            var errorMessage = await _authService.Register(model);
+            var errorMessage = await _authService.Register(model, profileImage);
             if (!string.IsNullOrEmpty(errorMessage))
             {
                 _response.IsSuccess = false;
@@ -83,5 +84,40 @@ namespace Api.Login.Controllers
             return Ok(_response);
         }
 
+        [HttpGet("{userId}")]
+        public async Task<IActionResult> GetUserById(string userId)
+        {
+            var user = await _authService.GetUserById(userId);
+
+            if (user == null)
+            {
+                _response.IsSuccess = false;
+                _response.Message = "Usuario no encontrado";
+                return NotFound(_response);
+            }
+
+            _response.IsSuccess = true;
+            _response.Message = "Usuario obtenido correctamente";
+            _response.Result = user;
+            return Ok(_response);
+        }
+
+        [HttpPut("{userId}")]
+        public async Task<IActionResult> UpdateUser(string userId, [FromForm] UpdateUserDto model, IFormFile? profileImage)
+        {
+            var updatedUser = await _authService.UpdateUser(userId, model, profileImage);
+
+            if (updatedUser == null)
+            {
+                _response.IsSuccess = false;
+                _response.Message = "No se pudo actualizar el usuario. Verifica que el email no esté en uso.";
+                return BadRequest(_response);
+            }
+
+            _response.IsSuccess = true;
+            _response.Message = "Usuario actualizado correctamente";
+            _response.Result = updatedUser;
+            return Ok(_response);
+        }
     }
 }

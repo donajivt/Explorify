@@ -1,41 +1,55 @@
+using Logueo.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Logueo.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 
-// 2) Infraestructura (Mongo + Repos + AuthService + JwtTokenGenerator + JwtOptions desde ApiSettings:JwtOptions)
+// Agregar infraestructura (MongoDB, JWT, Cloudinary)
 builder.Services.AddInfrastructure(builder.Configuration);
 
-// 3) Autenticación JWT (validación de tokens emitidos con tu Secret/Issuer/Audience)
-var jwtSection = builder.Configuration.GetSection("ApiSettings:JwtOptions");
-var secret = jwtSection["Secret"]!;
-var issuer = jwtSection["Issuer"];
-var audience = jwtSection["Audience"];
-
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+// Configurar CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", builder =>
     {
-        options.TokenValidationParameters = new()
-        {
-            ValidateIssuer = !string.IsNullOrWhiteSpace(issuer),
-            ValidateAudience = !string.IsNullOrWhiteSpace(audience),
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = issuer,          
-            ValidAudience = audience,      
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret))
-        };
+        builder.AllowAnyOrigin()
+               .AllowAnyMethod()
+               .AllowAnyHeader();
     });
+});
+
+// Configurar autenticación JWT
+var jwtSecret = builder.Configuration["ApiSettings:JwtOptions:Secret"];
+var jwtIssuer = builder.Configuration["ApiSettings:JwtOptions:Issuer"];
+var jwtAudience = builder.Configuration["ApiSettings:JwtOptions:Audience"];
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+        ValidateIssuer = true,
+        ValidIssuer = jwtIssuer,
+        ValidateAudience = true,
+        ValidAudience = jwtAudience,
+        ValidateLifetime = true
+    };
+});
 
 var app = builder.Build();
 
@@ -45,10 +59,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-app.UseSwagger();
-app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
