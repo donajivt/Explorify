@@ -36,7 +36,7 @@ namespace Explorify.Api.Publications.Application.Services
         }
         public async Task<PublicationDto?> GetByIdAsync(string id)
         {
-            var p = await _repository.GetByLocationAsync(id);
+            var p = await _repository.GetByIdAsync(id);
             if (p == null) return null;
 
             return new PublicationDto
