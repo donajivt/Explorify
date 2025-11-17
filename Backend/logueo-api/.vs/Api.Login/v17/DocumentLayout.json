@@ -3,12 +3,12 @@
   "WorkspaceRootPath": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{9C52BE3B-6775-4E09-B85F-CE7FEF811DB6}|Api.Login\\Api.Login.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\api.login\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9C52BE3B-6775-4E09-B85F-CE7FEF811DB6}|Api.Login\\Api.Login.csproj|solutionrelative:api.login\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{28A534A2-A32F-41C3-8930-87BEF19D8823}|Logueo.Infrastructure\\Logueo.Infrastructure.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\logueo.infrastructure\\auth\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{28A534A2-A32F-41C3-8930-87BEF19D8823}|Logueo.Infrastructure\\Logueo.Infrastructure.csproj|solutionrelative:logueo.infrastructure\\auth\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9C52BE3B-6775-4E09-B85F-CE7FEF811DB6}|Api.Login\\Api.Login.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\api.login\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9C52BE3B-6775-4E09-B85F-CE7FEF811DB6}|Api.Login\\Api.Login.csproj|solutionrelative:api.login\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{25AC85E5-7D50-424A-A708-F7AE2349E9C9}|Logueo.Application\\Logueo.Application.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\logueo.application\\interfaces\\iauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -66,7 +66,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": 6,
           "Children": [
             {
               "$type": "Bookmark",
@@ -82,8 +82,7 @@
               "RelativeToolTip": "Logueo.Application\\Interfaces\\IUserRepository.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-09T08:04:11.539Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-09T08:04:11.539Z"
             },
             {
               "$type": "Document",
@@ -95,18 +94,17 @@
               "RelativeToolTip": "Logueo.Application\\Interfaces\\IAuthService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-17T20:09:33.585Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-17T20:09:33.585Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Api.Login\\Program.cs",
               "RelativeDocumentMoniker": "Api.Login\\Program.cs",
               "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Api.Login\\Program.cs",
               "RelativeToolTip": "Api.Login\\Program.cs",
-              "ViewState": "AgIAACAAAAAAAAAAAAAAwCsAAAAoAAAAAAAAAA==",
+              "ViewState": "AgIAACAAAAAAAAAAAAAAwDMAAAADAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-31T01:54:31.235Z",
               "EditorCaption": ""
@@ -121,8 +119,7 @@
               "RelativeToolTip": "Logueo.Domain\\Entities\\User.cs",
               "ViewState": "AgIAAAMAAAAAAAAAAAAAAAwAAAA0AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T02:52:24.747Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-03T02:52:24.747Z"
             },
             {
               "$type": "Document",
@@ -134,18 +131,17 @@
               "RelativeToolTip": "Api.Login\\Controllers\\AuthApiController.cs",
               "ViewState": "AgIAAA4AAAAAAAAAAAAQwBsAAAAxAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T02:21:54.113Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-05T02:21:54.113Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "AuthService.cs",
               "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Infrastructure\\Auth\\AuthService.cs",
               "RelativeDocumentMoniker": "Logueo.Infrastructure\\Auth\\AuthService.cs",
               "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Infrastructure\\Auth\\AuthService.cs",
               "RelativeToolTip": "Logueo.Infrastructure\\Auth\\AuthService.cs",
-              "ViewState": "AgIAAAsAAAAAAAAAAAAmwBYAAABDAAAAAAAAAA==",
+              "ViewState": "AgIAAD8AAAAAAAAAAAAuwEsAAAAkAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-09T08:05:15.959Z",
               "EditorCaption": ""
@@ -160,8 +156,7 @@
               "RelativeToolTip": "Logueo.Infrastructure\\Repositories\\UserRepository.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAqwBEAAAA9AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T16:30:49.288Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-05T16:30:49.288Z"
             },
             {
               "$type": "Document",
@@ -173,8 +168,7 @@
               "RelativeToolTip": "Logueo.Infrastructure\\DepencyInjection.cs",
               "ViewState": "AgIAABYAAAAAAAAAAAAgwAMAAAApAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-17T20:38:32.789Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-17T20:38:32.789Z"
             },
             {
               "$type": "Document",
@@ -186,8 +180,7 @@
               "RelativeToolTip": "Api.Login\\appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAA2AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-10-31T02:14:43.328Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-31T02:14:43.328Z"
             },
             {
               "$type": "Document",

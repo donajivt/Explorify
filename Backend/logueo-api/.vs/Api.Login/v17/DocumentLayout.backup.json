@@ -82,8 +82,7 @@
               "RelativeToolTip": "Logueo.Application\\Interfaces\\IUserRepository.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-09T08:04:11.539Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-09T08:04:11.539Z"
             },
             {
               "$type": "Document",
@@ -95,8 +94,7 @@
               "RelativeToolTip": "Logueo.Application\\Interfaces\\IAuthService.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-17T20:09:33.585Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-17T20:09:33.585Z"
             },
             {
               "$type": "Document",
@@ -106,7 +104,7 @@
               "RelativeDocumentMoniker": "Api.Login\\Program.cs",
               "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Api.Login\\Program.cs",
               "RelativeToolTip": "Api.Login\\Program.cs",
-              "ViewState": "AgIAACAAAAAAAAAAAAAAwDIAAAAGAAAAAAAAAA==",
+              "ViewState": "AgIAACAAAAAAAAAAAAAAwDMAAAADAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-10-31T01:54:31.235Z",
               "EditorCaption": ""
@@ -121,8 +119,7 @@
               "RelativeToolTip": "Logueo.Domain\\Entities\\User.cs",
               "ViewState": "AgIAAAMAAAAAAAAAAAAAAAwAAAA0AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T02:52:24.747Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-03T02:52:24.747Z"
             },
             {
               "$type": "Document",
@@ -134,8 +131,7 @@
               "RelativeToolTip": "Api.Login\\Controllers\\AuthApiController.cs",
               "ViewState": "AgIAAA4AAAAAAAAAAAAQwBsAAAAxAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T02:21:54.113Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-05T02:21:54.113Z"
             },
             {
               "$type": "Document",
@@ -147,8 +143,7 @@
               "RelativeToolTip": "Logueo.Infrastructure\\Auth\\AuthService.cs",
               "ViewState": "AgIAAAsAAAAAAAAAAAAmwBYAAABDAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-09T08:05:15.959Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-09T08:05:15.959Z"
             },
             {
               "$type": "Document",
@@ -160,8 +155,7 @@
               "RelativeToolTip": "Logueo.Infrastructure\\Repositories\\UserRepository.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAqwBEAAAA9AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T16:30:49.288Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-05T16:30:49.288Z"
             },
             {
               "$type": "Document",
@@ -173,8 +167,7 @@
               "RelativeToolTip": "Logueo.Infrastructure\\DepencyInjection.cs",
               "ViewState": "AgIAABYAAAAAAAAAAAAgwAMAAAApAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-17T20:38:32.789Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-17T20:38:32.789Z"
             },
             {
               "$type": "Document",
@@ -186,8 +179,7 @@
               "RelativeToolTip": "Api.Login\\appsettings.json",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABIAAAA2AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
-              "WhenOpened": "2025-10-31T02:14:43.328Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-31T02:14:43.328Z"
             },
             {
               "$type": "Document",
