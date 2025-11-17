@@ -3,6 +3,7 @@ using Explorify.Api.Publications.Application.Services;
 using Explorify.Api.Publications.Domain.Entities;
 using Explorify.Api.Publications.Domain.Interfaces;
 using Explorify.Api.Publications.Infraestructure.Extensions;
+using Explorify.Api.Publications.Infraestructure.Middleware;
 using Explorify.Api.Publications.Infraestructure.Persistence;
 using Explorify.Api.Publications.Infraestructure.Publication;
 using Explorify.Api.Publications.Infraestructure.Repositories;
@@ -16,9 +17,9 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: corsPolicy, policy =>
     {
         policy
-            .AllowAnyOrigin()   
-            .AllowAnyHeader()   
-            .AllowAnyMethod();  
+            .AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
     });
 });
 
@@ -40,6 +41,9 @@ builder.Services.AddSingleton(new MongoContext(mongoOptions));
 // Cloudinary Service NUEVO
 builder.Services.AddCloudinaryService(builder.Configuration);
 
+//  Manejador Global de Excepciones
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 // Repositorio y servicios
 builder.Services.AddScoped<IPublicationRepository, PublicationRepository>();
@@ -60,6 +64,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 
 var app = builder.Build();
+
+//  Usar el manejador de excepciones
+app.UseExceptionHandler();
 
 app.UseSwagger();
 app.UseSwaggerUI();

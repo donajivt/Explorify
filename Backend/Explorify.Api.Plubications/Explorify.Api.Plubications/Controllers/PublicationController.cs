@@ -38,15 +38,17 @@ namespace Explorify.Api.Plubications.Controllers
 
             return Ok(new ResponseDto { Result = result });
         }
+
         [HttpGet("location/{location}")]
         public async Task<IActionResult> GetByLocation(string location)
         {
-            var result = await _service.GetByIdAsync(location);
+            var result = await _service.GetByLocationAsync(location);
             if (result == null)
                 return NotFound(new ResponseDto { IsSuccess = false, Message = "No hay publicaciones en esa ubicación." });
 
             return Ok(new ResponseDto { Result = result });
         }
+
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetByUserId(string userId)
         {
@@ -56,13 +58,37 @@ namespace Explorify.Api.Plubications.Controllers
             return Ok(new ResponseDto { Result = result });
         }
 
+        /// <summary>
+        /// Crea una nueva publicación
+        /// </summary>
+        /// <remarks>
+        /// Validaciones automáticas:
+        /// - Detecta y rechaza malas palabras en título, descripción y ubicación
+        /// - Valida que el usuario esté autenticado
+        /// 
+        /// Ejemplo de respuesta con error de malas palabras:
+        /// 
+        ///     {
+        ///       "result": {
+        ///         "field": "Descripción",
+        ///         "badWords": ["mierda", "puto"],
+        ///         "errorType": "BadWordsDetected"
+        ///       },
+        ///       "isSuccess": false,
+        ///       "message": "El campo 'Descripción' contiene palabras inapropiadas"
+        ///     }
+        /// </remarks>
         [HttpPost]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Create(PublicationDto dto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null)
                 return Unauthorized(new ResponseDto { IsSuccess = false, Message = "Usuario no autenticado" });
 
+            // ✅ Las excepciones de malas palabras serán manejadas por GlobalExceptionHandler
             await _service.CreateAsync(dto, userId);
             return Ok(new ResponseDto { Message = "Publicación creada exitosamente" });
         }
@@ -81,13 +107,26 @@ namespace Explorify.Api.Plubications.Controllers
             return Ok(new ResponseDto { Message = "Publicación eliminada correctamente" });
         }
 
+        /// <summary>
+        /// Actualiza una publicación existente
+        /// </summary>
+        /// <remarks>
+        /// Validaciones automáticas:
+        /// - Detecta y rechaza malas palabras en campos actualizados
+        /// - Verifica que el usuario sea el dueño de la publicación
+        /// </remarks>
         [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> Update(string id, PublicationDto dto)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (userId == null)
                 return Unauthorized(new ResponseDto { IsSuccess = false, Message = "Usuario no autenticado" });
 
+            // ✅ Las excepciones de malas palabras serán manejadas por GlobalExceptionHandler
             var updated = await _service.UpdateAsync(id, dto, userId);
             if (!updated)
                 return Forbid();
@@ -153,4 +192,3 @@ namespace Explorify.Api.Plubications.Controllers
         }
     }
 }
-

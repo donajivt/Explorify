@@ -1,17 +1,13 @@
-﻿using Logueo.Application.Dtos;
-using Logueo.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Logueo.Domain.Entities;
 
 namespace Logueo.Application.Interfaces
 {
     public interface IUserRepository
     {
         Task<User?> GetByEmailAsync(string email);
+        Task<User?> GetByIdAsync(string id);
         Task AddAsync(User user);
+        Task<bool> UpdateAsync(User user);
         Task<bool> AddRoleAsync(string email, string roleName);
         Task<IReadOnlyList<string>> GetRolesAsync(string email);
         Task<IEnumerable<User>> GetAllUsers();
