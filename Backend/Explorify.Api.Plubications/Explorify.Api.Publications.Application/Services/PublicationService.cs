@@ -1,10 +1,11 @@
 ﻿using Explorify.Api.Publications.Application.Dtos;
+using Explorify.Api.Publications.Application.Exceptions;
 using Explorify.Api.Publications.Application.Interfaces;
+using Explorify.Api.Publications.Application.Validators;
 using Explorify.Api.Publications.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Explorify.Api.Publications.Application.Services
@@ -34,9 +35,10 @@ namespace Explorify.Api.Publications.Application.Services
                 CreatedAt = p.CreatedAt
             });
         }
+
         public async Task<PublicationDto?> GetByIdAsync(string id)
         {
-            var p = await _repository.GetByLocationAsync(id);
+            var p = await _repository.GetByIdAsync(id);
             if (p == null) return null;
 
             return new PublicationDto
@@ -71,6 +73,7 @@ namespace Explorify.Api.Publications.Application.Services
                 CreatedAt = p.CreatedAt
             };
         }
+
         public async Task<IEnumerable<PublicationDto>> GetByUserIdAsync(string userId)
         {
             var publications = await _repository.GetByUserIdAsync(userId);
@@ -90,6 +93,30 @@ namespace Explorify.Api.Publications.Application.Services
 
         public async Task CreateAsync(PublicationDto dto, string userId)
         {
+            //  Validar malas palabras en Título
+            var (titleValid, titleBadWords) = BadWordsValidator.Validate(dto.Title ?? string.Empty);
+            if (!titleValid)
+            {
+                throw new BadWordsException(
+                    "Título", titleBadWords);
+            }
+
+            //  Validar malas palabras en Descripción
+            var (descValid, descBadWords) = BadWordsValidator.Validate(dto.Description ?? string.Empty);
+            if (!descValid)
+            {
+                throw new BadWordsException(
+                    "Descripción", descBadWords);
+            }
+
+            //  Validar malas palabras en Ubicación
+            var (locValid, locBadWords) = BadWordsValidator.Validate(dto.Location ?? string.Empty);
+            if (!locValid)
+            {
+                throw new BadWordsException(
+                    "Ubicación", locBadWords);
+            }
+
             var entity = new Publication
             {
                 ImageUrl = dto.ImageUrl ?? string.Empty,
@@ -122,12 +149,51 @@ namespace Explorify.Api.Publications.Application.Services
 
             if (existing.UserId != userId) return false;
 
-            existing.ImageUrl = dto.ImageUrl ?? existing.ImageUrl;
-            existing.Title = dto.Title ?? existing.Title;
-            existing.Description = dto.Description ?? existing.Description;
-            existing.Location = dto.Location ?? existing.Location;
-            existing.Latitud = dto.Latitud ?? existing.Latitud;
-            existing.Longitud = dto.Longitud ?? existing.Longitud;
+            // Validar malas palabras si se actualiza el título
+            if (!string.IsNullOrWhiteSpace(dto.Title))
+            {
+                var (titleValid, titleBadWords) = BadWordsValidator.Validate(dto.Title);
+                if (!titleValid)
+                {
+                    throw new BadWordsException(
+                        "Título", titleBadWords);
+                }
+                existing.Title = dto.Title;
+            }
+
+            // Validar malas palabras si se actualiza la descripción
+            if (!string.IsNullOrWhiteSpace(dto.Description))
+            {
+                var (descValid, descBadWords) = BadWordsValidator.Validate(dto.Description);
+                if (!descValid)
+                {
+                    throw new BadWordsException(
+                        "Descripción", descBadWords);
+                }
+                existing.Description = dto.Description;
+            }
+
+            //  Validar malas palabras si se actualiza la ubicación
+            if (!string.IsNullOrWhiteSpace(dto.Location))
+            {
+                var (locValid, locBadWords) = BadWordsValidator.Validate(dto.Location);
+                if (!locValid)
+                {
+                    throw new BadWordsException(
+                        "Ubicación", locBadWords);
+                }
+                existing.Location = dto.Location;
+            }
+
+            // Actualizar otros campos
+            if (!string.IsNullOrWhiteSpace(dto.ImageUrl))
+                existing.ImageUrl = dto.ImageUrl;
+
+            if (!string.IsNullOrWhiteSpace(dto.Latitud))
+                existing.Latitud = dto.Latitud;
+
+            if (!string.IsNullOrWhiteSpace(dto.Longitud))
+                existing.Longitud = dto.Longitud;
 
             await _repository.UpdateAsync(existing);
             return true;
