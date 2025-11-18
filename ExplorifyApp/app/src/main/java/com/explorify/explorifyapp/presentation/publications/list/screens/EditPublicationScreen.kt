@@ -333,7 +333,7 @@ fun EditPublicationScreen(
                 OutlinedTextField(
                     value = title,
                     onValueChange = {
-                        val clean = sanitizeSafeInput(it)
+                        val clean = sanitizeEditInput(it)
                         if (clean.length <= 50) title = clean
                     },
                     label = { Text("Título") },
@@ -358,7 +358,7 @@ fun EditPublicationScreen(
                 OutlinedTextField(
                     value = description,
                     onValueChange = {
-                        val clean = sanitizeSafeInput(it)
+                        val clean = sanitizeEditInput(it)
                         if (clean.length <= 200) description = clean
                     },
                     label = { Text("Descripción") },
@@ -501,41 +501,21 @@ fun EditPublicationScreen(
     }
 }
 
-fun sanitizeSafeInputEdit(input: String): String {
+fun sanitizeEditInput(input: String): String {
     var clean = input
 
-    // 1) Bloquear caracteres peligrosos que abren HTML/JS
     val forbiddenChars = listOf('<', '>', '/', '\\', '{', '}', '`', '=', '"', '\'')
     forbiddenChars.forEach { char ->
         clean = clean.replace(char.toString(), "")
     }
 
-    // 2) Eliminar cualquier etiqueta HTML restante (<algo>)
     clean = clean.replace(Regex("<[^>]*>"), "")
-
-    // 3) Eliminar atributos peligrosos (onclick="", onload="", etc.)
-    clean = clean.replace(
-        Regex("on\\w+\\s*=\\s*['\"].*?['\"]", RegexOption.IGNORE_CASE),
-        ""
-    )
-
-    // 4) Bloquear javascript:, data:, vbscript:
-    clean = clean.replace(
-        Regex("(javascript:|vbscript:|data:)", RegexOption.IGNORE_CASE),
-        ""
-    )
-
-    // 5) Quitar entidades numéricas tipo &#123; o &#x1fa9;
+    clean = clean.replace(Regex("on\\w+\\s*=\\s*['\"].*?['\"]", RegexOption.IGNORE_CASE), "")
+    clean = clean.replace(Regex("(javascript:|vbscript:|data:)", RegexOption.IGNORE_CASE), "")
     clean = clean.replace(Regex("&#\\d+;"), "")
     clean = clean.replace(Regex("&#x[0-9a-fA-F]+;"), "")
-
-    // 6) Quitar caracteres invisibles
     clean = clean.replace(Regex("[\\u0000-\\u001F\\u007F]"), "")
 
-    // 7) Normalizar espacios múltiples
-    clean = clean.replace(Regex("\\s+"), " ")
-
-    // 8) Remover palabras de ataques HTML
     val forbiddenWords = listOf(
         "script", "iframe", "object", "embed", "form", "svg",
         "link", "style", "meta", "head", "body", "onerror", "onload"
@@ -544,5 +524,5 @@ fun sanitizeSafeInputEdit(input: String): String {
         clean = clean.replace(it, "", ignoreCase = true)
     }
 
-    return clean.trim()
+    return clean
 }

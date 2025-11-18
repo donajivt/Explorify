@@ -327,12 +327,15 @@ fun ProfileField(
 }
 
 fun sanitizeProfileInput(text: String): String {
+    // Lista de caracteres peligrosos SIN incluir el espacio
     val forbidden = listOf('<', '>', '/', '\\', '"', '\'', '{', '}', '`', '=', ';')
+
     var clean = text
-    forbidden.forEach { c ->
-        clean = clean.replace(c.toString(), "")
+    forbidden.forEach { char ->
+        clean = clean.replace(char.toString(), "")
     }
-    return clean.trim()
+
+    return clean
 }
 
 /*

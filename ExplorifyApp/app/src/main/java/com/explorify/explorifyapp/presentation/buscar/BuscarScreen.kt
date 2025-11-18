@@ -2285,11 +2285,14 @@ fun connectionIsSlow(context: Context): Boolean {
     return caps.linkDownstreamBandwidthKbps < 1500
 }
 
-fun sanitizeSearchInput(input: String): String {
-    val forbidden = listOf('<', '>', '/', '\\', '"', '\'', '{', '}', '`', '=')
-    var cleaned = input
-    forbidden.forEach { c ->
-        cleaned = cleaned.replace(c.toString(), "")
+fun sanitizeSearchInput(text: String): String {
+    // Lista de caracteres peligrosos SIN incluir el espacio
+    val forbidden = listOf('<', '>', '/', '\\', '"', '\'', '{', '}', '`', '=', ';')
+
+    var clean = text
+    forbidden.forEach { char ->
+        clean = clean.replace(char.toString(), "")
     }
-    return cleaned.trim()
+
+    return clean
 }

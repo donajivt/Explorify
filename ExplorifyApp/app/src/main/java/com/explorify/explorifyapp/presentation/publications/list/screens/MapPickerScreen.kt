@@ -59,6 +59,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.Job
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -86,6 +87,8 @@ fun MapPickerScreen(
     var awaitingGpsEnable by remember { mutableStateOf(false) }
     var mapReady by remember { mutableStateOf(false) }
     var mapLoaded by remember { mutableStateOf(false) }
+    var lastSearchJob by remember { mutableStateOf<Job?>(null) }
+    var searchDelay by remember { mutableStateOf(400L) } // debounce dinámico
 
     var userLocation by remember { mutableStateOf<GeoPoint?>(null) }
 
@@ -219,9 +222,13 @@ fun MapPickerScreen(
             context.getSharedPreferences("osmdroid", Context.MODE_PRIVATE)
         )
         Configuration.getInstance().userAgentValue = context.packageName
-        Configuration.getInstance().tileDownloadThreads = 4
-        Configuration.getInstance().tileFileSystemCacheMaxBytes = 1024L * 1024 * 256
-        Configuration.getInstance().tileFileSystemCacheTrimBytes = 1024L * 1024 * 200
+        Configuration.getInstance().apply {
+            tileDownloadThreads = 2                           // Menos hilos → más estable en conexión lenta
+            tileDownloadMaxQueueSize = 20                     // Evita saturación por scroll
+            tileFileSystemCacheMaxBytes = 1024L * 1024 * 128  // 128MB cache
+            tileFileSystemCacheTrimBytes = 1024L * 1024 * 96  // Limpieza agresiva
+            isMapViewHardwareAccelerated = true               // Animaciones más suaves
+        }
 
         mapView.setTileSource(TileSourceFactory.MAPNIK)
         mapView.setMultiTouchControls(true)
@@ -239,23 +246,6 @@ fun MapPickerScreen(
         }
     }
 
-    // ---------- Debounce de búsqueda (300ms) ----------
-    LaunchedEffect(Unit) {
-        searchFlow.debounce(300L).collectLatest { q ->
-            if (q.length < 3) return@collectLatest
-            searching = true
-            val result = fetchCoordinatesFromOSM(context, q)
-            searching = false
-            result?.let { (lat, lon, name) ->
-                val p = GeoPoint(lat, lon)
-                selectedPoint = p
-                selectedPlaceName = name
-                updateMarker(mapView, context, p)
-                mapView.controller.setZoom(16.0)
-                mapView.controller.animateTo(p)
-            }
-        }
-    }
 
     // 🌍 Modal elegante para activar ubicación (versión mejorada visualmente)
     if (showLocationDialog) {
@@ -404,7 +394,57 @@ fun MapPickerScreen(
                         val cleanText = sanitizeSearchInput(newValue.text)
 
                         searchText = newValue.copy(text = cleanText)
-                        searchFlow.value = cleanText
+
+                        // 🔥 Cancelar la búsqueda anterior (si todavía estaba corriendo)
+                        lastSearchJob?.cancel()
+
+                        val q = cleanText.trim()
+
+                        // Si está vacío → regresar a ubicación del usuario con pequeño delay
+                        if (q.isEmpty()) {
+                            lastSearchJob = scope.launch {
+                                delay(300)
+                                pendingLocateAction = true
+                                getUserLocation()
+                            }
+                            return@OutlinedTextField
+                        }
+
+                        // Si el texto es muy corto, no pegues a la API todavía
+                        if (q.length < 3) {
+                            return@OutlinedTextField
+                        }
+
+                        // 🔥 Nueva búsqueda con debounce
+                        lastSearchJob = scope.launch {
+                            // Espera un poco a que el usuario termine de escribir
+                            delay(searchDelay)
+
+                            searching = true
+                            val start = System.currentTimeMillis()
+
+                            val result = try {
+                                fetchCoordinatesFromOSM(context, q)
+                            } catch (e: Exception) {
+                                null
+                            }
+
+                            val elapsed = System.currentTimeMillis() - start
+
+                            // ⏱ Ajustar debounce según qué tan lenta está la red
+                            searchDelay = if (elapsed > 900) 700L else 350L
+
+                            searching = false
+
+                            result?.let { (lat, lon, name) ->
+                                val p = GeoPoint(lat, lon)
+                                selectedPoint = p
+                                selectedPlaceName = name
+                                updateMarker(mapView, context, p)
+                                mapView.controller.setZoom(16.0)
+                                mapView.controller.animateTo(p)
+                            }
+                        }
                     },
                     label = { Text("Buscar lugar...") },
                     singleLine = true,
@@ -422,24 +462,26 @@ fun MapPickerScreen(
                         } else {
                             TextButton(onClick = {
                                 val q = searchText.text.trim()
-                                // Si el campo está vacío, regresar a ubicación del usuario
+
+                                // Igual que arriba: si está vacío, ir a mi ubicación
                                 if (q.isEmpty()) {
-                                    // Marca que el usuario quiere ir a su ubicación
                                     pendingLocateAction = true
                                     getUserLocation()
-                                } else {
+                                    return@TextButton
+                                }
+
+                                scope.launch {
                                     searching = true
-                                    scope.launch {
-                                        val result = fetchCoordinatesFromOSM(context, q)
-                                        searching = false
-                                        result?.let { (lat, lon, name) ->
-                                            val p = GeoPoint(lat, lon)
-                                            selectedPoint = p
-                                            selectedPlaceName = name
-                                            updateMarker(mapView, context, p)
-                                            mapView.controller.setZoom(16.0)
-                                            mapView.controller.animateTo(p)
-                                        }
+                                    val result = fetchCoordinatesFromOSM(context, q)
+                                    searching = false
+
+                                    result?.let { (lat, lon, name) ->
+                                        val p = GeoPoint(lat, lon)
+                                        selectedPoint = p
+                                        selectedPlaceName = name
+                                        updateMarker(mapView, context, p)
+                                        mapView.controller.setZoom(16.0)
+                                        mapView.controller.animateTo(p)
                                     }
                                 }
                             }) { Text("Buscar") }
@@ -616,11 +658,15 @@ private fun hasLocationPermission(context: Context): Boolean {
     return fine || coarse
 }
 
-fun sanitizeSearchInput(input: String): String {
-    val forbidden = listOf('<', '>', '/', '\\', '"', '\'', '{', '}', '`', '=')
-    var cleaned = input
-    forbidden.forEach { c ->
-        cleaned = cleaned.replace(c.toString(), "")
+fun sanitizeSearchInput(text: String): String {
+    // Lista de caracteres peligrosos SIN incluir el espacio
+    val forbidden = listOf('<', '>', '/', '\\', '"', '\'', '{', '}', '`', '=', ';')
+
+    var clean = text
+    forbidden.forEach { char ->
+        clean = clean.replace(char.toString(), "")
     }
-    return cleaned.trim()
+
+    // NO eliminamos espacios
+    return clean
 }
