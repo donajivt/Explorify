@@ -400,9 +400,11 @@ fun MapPickerScreen(
             ) {
                 OutlinedTextField(
                     value = searchText,
-                    onValueChange = {
-                        searchText = it
-                        searchFlow.value = it.text
+                    onValueChange = { newValue ->
+                        val cleanText = sanitizeSearchInput(newValue.text)
+
+                        searchText = newValue.copy(text = cleanText)
+                        searchFlow.value = cleanText
                     },
                     label = { Text("Buscar lugar...") },
                     singleLine = true,
@@ -612,4 +614,13 @@ private fun hasLocationPermission(context: Context): Boolean {
         context, Manifest.permission.ACCESS_COARSE_LOCATION
     ) == PackageManager.PERMISSION_GRANTED
     return fine || coarse
+}
+
+fun sanitizeSearchInput(input: String): String {
+    val forbidden = listOf('<', '>', '/', '\\', '"', '\'', '{', '}', '`', '=')
+    var cleaned = input
+    forbidden.forEach { c ->
+        cleaned = cleaned.replace(c.toString(), "")
+    }
+    return cleaned.trim()
 }

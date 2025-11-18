@@ -134,7 +134,8 @@ fun CommentsScreen(
                     BasicTextField(
                         value = newComment,
                         onValueChange = {
-                            if (it.length <= 500) newComment = it
+                            val clean = sanitizeSafeInput(it)
+                            if (clean.length <= 500) newComment = clean
                         },
                         modifier = Modifier
                             .weight(1f)
@@ -296,13 +297,24 @@ fun CommentsScreen(
                         val idToDelete = confirmDeleteId
                         confirmDeleteId = null
                         if (idToDelete != null) {
+                            val id = idToDelete
+                            confirmDeleteId = null
+
                             scope.launch {
+                                val originalList = uiState.comentarios
+
+                                // 🔥 1. BORRAR INSTANTÁNEAMENTE
+                                uiState.comentarios = originalList.filter { it.id != id }
+
                                 try {
+                                    // 🔥 2. MANDAR LA API (background)
                                     token?.let { tk ->
-                                        viewModel.deleteComentario(idToDelete, tk)
+                                        viewModel.deleteComentario(id, tk)
                                     }
                                 } catch (e: Exception) {
-                                    println("Error al eliminar: ${e.message}")
+                                    // ❌ 3. SI FALLA → REVERTIR LISTA
+                                    uiState.comentarios = originalList
+                                    println("❌ Error al eliminar: ${e.message}")
                                 }
                             }
                         }
@@ -314,4 +326,50 @@ fun CommentsScreen(
             }
         )
     }
+}
+
+fun sanitizeSafeInputComments(input: String): String {
+    var clean = input
+
+    // 1) Bloquear caracteres peligrosos que abren HTML/JS
+    val forbiddenChars = listOf('<', '>', '/', '\\', '{', '}', '`', '=', '"', '\'')
+    forbiddenChars.forEach { char ->
+        clean = clean.replace(char.toString(), "")
+    }
+
+    // 2) Eliminar cualquier etiqueta HTML restante (<algo>)
+    clean = clean.replace(Regex("<[^>]*>"), "")
+
+    // 3) Eliminar atributos peligrosos (onclick="", onload="", etc.)
+    clean = clean.replace(
+        Regex("on\\w+\\s*=\\s*['\"].*?['\"]", RegexOption.IGNORE_CASE),
+        ""
+    )
+
+    // 4) Bloquear javascript:, data:, vbscript:
+    clean = clean.replace(
+        Regex("(javascript:|vbscript:|data:)", RegexOption.IGNORE_CASE),
+        ""
+    )
+
+    // 5) Quitar entidades numéricas tipo &#123; o &#x1fa9;
+    clean = clean.replace(Regex("&#\\d+;"), "")
+    clean = clean.replace(Regex("&#x[0-9a-fA-F]+;"), "")
+
+    // 6) Quitar caracteres invisibles
+    clean = clean.replace(Regex("[\\u0000-\\u001F\\u007F]"), "")
+
+    // 7) Normalizar espacios múltiples
+    clean = clean.replace(Regex("\\s+"), " ")
+
+    // 8) Remover palabras de ataques HTML
+    val forbiddenWords = listOf(
+        "script", "iframe", "object", "embed", "form", "svg",
+        "link", "style", "meta", "head", "body", "onerror", "onload"
+    )
+    forbiddenWords.forEach {
+        clean = clean.replace(it, "", ignoreCase = true)
+    }
+
+    return clean.trim()
 }

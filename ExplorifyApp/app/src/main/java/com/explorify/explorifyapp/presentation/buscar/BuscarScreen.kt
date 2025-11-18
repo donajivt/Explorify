@@ -56,6 +56,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import android.app.Activity
+import android.net.ConnectivityManager
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -63,8 +64,12 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.ui.graphics.graphicsLayer
+import java.io.File
 
 
 /*
@@ -701,8 +706,10 @@ fun BuscarScreenMapa(
 
     // Estados UI
     var searchQuery by remember { mutableStateOf("") }
-    var selectedPublication by remember { mutableStateOf<PublicationMap?>(null) }
     var userLocation by remember { mutableStateOf<GeoPoint?>(null) }
+
+    var showFullImage by remember { mutableStateOf(false) }
+    var selectedPublication by remember { mutableStateOf<PublicationMap?>(null) }
 
     // ⚙️ Configurar mapa base
     LaunchedEffect(Unit) {
@@ -710,7 +717,10 @@ fun BuscarScreenMapa(
             context,
             context.getSharedPreferences("osmdroid", Context.MODE_PRIVATE)
         )
-        mapView.setTileSource(TileSourceFactory.MAPNIK)
+        mapView.setTileSource(
+            if (connectionIsSlow(context)) TileSourceFactory.USGS_SAT
+            else TileSourceFactory.MAPNIK
+        )
         mapView.setMultiTouchControls(true)
         mapView.controller.setZoom(14.0)
     }
@@ -746,24 +756,16 @@ fun BuscarScreenMapa(
 
     // 👤 Cargar datos de usuario y publicaciones
     LaunchedEffect(Unit) {
-        val isLoggedIn = loginViewModel.isLoggedIn()
-        if (!isLoggedIn) {
-            navController.navigate("login") {
-                popUpTo("buscar") { inclusive = true }
-            }
-        }
+        userMap = emptyMap() // carga después
+    }
 
-        userName = loginViewModel.userName
-        val userId = loginViewModel.userId
+    LaunchedEffect(key1 = loginViewModel.token) {
         val token = loginViewModel.token
-
-        if (!token.isNullOrEmpty() && userId.isNotEmpty()) {
+        val userId = loginViewModel.userId
+        if (!token.isNullOrEmpty()) {
             viewModel.loadPublications(userId, token)
-            try {
-                val users = userRepo.getAllUsers(token)
-                userMap = users.associate { u -> u.id to u.name }
-            } catch (_: Exception) {
-            }
+            userMap = try { userRepo.getAllUsers(token).associate { it.id to it.name } }
+            catch (_: Exception) { emptyMap() }
         }
     }
 
@@ -811,7 +813,9 @@ fun BuscarScreenMapa(
             // 🔍 Barra de búsqueda
             OutlinedTextField(
                 value = searchQuery,
-                onValueChange = { searchQuery = it },
+                onValueChange = { newValue ->
+                    searchQuery = sanitizeSearchInput(newValue)
+                },
                 placeholder = { Text("Buscar lugar o dirección...") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
                 singleLine = true,
@@ -989,7 +993,10 @@ fun BuscarScreenMapa(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(180.dp)
-                                    .clip(RoundedCornerShape(12.dp)),
+                                    .clip(RoundedCornerShape(12.dp))
+                                .clickable {
+                                showFullImage = true
+                            },
                                 contentScale = ContentScale.Crop
                             )
                             Spacer(modifier = Modifier.height(12.dp))
@@ -1724,6 +1731,10 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
     var userMap by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
     var searchQuery by remember { mutableStateOf("") }
 
+    var isImageLoading by remember { mutableStateOf(true) }
+    var showFullImage by remember { mutableStateOf(false) }
+    var showFullDescription by remember { mutableStateOf(false) }
+
     // Launcher para dialogo del sistema
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
     val locationRequest = LocationRequest.create().apply {
@@ -1772,6 +1783,21 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
 
     // Configurar mapa
     LaunchedEffect(mapView) {
+        Configuration.getInstance().apply {
+            userAgentValue = context.packageName
+
+            // 🔥 Cache interno (mucho más rápido)
+            osmdroidBasePath = File(context.cacheDir, "osmdroid")
+            osmdroidTileCache = File(osmdroidBasePath, "tiles")
+
+            // 🔥 Menos hilos para evitar cuelgues
+            tileDownloadThreads = 2
+            tileFileSystemThreads = 2
+
+            // 🔥 Evitar sobrecarga
+            cacheMapTileCount = 4000
+            cacheMapTileOvershoot = 100
+        }
         Configuration.getInstance().load(
             context,
             context.getSharedPreferences("osmdroid", Context.MODE_PRIVATE)
@@ -1931,7 +1957,9 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
             ) {
                 OutlinedTextField(
                     value = searchQuery,
-                    onValueChange = { searchQuery = it },
+                    onValueChange = { newValue ->
+                        searchQuery = sanitizeSearchInput(newValue)
+                    },
                     placeholder = { Text("Buscar lugar o dirección...") },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
                     singleLine = true,
@@ -1996,6 +2024,13 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
             }
 
 
+            LaunchedEffect(userLocation) {
+                userLocation?.let { loc ->
+                    mapView.controller.setCenter(loc)
+                    mapView.controller.setZoom(16.0)
+                }
+            }
+
             // Mapa
             Box(
                 modifier = Modifier
@@ -2008,7 +2043,7 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                     factory = { mapView },
                     modifier = Modifier.fillMaxSize()
                 ) { map ->
-                    map.overlays.clear()
+                    map.overlays.removeIf { it is Marker && it.title != "Tu ubicación" }
 
                     userLocation?.let { location ->
                         val userMarker = Marker(map).apply {
@@ -2017,7 +2052,6 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                             icon = ContextCompat.getDrawable(context, android.R.drawable.star_big_off)
                         }
                         map.overlays.add(userMarker)
-                        map.controller.setCenter(location)
                     }
 
                     // Publicaciones cercanas
@@ -2109,23 +2143,153 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                             }
 
                             Spacer(modifier = Modifier.height(8.dp))
-                            AsyncImage(
-                                model = pub.imageUrl,
-                                contentDescription = pub.title,
+                            // Imagen con loader bonito
+                            Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .height(180.dp)
-                                    .clip(RoundedCornerShape(12.dp)),
-                                contentScale = ContentScale.Crop
-                            )
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFFEAEAEA)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                AsyncImage(
+                                    model = pub.imageUrl,
+                                    contentDescription = pub.title,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(180.dp)
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .clickable {
+                                            showFullImage = true
+                                        },
+                                    contentScale = ContentScale.Crop
+                                )
+
+                                if (isImageLoading) {
+                                    CircularProgressIndicator(color = Color(0xFF3C9D6D))
+                                }
+                            }
                             Spacer(modifier = Modifier.height(12.dp))
                             Text(pub.title, style = MaterialTheme.typography.titleMedium, color = Color.Gray)
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(pub.description, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                            val maxChars = 160
+
+                            Column {
+                                Text(
+                                    text = if (showFullDescription) pub.description else pub.description.take(maxChars),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = Color.Gray
+                                )
+
+                                if (pub.description.length > maxChars) {
+                                    Text(
+                                        text = if (showFullDescription) "Ver menos" else "Ver más",
+                                        color = Color(0xFF3C9D6D),
+                                        modifier = Modifier
+                                            .padding(top = 4.dp)
+                                            .clickable { showFullDescription = !showFullDescription }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // 📌 VISOR DE IMAGEN COMPLETA — Zoom real sin mover la imagen completa
+            if (showFullImage && selectedPublication != null) {
+
+                Dialog(
+                    onDismissRequest = { showFullImage = false },
+                    properties = DialogProperties(usePlatformDefaultWidth = false)
+                ) {
+
+                    var scale by remember { mutableStateOf(1f) }
+                    var offsetX by remember { mutableStateOf(0f) }
+                    var offsetY by remember { mutableStateOf(0f) }
+
+                    var loading by remember { mutableStateOf(true) }
+
+                    // 🔥 El pan y zoom SOLO afecta la imagen, no el contenedor
+                    val transformState = rememberTransformableState { zoomChange, panChange, _ ->
+
+                        val newScale = (scale * zoomChange).coerceIn(1f, 4f)
+
+                        // Límites para NO sacar la imagen de pantalla
+                        val maxX = (newScale - 1f) * 500f
+                        val maxY = (newScale - 1f) * 800f
+
+                        offsetX = (offsetX + panChange.x).coerceIn(-maxX, maxX)
+                        offsetY = (offsetY + panChange.y).coerceIn(-maxY, maxY)
+
+                        scale = newScale
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Black),
+                        contentAlignment = Alignment.Center
+                    ) {
+
+                        // 🔥 AQUÍ va el transformable (solo sobre la imagen)
+                        AsyncImage(
+                            model = selectedPublication!!.imageUrl,
+                            contentDescription = "Vista completa",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer(
+                                    scaleX = scale,
+                                    scaleY = scale,
+                                    translationX = offsetX,
+                                    translationY = offsetY
+                                )
+                                .transformable(transformState), // 👈 SOLO aquí
+                            contentScale = ContentScale.Fit,
+                            onSuccess = { loading = false },
+                            onError = { loading = false }
+                        )
+
+                        if (loading) {
+                            CircularProgressIndicator(
+                                color = Color.White,
+                                modifier = Modifier.size(50.dp)
+                            )
+                        }
+
+                        IconButton(
+                            onClick = { showFullImage = false },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(16.dp)
+                                .size(42.dp)
+                                .background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                        ) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = "Cerrar",
+                                tint = Color.White
+                            )
                         }
                     }
                 }
             }
         }
     }
+}
+
+fun connectionIsSlow(context: Context): Boolean {
+    val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    val network = cm.activeNetwork ?: return true
+    val caps = cm.getNetworkCapabilities(network) ?: return true
+    return caps.linkDownstreamBandwidthKbps < 1500
+}
+
+fun sanitizeSearchInput(input: String): String {
+    val forbidden = listOf('<', '>', '/', '\\', '"', '\'', '{', '}', '`', '=')
+    var cleaned = input
+    forbidden.forEach { c ->
+        cleaned = cleaned.replace(c.toString(), "")
+    }
+    return cleaned.trim()
 }

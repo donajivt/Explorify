@@ -17,6 +17,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.size
 import androidx.compose.ui.draw.clip
@@ -51,6 +53,7 @@ import com.explorify.explorifyapp.domain.repository.UserRepository
 import com.explorify.explorifyapp.data.remote.users.RetrofitUsersInstance
 import com.explorify.explorifyapp.data.remote.dto.users.UserRequest
 import androidx.compose.material3.AlertDialog
+import androidx.compose.ui.platform.LocalFocusManager
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
@@ -65,6 +68,7 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
 
     var showDialog by remember { mutableStateOf(false) }
     var dialogMessage by remember { mutableStateOf("") }
+    val focusManager = LocalFocusManager.current
 
     var menuExpanded by remember { mutableStateOf(false) }
 
@@ -127,7 +131,13 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = 24.dp)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                ) {
+                    focusManager.clearFocus()
+                },
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
@@ -166,14 +176,17 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
                 label = "Nombre Completo",
                 value = profileName.value,
                 icon = Icons.Default.Person,
-                onValueChange = { profileName.value = it }
+                onValueChange = { newValue ->
+                    profileName.value = sanitizeProfileInput(newValue)
+                }
             )
-
             ProfileField(
                 label = "Correo Electrónico",
                 value = email.value,
                 icon = Icons.Default.Email,
-                onValueChange = { email.value = it }
+                onValueChange = { newValue ->
+                    email.value = sanitizeProfileInput(newValue)
+                }
             )
 
          /*   ProfileField(
@@ -311,6 +324,15 @@ fun ProfileField(
         singleLine = true,
 
     )
+}
+
+fun sanitizeProfileInput(text: String): String {
+    val forbidden = listOf('<', '>', '/', '\\', '"', '\'', '{', '}', '`', '=', ';')
+    var clean = text
+    forbidden.forEach { c ->
+        clean = clean.replace(c.toString(), "")
+    }
+    return clean.trim()
 }
 
 /*

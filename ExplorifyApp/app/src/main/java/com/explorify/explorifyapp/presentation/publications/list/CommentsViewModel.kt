@@ -11,7 +11,7 @@ import com.explorify.explorifyapp.data.remote.publications.RetrofitComentariosIn
 import com.explorify.explorifyapp.domain.repository.ComentarioRepositoryImpl
 
 data class CommentsUiState(
-    val comentarios: List<Comentario> = emptyList(),
+    var comentarios: List<Comentario> = emptyList(),
     val loading: Boolean = false,
     val error: String? = null
 )

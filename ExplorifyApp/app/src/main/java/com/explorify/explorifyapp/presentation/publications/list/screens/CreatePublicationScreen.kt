@@ -394,7 +394,10 @@ fun CreatePublicationScreen(
             // 🎯 Título
             OutlinedTextField(
                 value = title,
-                onValueChange = { if (it.length <= 50) title = it },
+                onValueChange = {
+                    val clean = sanitizeSafeInput(it)
+                    if (clean.length <= 50) title = clean
+                },
                 label = { Text("Título (opcional)") },
                 leadingIcon = {
                     Icon(imageVector = Icons.Default.Add, contentDescription = null, tint = Color(0xFF3C9D6D))
@@ -421,7 +424,10 @@ fun CreatePublicationScreen(
             // 📝 Descripción
             OutlinedTextField(
                 value = description,
-                onValueChange = { if (it.length <= 200) description = it },
+                onValueChange = {
+                    val clean = sanitizeSafeInput(it)
+                    if (clean.length <= 200) description = clean
+                },
                 label = { Text("Descripción") },
                 leadingIcon = {
                     Icon(imageVector = Icons.Default.Add, contentDescription = null, tint = Color(0xFF3C9D6D))
@@ -578,4 +584,50 @@ suspend fun <T> retrySuspend(
         currentDelay = (currentDelay * factor).toLong().coerceAtMost(8000L)
     }
     return block()
+}
+
+fun sanitizeSafeInput(input: String): String {
+    var clean = input
+
+    // 1) Bloquear caracteres peligrosos que abren HTML/JS
+    val forbiddenChars = listOf('<', '>', '/', '\\', '{', '}', '`', '=', '"', '\'')
+    forbiddenChars.forEach { char ->
+        clean = clean.replace(char.toString(), "")
+    }
+
+    // 2) Eliminar cualquier etiqueta HTML restante (<algo>)
+    clean = clean.replace(Regex("<[^>]*>"), "")
+
+    // 3) Eliminar atributos peligrosos (onclick="", onload="", etc.)
+    clean = clean.replace(
+        Regex("on\\w+\\s*=\\s*['\"].*?['\"]", RegexOption.IGNORE_CASE),
+        ""
+    )
+
+    // 4) Bloquear javascript:, data:, vbscript:
+    clean = clean.replace(
+        Regex("(javascript:|vbscript:|data:)", RegexOption.IGNORE_CASE),
+        ""
+    )
+
+    // 5) Quitar entidades numéricas tipo &#123; o &#x1fa9;
+    clean = clean.replace(Regex("&#\\d+;"), "")
+    clean = clean.replace(Regex("&#x[0-9a-fA-F]+;"), "")
+
+    // 6) Quitar caracteres invisibles
+    clean = clean.replace(Regex("[\\u0000-\\u001F\\u007F]"), "")
+
+    // 7) Normalizar espacios múltiples
+    clean = clean.replace(Regex("\\s+"), " ")
+
+    // 8) Remover palabras de ataques HTML
+    val forbiddenWords = listOf(
+        "script", "iframe", "object", "embed", "form", "svg",
+        "link", "style", "meta", "head", "body", "onerror", "onload"
+    )
+    forbiddenWords.forEach {
+        clean = clean.replace(it, "", ignoreCase = true)
+    }
+
+    return clean.trim()
 }
