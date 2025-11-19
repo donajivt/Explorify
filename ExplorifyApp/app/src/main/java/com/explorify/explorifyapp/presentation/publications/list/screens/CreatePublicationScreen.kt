@@ -5,6 +5,7 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -197,48 +198,87 @@ fun CreatePublicationScreen(
                 Button(
                     onClick = {
                         if (isPublishing || ui.loading) return@Button
+
                         scope.launch(Dispatchers.IO) {
+
                             snackbarHostState.currentSnackbarData?.dismiss()
 
+                            // 🛑 Validaciones iniciales
                             if (selectedImageUri == null) {
-                                withContext(Dispatchers.Main) { snackbarHostState.showSnackbar("Debes seleccionar una imagen antes de publicar") }
+                                withContext(Dispatchers.Main) {
+                                    snackbarHostState.showSnackbar("Debes seleccionar una imagen antes de publicar")
+                                }
                                 return@launch
                             }
 
                             if (description.isBlank() || location.isBlank()) {
-                                withContext(Dispatchers.Main) { snackbarHostState.showSnackbar("Debes llenar descripción y ubicación") }
+                                withContext(Dispatchers.Main) {
+                                    snackbarHostState.showSnackbar("Debes llenar descripción y ubicación")
+                                }
                                 return@launch
                             }
 
                             if (userIdState.isNullOrEmpty()) {
-                                withContext(Dispatchers.Main) { snackbarHostState.showSnackbar("No se encontró el usuario autenticado") }
+                                withContext(Dispatchers.Main) {
+                                    snackbarHostState.showSnackbar("No se encontró el usuario autenticado")
+                                }
                                 return@launch
                             }
 
                             try {
+
+                                // ================================
+                                // 📤 SUBIR IMAGEN
+                                // ================================
                                 isUploading = true
                                 withContext(Dispatchers.Main) {
-                                    snackbarHostState.showSnackbar("⏳ Subiendo y verificando imagen...")
+                                    snackbarHostState.showSnackbar("⏳ Subiendo imagen...")
                                 }
 
                                 val compressedFile = compressImage(context, selectedImageUri!!)
                                 val compressedUri = Uri.fromFile(compressedFile)
                                 val filePart = context.prepareFilePart("file", compressedUri)
 
+                                Log.e("UPLOAD", "📸 URI comprimida: $compressedUri")
+                                Log.e("UPLOAD", "📤 Enviando imagen al backend...")
+
                                 val uploadResult = retrySuspend(times = 3) {
                                     mediaRepo.uploadImage(token ?: "", filePart)
                                 }
 
+                                // ================================
+                                // ✔ OBTENER URL DE CLOUDINARY
+                                // ================================
                                 val finalImageUrl = uploadResult.result?.secureUrl
-                                    ?: throw Exception("No se recibió URL segura del servidor")
 
+                                Log.e("UPLOAD", "🔗 secureUrl = $finalImageUrl")
 
+                                if (finalImageUrl.isNullOrBlank()) {
+                                    withContext(Dispatchers.Main) {
+                                        snackbarHostState.showSnackbar("Error: la imagen no se pudo procesar")
+                                    }
+                                    return@launch
+                                }
+
+                                // ================================
+                                // 📝 CREAR PUBLICACIÓN
+                                // ================================
                                 isUploading = false
                                 isPublishing = true
 
                                 withContext(Dispatchers.Main) {
-                                    snackbarHostState.showSnackbar("Publicando aventura...")
+                                    snackbarHostState.showSnackbar("📤 Creando publicación...")
                                 }
+
+                                Log.e("CREATE_PUB", "==== DATOS A ENVIAR ====")
+                                Log.e("CREATE_PUB", "imageUrl = $finalImageUrl")
+                                Log.e("CREATE_PUB", "title = $title")
+                                Log.e("CREATE_PUB", "description = $description")
+                                Log.e("CREATE_PUB", "location = $location")
+                                Log.e("CREATE_PUB", "latitud = $latitud")
+                                Log.e("CREATE_PUB", "longitud = $longitud")
+                                Log.e("CREATE_PUB", "userId = $userIdState")
+                                Log.e("CREATE_PUB", "========================")
 
                                 vm.createPublication(
                                     context = context,
@@ -251,19 +291,20 @@ fun CreatePublicationScreen(
                                     userId = userIdState!!,
                                     onDone = {
                                         scope.launch {
-                                            snackbarHostState.showSnackbar("Aventura publicada con éxito")
+                                            snackbarHostState.showSnackbar("Aventura publicada con éxito 🎉")
                                             onPublishDone()
                                         }
                                     }
                                 )
+
                             } catch (e: Exception) {
+                                val msg = e.message ?: "Error desconocido"
+
+                                Log.e("CREATE_PUB_ERROR", "🔥 ERROR COMPLETO: $msg")
+                                Log.e("CREATE_PUB_ERROR", "STACKTRACE:", e)
+
                                 withContext(Dispatchers.Main) {
-                                    val msg = when {
-                                        "timeout" in (e.message ?: "") -> "Conexión lenta. Reintentando..."
-                                        "host" in (e.message ?: "") -> "Sin conexión. Intenta más tarde."
-                                        else -> "Error inesperado: ${e.message}"
-                                    }
-                                    snackbarHostState.showSnackbar(msg)
+                                    snackbarHostState.showSnackbar("Error: $msg")
                                 }
                             } finally {
                                 isUploading = false

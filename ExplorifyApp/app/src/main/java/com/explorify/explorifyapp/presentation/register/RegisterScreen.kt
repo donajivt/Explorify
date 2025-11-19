@@ -225,7 +225,7 @@ fun RegisterScreen(navController: NavController) {
                             onClick = {
                                 val intent = Intent(
                                     Intent.ACTION_VIEW,
-                                    Uri.parse("http://explorify2.somee.com/Home/Terminos")
+                                    Uri.parse("https://explorify.runasp.net/Home/Terminos")
                                 )
                                 context.startActivity(intent)
                             }
@@ -239,7 +239,7 @@ fun RegisterScreen(navController: NavController) {
                             onClick = {
                                 val intent = Intent(
                                     Intent.ACTION_VIEW,
-                                    Uri.parse("http://explorify2.somee.com/Home/Privacidad")
+                                    Uri.parse("https://explorify.runasp.net/Home/Privacidad")
                                 )
                                 context.startActivity(intent)
                             }

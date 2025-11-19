@@ -203,7 +203,9 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
-
+    fun resetLoginResult() {
+        _loginResult.value = ""
+    }
 
 }
 

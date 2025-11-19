@@ -1,6 +1,8 @@
 package com.explorify.explorifyapp.presentation.login
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -20,6 +22,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
+import androidx.compose.ui.platform.LocalFocusManager
 
 @Composable
 fun LoginScreen(navController: NavController) {
@@ -37,6 +40,7 @@ fun LoginScreen(navController: NavController) {
 
     val loginResult by viewModel.loginResult.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val focusManager = LocalFocusManager.current
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
@@ -45,7 +49,10 @@ fun LoginScreen(navController: NavController) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-               // .height(300.dp)
+                .clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ) { focusManager.clearFocus() }
                 .padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
@@ -161,7 +168,11 @@ fun LoginScreen(navController: NavController) {
                             if (hasError) {
                                 errorMessage = "Por favor, completa todos los campos"
                                 coroutineScope.launch {
-                                    snackbarHostState.showSnackbar(errorMessage!!)
+                                    snackbarHostState.currentSnackbarData?.dismiss()   // 👈 cierra el anterior si existe
+                                    snackbarHostState.showSnackbar(
+                                        message = errorMessage!!,
+                                        duration = SnackbarDuration.Short              // 👈 más rápido
+                                    )
                                 }
                                 /*if (userName.isBlank() || password.isBlank()) {
                     errorMessage = "Por favor, completa todos los campos"
@@ -216,16 +227,17 @@ fun LoginScreen(navController: NavController) {
                     LaunchedEffect(loginResult) {
                         if (loginResult.isNotEmpty()) {
                             if (loginResult.startsWith("Bienvenido")) {
-                                val name = viewModel.userName
                                 navController.navigate("publicaciones")
                             } else {
                                 coroutineScope.launch {
+                                    snackbarHostState.currentSnackbarData?.dismiss()   // 👈 quita el snackbar anterior
                                     snackbarHostState.showSnackbar(
                                         message = "Usuario y/o contraseña incorrectos",
                                         duration = SnackbarDuration.Short
                                     )
                                 }
                             }
+                            viewModel.resetLoginResult()
                         }
                     }
                 }

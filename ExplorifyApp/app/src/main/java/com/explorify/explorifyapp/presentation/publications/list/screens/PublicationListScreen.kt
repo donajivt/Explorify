@@ -33,6 +33,7 @@ import com.explorify.explorifyapp.presentation.publications.list.PublicationsLis
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import android.net.Uri
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -479,17 +480,45 @@ fun PublicationCard(
             }
 
             // 📝 Descripción
-            Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+            Column(
+                Modifier
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .animateContentSize()
+            ) {
+
+                var expanded by remember { mutableStateOf(false) }
+                var overflowingDesc by remember { mutableStateOf(false) }
+
                 Text(
                     text = publication.description,
                     color = textPrimary,
                     style = MaterialTheme.typography.bodyMedium,
                     lineHeight = MaterialTheme.typography.bodyMedium.lineHeight * 1.4f,
-                    maxLines = 3,
-                    overflow = TextOverflow.Ellipsis
+                    maxLines = if (expanded) Int.MAX_VALUE else 3,
+                    overflow = TextOverflow.Ellipsis,
+                    onTextLayout = { layout ->
+                        if (!expanded) {
+                            // Solo medir overflow mientras está colapsado
+                            overflowingDesc = layout.hasVisualOverflow
+                        }
+                    }
                 )
 
-                Spacer(Modifier.height(16.dp))
+                if (overflowingDesc) {
+                    Text(
+                        text = if (expanded) "Ver menos ▲" else "Ver más ▼",
+                        color = Color(0xFF3C9D6D),
+                        style = MaterialTheme.typography.bodyLarge.copy(
+                            fontWeight = FontWeight.Bold
+                        ),
+                        modifier = Modifier
+                            .padding(top = 8.dp)
+                            .clickable { expanded = !expanded }
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
 
                 // 📍 Ubicación
                 Row(
@@ -533,7 +562,6 @@ fun PublicationCard(
             }
         }
     }
-}
 
 private fun String.formatAsDate(): String = try {
     val odt = OffsetDateTime.parse(this)
