@@ -13,5 +13,6 @@ namespace Explorify.Api.Publications.Application.Interfaces
         Task CreateAsync(PublicationDto dto, string userId);
         Task<bool> DeleteAsync(string id, string userId);
         Task<bool> UpdateAsync(string id, PublicationDto dto, string userId);
+        Task<bool> DeleteAdminAsync(string id);
     }
 }

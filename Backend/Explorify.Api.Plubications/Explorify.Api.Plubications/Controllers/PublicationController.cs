@@ -88,7 +88,6 @@ namespace Explorify.Api.Plubications.Controllers
             if (userId == null)
                 return Unauthorized(new ResponseDto { IsSuccess = false, Message = "Usuario no autenticado" });
 
-            // ✅ Las excepciones de malas palabras serán manejadas por GlobalExceptionHandler
             await _service.CreateAsync(dto, userId);
             return Ok(new ResponseDto { Message = "Publicación creada exitosamente" });
         }
@@ -101,6 +100,20 @@ namespace Explorify.Api.Plubications.Controllers
                 return Unauthorized(new ResponseDto { IsSuccess = false, Message = "Usuario no autenticado" });
 
             var deleted = await _service.DeleteAsync(id, userId);
+            if (!deleted)
+                return Forbid();
+
+            return Ok(new ResponseDto { Message = "Publicación eliminada correctamente" });
+        }
+        [HttpDelete("admin/{id}")]
+        [Authorize(Roles = "Admin, ADMIN, admin")]
+        public async Task<IActionResult> DeleteAdmin(string id)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId == null)
+                return Unauthorized(new ResponseDto { IsSuccess = false, Message = "Usuario no autenticado" });
+
+            var deleted = await _service.DeleteAdminAsync(id);
             if (!deleted)
                 return Forbid();
 

@@ -59,12 +59,17 @@ namespace Explorify.Api.User.Application.Services
                     profileImageUrl = uploadResult.Value.imageUrl;
                     cloudinaryPublicId = uploadResult.Value.publicId;
                 }
+                user.ProfileImageUrl = profileImageUrl;
+                user.CloudinaryPublicId = cloudinaryPublicId;
+            }
+            else
+            {
+                user.ProfileImageUrl = user.ProfileImageUrl ?? string.Empty;
+                user.CloudinaryPublicId = user.CloudinaryPublicId ?? string.Empty;
             }
             user.Name = dto.Username;
             user.Email = dto.Email;
             user.UpdatedAt = DateTime.UtcNow;
-            user.ProfileImageUrl = profileImageUrl;
-            user.CloudinaryPublicId = cloudinaryPublicId;
 
             await _userRepository.UpdateAsync(user);
 

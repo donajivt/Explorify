@@ -141,6 +141,15 @@ namespace Explorify.Api.Publications.Application.Services
             await _repository.DeleteAsync(id);
             return true;
         }
+        public async Task<bool> DeleteAdminAsync(string id)
+        {
+            var pub = await _repository.GetByIdAsync(id);
+            if (pub == null)
+                return false;
+
+            await _repository.DeleteAsync(id);
+            return true;
+        }
 
         public async Task<bool> UpdateAsync(string id, PublicationDto dto, string userId)
         {
