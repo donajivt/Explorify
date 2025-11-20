@@ -79,7 +79,7 @@ fun EditPublicationScreen(
     val mediaRepo = remember {
         MediaRepositoryImpl(
             Retrofit.Builder()
-                .baseUrl("http://explorify.somee.com/") // ⚠️ HTTPS!
+                .baseUrl("https://explorify-publications.runasp.net/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(MediaApi::class.java)

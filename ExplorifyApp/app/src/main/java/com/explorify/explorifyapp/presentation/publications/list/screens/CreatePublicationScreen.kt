@@ -4,8 +4,8 @@ import android.net.Uri
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.os.Build
-import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -93,15 +93,22 @@ fun CreatePublicationScreen(
 
     val mediaRepo = remember {
         val okHttp = OkHttpClient.Builder()
-            .connectTimeout(45, TimeUnit.SECONDS)
-            .readTimeout(60, TimeUnit.SECONDS)
-            .writeTimeout(60, TimeUnit.SECONDS)
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS)
+            .writeTimeout(20, TimeUnit.SECONDS)
             .retryOnConnectionFailure(true)
+            .callTimeout(25, TimeUnit.SECONDS)
+            .dispatcher(
+                okhttp3.Dispatcher().apply {
+                    maxRequests = 64
+                    maxRequestsPerHost = 10
+                }
+            )
             .build()
 
         MediaRepositoryImpl(
             Retrofit.Builder()
-                .baseUrl("http://explorify.somee.com/")
+                .baseUrl("https://explorify-publications.runasp.net/")
                 .client(okHttp)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
@@ -236,11 +243,9 @@ fun CreatePublicationScreen(
                                 }
 
                                 val compressedFile = compressImage(context, selectedImageUri!!)
-                                val compressedUri = Uri.fromFile(compressedFile)
-                                val filePart = context.prepareFilePart("file", compressedUri)
 
-                                Log.e("UPLOAD", "📸 URI comprimida: $compressedUri")
-                                Log.e("UPLOAD", "📤 Enviando imagen al backend...")
+                                val filePart = context.prepareFilePart("file", Uri.fromFile(compressedFile))
+
 
                                 val uploadResult = retrySuspend(times = 3) {
                                     mediaRepo.uploadImage(token ?: "", filePart)
@@ -250,8 +255,6 @@ fun CreatePublicationScreen(
                                 // ✔ OBTENER URL DE CLOUDINARY
                                 // ================================
                                 val finalImageUrl = uploadResult.result?.secureUrl
-
-                                Log.e("UPLOAD", "🔗 secureUrl = $finalImageUrl")
 
                                 if (finalImageUrl.isNullOrBlank()) {
                                     withContext(Dispatchers.Main) {
@@ -269,16 +272,6 @@ fun CreatePublicationScreen(
                                 withContext(Dispatchers.Main) {
                                     snackbarHostState.showSnackbar("📤 Creando publicación...")
                                 }
-
-                                Log.e("CREATE_PUB", "==== DATOS A ENVIAR ====")
-                                Log.e("CREATE_PUB", "imageUrl = $finalImageUrl")
-                                Log.e("CREATE_PUB", "title = $title")
-                                Log.e("CREATE_PUB", "description = $description")
-                                Log.e("CREATE_PUB", "location = $location")
-                                Log.e("CREATE_PUB", "latitud = $latitud")
-                                Log.e("CREATE_PUB", "longitud = $longitud")
-                                Log.e("CREATE_PUB", "userId = $userIdState")
-                                Log.e("CREATE_PUB", "========================")
 
                                 vm.createPublication(
                                     context = context,
@@ -299,9 +292,6 @@ fun CreatePublicationScreen(
 
                             } catch (e: Exception) {
                                 val msg = e.message ?: "Error desconocido"
-
-                                Log.e("CREATE_PUB_ERROR", "🔥 ERROR COMPLETO: $msg")
-                                Log.e("CREATE_PUB_ERROR", "STACKTRACE:", e)
 
                                 withContext(Dispatchers.Main) {
                                     snackbarHostState.showSnackbar("Error: $msg")
@@ -531,54 +521,6 @@ fun CreatePublicationScreen(
     }
 }
 
-fun compressImage(context: Context, uri: Uri): File {
-    // 1) Lee dimensiones sin cargar todo en memoria
-    val options = android.graphics.BitmapFactory.Options().apply {
-        inJustDecodeBounds = true
-    }
-    context.contentResolver.openInputStream(uri)?.use {
-        android.graphics.BitmapFactory.decodeStream(it, null, options)
-    }
-
-    // 2) Calcula inSampleSize para un máximo de ~1920px (suficiente para móvil)
-    val maxDim = 1920
-    var inSampleSize = 1
-    var width = options.outWidth
-    var height = options.outHeight
-    while (width / inSampleSize > maxDim || height / inSampleSize > maxDim) {
-        inSampleSize *= 2
-    }
-
-    // 3) Decodifica ya escalado
-    val decodeOpts = android.graphics.BitmapFactory.Options().apply {
-        inSampleSize = inSampleSize
-        inPreferredConfig = android.graphics.Bitmap.Config.RGB_565 // menos memoria/peso
-    }
-    val bitmap = context.contentResolver.openInputStream(uri)?.use {
-        android.graphics.BitmapFactory.decodeStream(it, null, decodeOpts)
-    } ?: throw IllegalArgumentException("No se pudo decodificar la imagen")
-
-    // 4) (Opcional) re-escala fino si aún supera el máximo
-    val scale = (maxOf(bitmap.width, bitmap.height).toFloat() / maxDim).coerceAtLeast(1f)
-    val resized = if (scale > 1f) {
-        android.graphics.Bitmap.createScaledBitmap(
-            bitmap,
-            (bitmap.width / scale).toInt(),
-            (bitmap.height / scale).toInt(),
-            true
-        )
-    } else bitmap
-
-    // 5) Comprime a JPEG ~70 (buena calidad/peso)
-    val outFile = File(context.cacheDir, "compressed_${System.currentTimeMillis()}.jpg")
-    java.io.FileOutputStream(outFile).use { fos ->
-        resized.compress(android.graphics.Bitmap.CompressFormat.JPEG, 70, fos)
-        fos.flush()
-    }
-
-    if (resized !== bitmap) bitmap.recycle()
-    return outFile
-}
 
 class RetryInterceptor(
     private val maxRetries: Int = 3,
@@ -651,4 +593,26 @@ fun sanitizeSafeInput(input: String): String {
     }
 
     return clean
+}
+
+suspend fun compressImage(context: Context, uri: Uri): File = withContext(Dispatchers.IO) {
+    val inputStream = context.contentResolver.openInputStream(uri)
+        ?: throw IllegalStateException("No se pudo leer la imagen")
+
+    val bitmap = android.graphics.BitmapFactory.decodeStream(inputStream)
+
+    // Reducir resolución a 1080px (suficiente para móvil)
+    val scaled = Bitmap.createScaledBitmap(
+        bitmap,
+        1080,
+        (bitmap.height * (1080f / bitmap.width)).toInt(),
+        true
+    )
+
+    val file = File(context.cacheDir, "compressed_${System.currentTimeMillis()}.jpg")
+    file.outputStream().use { out ->
+        scaled.compress(Bitmap.CompressFormat.JPEG, 70, out)
+    }
+
+    file
 }
