@@ -34,8 +34,8 @@ fun SplashScreen(navController: NavController, viewModel: LoginViewModel = viewM
                         popUpTo("splash") { inclusive = true }
                     }
                 }
-                else -> { // si no hay rol o es desconocido
-                    navController.navigate("inicio/${userName}") {
+                else -> { // si no hay rol o es desconocidoinicio/${userName}
+                    navController.navigate("publicaciones") {
                         popUpTo("splash") { inclusive = true }
                     }
                 }
