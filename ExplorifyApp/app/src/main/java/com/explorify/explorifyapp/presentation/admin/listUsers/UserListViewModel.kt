@@ -54,20 +54,20 @@ class UserListViewModel(
             }
         }
     }
-  /*  fun getUsuarios() {
-        viewModelScope.launch {
-            try {
-                val response = RetrofitUserInstance.api.getAll()
-                if (response.isSuccess) {
-                    _users.value = response.result
-                    Log.d("UserListViewModel", "Usuarios cargados: ${_users.value.size}")
-                } else {
-                    Log.e("UserListViewModel", "Error al obtener usuarios: ${response.message}")
-                }
-            } catch (e: Exception) {
-                Log.e("UserListViewModel", "Error de red al traer usuarios: ${e.localizedMessage}")
-            }
-        }
-    }
-*/
 }
+/*  fun getUsuarios() {
+       viewModelScope.launch {
+           try {
+               val response = RetrofitUserInstance.api.getAll()
+               if (response.isSuccess) {
+                   _users.value = response.result
+                   Log.d("UserListViewModel", "Usuarios cargados: ${_users.value.size}")
+               } else {
+                   Log.e("UserListViewModel", "Error al obtener usuarios: ${response.message}")
+               }
+           } catch (e: Exception) {
+               Log.e("UserListViewModel", "Error de red al traer usuarios: ${e.localizedMessage}")
+           }
+       }
+   }
+*/

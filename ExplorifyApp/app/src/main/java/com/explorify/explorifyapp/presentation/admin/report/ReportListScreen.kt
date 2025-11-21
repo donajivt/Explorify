@@ -48,11 +48,28 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.filled.Delete
 import android.util.Log
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.explorify.explorifyapp.presentation.admin.listUsers.UserListViewModel
+import com.explorify.explorifyapp.presentation.login.LoginViewModel
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.draw.shadow
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.width
+
 @ExperimentalMaterial3Api
 @Composable
 fun ReportListScreen(
     vm: ReportViewModel,
-    navController: NavController
+    navController: NavController,
+    userListVM: UserListViewModel = viewModel(),
+            viewModel: LoginViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val items = vm.reportedItems
@@ -61,9 +78,29 @@ fun ReportListScreen(
     var token by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(Unit) {
         token = AppDatabase.getInstance(context).authTokenDao().getToken()?.token
-        token?.let { tk -> vm.load(tk) }
+        //token?.let { tk -> vm.load(tk) }
     // vm.load(token)
+        token?.let {
+            vm.load(it)
+            try {
+                userListVM.getUsers(it)
+                // val users = userRepo.getAllUsers(it)
+                // userMap = users.associate { u -> u.id to u.name }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
     }
+    LaunchedEffect(Unit) {
+        val isLoggedIn = viewModel.isLoggedIn()
+        if (!isLoggedIn) {
+            navController.navigate("login") {
+                popUpTo("adminDashboard") { inclusive = true }
+            }
+        }
+    }
+    val usuarios by userListVM.usuarios.collectAsState()
+    val userMap = usuarios.associate { it.id to (it.name to it.profileImageUrl) }
 
     Scaffold(
         topBar = { TopAppBar(title = { Text("Publicaciones reportadas") }) }
@@ -125,8 +162,14 @@ fun ReportListScreen(
                             .padding(padding)
                     ) {
                         items(items) { item ->
+                            val userData = userMap[item.publication.userId]
+                            Log.d("userData","${userData}")
+                            val name = userData?.first ?: "Usuario desconocido"
+                            val image = userData?.second
                             ReportedPublicationCard(
                                 item = item,
+                                authorName = name,
+                                authorImage = image,
                                 onDelete = {
 
                                     vm.deletePublication(item.publication, token!!) {
@@ -143,7 +186,122 @@ fun ReportListScreen(
     }
 }
 
+@Composable
+fun ReportedPublicationCard(
+    item: ReportedPublicationItem,
+    authorName: String,
+    authorImage: String?,
+    onDelete: () -> Unit
+) {
 
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(12.dp)
+            .shadow(6.dp, RoundedCornerShape(20.dp), clip = true),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E1B1C)),
+        border = BorderStroke(1.dp, Color(0xFFBFAE94).copy(alpha = 0.4f))
+    ) {
+
+        Column {
+
+            // --- Imagen principal ---
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(220.dp)
+                    .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+            ) {
+                AsyncImage(
+                    model = item.publication.imageUrl,
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+
+            Column(Modifier.padding(16.dp)) {
+
+                // --- Título + botón eliminar ---
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        item.publication.title,
+                        style = MaterialTheme.typography.titleLarge.copy(
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold
+                        )
+                    )
+
+                    IconButton(onClick = onDelete) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Eliminar publicación",
+                            tint = Color.Red
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(8.dp))
+
+                // --- Autor con foto ---
+                Row(verticalAlignment = Alignment.CenterVertically) {
+
+                    AsyncImage(
+                        model = authorImage,
+                        contentDescription = "Foto autor",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(26.dp)
+                            .clip(CircleShape)
+                            .border(
+                                width = 1.dp,
+                                color = Color.White.copy(alpha = 0.3f),
+                                shape = CircleShape
+                            )
+                    )
+
+                    Spacer(Modifier.width(8.dp))
+
+                    Text(
+                        text = authorName,
+                        style = MaterialTheme.typography.bodyLarge.copy(color = Color.White)
+                    )
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                // --- Datos del reporte ---
+                Text(
+                    "Total reportes: ${item.reports.size}",
+                    color = Color(0xFFBFAE94)
+                )
+
+                Spacer(Modifier.height(6.dp))
+
+                Text("Reportado por:", color = Color.White)
+                item.reporterNames.forEach { name ->
+                    Text("• $name", color = Color.LightGray)
+                }
+
+                Spacer(Modifier.height(10.dp))
+
+                Text(
+                    "Último reporte: " + (item.reports.maxByOrNull { it.createdAt }?.createdAt ?: ""),
+                    color = Color.Gray
+                )
+            }
+        }
+    }
+}
+
+
+
+/*
 @Composable
 fun ReportedPublicationCard(
     item: ReportedPublicationItem,
@@ -207,4 +365,5 @@ fun ReportedPublicationCard(
         }
     }
 }
+*/
 

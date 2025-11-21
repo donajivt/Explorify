@@ -26,13 +26,7 @@ interface UsersApiService {
     suspend fun getAll(
         @Header("Authorization") token: String
     ): Response<UsersResponse>
-/*
-    @GET("api/Users/{id}")
-    suspend fun getUserById(
-        @Path("id") id: String,
-        @Header("Authorization") token: String
-    ): UserResponse
-*/
+
     //Traer por id
     @GET("api/Users/{id}")
     suspend fun getById(
@@ -47,11 +41,6 @@ interface UsersApiService {
     ): UserResponse
 
     // 🔹 Editar usuario actual
-   /* @PUT("api/Users/me")
-    suspend fun editUser(
-        @Body body: UserRequest,
-        @Header("Authorization") token: String
-    ): Response<SimpleResponse> */
     @Multipart
     @PUT("api/Users/me")
     suspend fun editUser(
@@ -60,7 +49,6 @@ interface UsersApiService {
         @Part profileImage: MultipartBody.Part? =null,
         @Header("Authorization") token: String
     ): Response<SimpleResponse>
-
 
     //Eliminar por id
     @DELETE("api/Users")

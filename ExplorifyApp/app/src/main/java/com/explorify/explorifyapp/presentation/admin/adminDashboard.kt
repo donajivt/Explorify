@@ -50,6 +50,7 @@ import com.explorify.explorifyapp.presentation.publications.list.PublicationsLis
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.shadow
@@ -57,7 +58,8 @@ import androidx.compose.ui.text.font.FontWeight
 import com.explorify.explorifyapp.data.remote.publications.RetrofitUsersInstance
 import com.explorify.explorifyapp.domain.repository.UserRepositoryImpl
 import com.explorify.explorifyapp.presentation.admin.AdminDashboard
-
+import com.explorify.explorifyapp.presentation.admin.listUsers.UserListViewModel
+import androidx.compose.foundation.shape.CircleShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,7 +67,9 @@ fun AdminDashboard( vm: PublicationsListModel,
                     navController: NavController,
                     //onCreateClick: (String) -> Unit,
                     onOpenDetail: (String) -> Unit,
-                 viewModel: LoginViewModel = viewModel()) {
+                 viewModel: LoginViewModel = viewModel(),
+                    userListVM: UserListViewModel = viewModel()
+                    ) {
     var menuExpanded by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
@@ -73,10 +77,15 @@ fun AdminDashboard( vm: PublicationsListModel,
     val swipeState = rememberSwipeRefreshState(isRefreshing = state.loading)
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
+    val usuarios by userListVM.usuarios.collectAsState()
+    //val userMap = usuarios.associate { it.id to it.name }
+    val userMap = usuarios.associate { user ->
+        user.id to (user.name to user.profileImageUrl)
+    }
 
     // 🧠 Mapa de usuarios (id → nombre)
-    val userRepo = remember { UserRepositoryImpl(RetrofitUsersInstance.api) }
-    var userMap by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+    //val userRepo = remember { UserRepositoryImpl(RetrofitUsersInstance.api) }
+    //var userMap by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
 
     // 🔹 Obtener token para cargar publicaciones y usuarios
     var token by remember { mutableStateOf<String?>(null) }
@@ -99,8 +108,9 @@ fun AdminDashboard( vm: PublicationsListModel,
         token?.let {
             vm.load(it)
             try {
-                val users = userRepo.getAllUsers(it)
-                userMap = users.associate { u -> u.id to u.name }
+                userListVM.getUsers(it)
+                // val users = userRepo.getAllUsers(it)
+               // userMap = users.associate { u -> u.id to u.name }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -208,8 +218,9 @@ fun AdminDashboard( vm: PublicationsListModel,
                         if (!token.isNullOrEmpty()) {
                             vm.refresh(token!!)
                             try {
-                                val users = userRepo.getAllUsers(token!!)
-                                userMap = users.associate { u -> u.id to u.name }
+                                userListVM.getUsers(token!!)
+                                //val users = userRepo.getAllUsers(token!!)
+                                //userMap = users.associate { u -> u.id to u.name }
                             } catch (e: Exception) {
                                 e.printStackTrace()
                             }
@@ -253,6 +264,9 @@ fun AdminDashboard( vm: PublicationsListModel,
                             verticalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             items(state.items, key = { it.id }) { pub ->
+                                val userData = userMap[pub.userId]
+                                val authorName = userData?.first ?: "Usuario desconocido"
+                                val authorImage = userData?.second
                                 PublicationCard(
                                     publication = pub,
                                     onOpen = { onOpenDetail(pub.id) },
@@ -262,7 +276,9 @@ fun AdminDashboard( vm: PublicationsListModel,
                                         val name = Uri.encode(pub.location)
                                         navController.navigate("map/$lat/$lon/$name")
                                     },
-                                    authorName = userMap[pub.userId] ?: "Usuario desconocido"
+                                    authorName = authorName,
+                                    authorImage = authorImage
+                                    //authorName = userMap[pub.userId] ?: "Usuario desconocido"
                                 )
                             }
                         }
@@ -278,7 +294,8 @@ private fun PublicationCard(
     publication: Publication,
     onOpen: () -> Unit,
     onViewMap: () -> Unit,
-    authorName: String
+    authorName: String,
+    authorImage:String?
 ) {
     Card(
         modifier = Modifier
@@ -350,12 +367,41 @@ private fun PublicationCard(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
+                        if (!authorImage.isNullOrBlank()) {
+                            Log.d("imagen url:"," ${authorImage}")
+                            AsyncImage( //imageUrl
+                                model = authorImage+ "?t=" + System.currentTimeMillis(),
+                                contentDescription = "Foto de perfil",
+                                modifier = Modifier
+                                    .size(40.dp)        // 👈 más pequeño
+                                    .clip(CircleShape)
+                                    .border(
+                                        width = 1.dp,
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                        shape = CircleShape
+                                    ),
+                                contentScale = ContentScale.Crop
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "Avatar",
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .border(
+                                        width = 1.dp,
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                        shape = CircleShape
+                                    ),
+                                tint = Color(0xFF355031)
+                            )
+                        }
+                        /*Icon(
                             imageVector = Icons.Default.AccountCircle,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(22.dp)
-                        )
+                        )*/
                         Spacer(Modifier.width(6.dp))
                         Column {
                             Text(
