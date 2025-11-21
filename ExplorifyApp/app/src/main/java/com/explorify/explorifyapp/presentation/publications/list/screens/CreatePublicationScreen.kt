@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Build
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -119,6 +120,10 @@ fun CreatePublicationScreen(
     val ui = vm.uiState
     var isPublishing by remember { mutableStateOf(false) }
 
+    BackHandler(enabled = isUploading || isPublishing) {
+        // Bloquea el botón atrás del celular
+    }
+
     LaunchedEffect(navController.currentBackStackEntry?.savedStateHandle?.get<String>("selected_location_name")) {
         val savedStateHandle = navController.currentBackStackEntry?.savedStateHandle
         savedStateHandle?.get<String>("selected_location_name")?.let {
@@ -184,7 +189,10 @@ fun CreatePublicationScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(
+                        onClick = { if (!isUploading && !isPublishing) onBack() },
+                        enabled = !isUploading && !isPublishing
+                    ) {
                         Icon(Icons.Default.Close, contentDescription = "Volver", tint = Color(0xFF3C9D6D))
                     }
                 },
@@ -518,6 +526,13 @@ fun CreatePublicationScreen(
 
             Spacer(Modifier.height(30.dp))
         }
+        if (isUploading || isPublishing) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .clickable(enabled = true) {}
+            )
+        }
     }
 }
 
@@ -599,7 +614,8 @@ suspend fun compressImage(context: Context, uri: Uri): File = withContext(Dispat
     val inputStream = context.contentResolver.openInputStream(uri)
         ?: throw IllegalStateException("No se pudo leer la imagen")
 
-    val bitmap = android.graphics.BitmapFactory.decodeStream(inputStream)
+    val originalBitmap = android.graphics.BitmapFactory.decodeStream(inputStream)
+    val bitmap = rotateImageIfRequired(context, originalBitmap, uri)
 
     // Reducir resolución a 1080px (suficiente para móvil)
     val scaled = Bitmap.createScaledBitmap(
@@ -615,4 +631,33 @@ suspend fun compressImage(context: Context, uri: Uri): File = withContext(Dispat
     }
 
     file
+}
+
+fun rotateImageIfRequired(context: Context, bitmap: Bitmap, uri: Uri): Bitmap {
+    val input = context.contentResolver.openInputStream(uri) ?: return bitmap
+
+    val exif = androidx.exifinterface.media.ExifInterface(input)
+    val orientation = exif.getAttributeInt(
+        androidx.exifinterface.media.ExifInterface.TAG_ORIENTATION,
+        androidx.exifinterface.media.ExifInterface.ORIENTATION_NORMAL
+    )
+
+    return when (orientation) {
+        androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_90 -> {
+            val matrix = android.graphics.Matrix()
+            matrix.postRotate(90f)
+            Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        }
+        androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_180 -> {
+            val matrix = android.graphics.Matrix()
+            matrix.postRotate(180f)
+            Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        }
+        androidx.exifinterface.media.ExifInterface.ORIENTATION_ROTATE_270 -> {
+            val matrix = android.graphics.Matrix()
+            matrix.postRotate(270f)
+            Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        }
+        else -> bitmap
+    }
 }

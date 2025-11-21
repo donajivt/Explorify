@@ -3,6 +3,8 @@ package com.explorify.explorifyapp.presentation.register
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
@@ -14,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -49,8 +52,8 @@ fun RegisterScreen(navController: NavController) {
     val context = LocalContext.current
 
     val userRepo = remember { UserRepositoryImpl(RetrofitUsersInstance.api) }
+    val focusManager = LocalFocusManager.current
 
-    // ✅ Expresión regular mejorada para emails válidos (incluye subdominios, letras, números, etc.)
     val isEmailValid = remember(email) {
         email.contains("@") && email.length <= 100
     }
@@ -71,10 +74,15 @@ fun RegisterScreen(navController: NavController) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
+                .padding(paddingValues)
+                .clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ) {
+                    focusManager.clearFocus()  // ← Cierra teclado al tocar fuera
+                },
             contentAlignment = Alignment.Center
-
-        ) {
+        ){
             Image(
                 painter = painterResource(id = R.drawable.mountains),
                 contentDescription = null,

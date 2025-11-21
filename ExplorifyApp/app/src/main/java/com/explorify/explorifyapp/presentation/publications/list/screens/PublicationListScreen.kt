@@ -87,8 +87,6 @@ fun PublicationListScreen(
         }
     }
 
-    // 🔹 Carga inicial de publicaciones y usuarios
-    // 🔹 Carga inicial optimizada de publicaciones y usuarios
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
             val dao = AppDatabase.getInstance(context).authTokenDao()
@@ -554,12 +552,26 @@ fun PublicationCard(
 
                 Spacer(Modifier.height(14.dp))
 
-                TextButton(onClick = onViewComments) {
-                    Icon(Icons.Outlined.ChatBubbleOutline, contentDescription = null, tint = Color(0xFF3C9D6D))
-                    Spacer(Modifier.width(6.dp))
-                    Text("Comentarios", color = Color(0xFF3C9D6D))
-                }
+            TextButton(
+                onClick = onViewComments,
+                modifier = Modifier
+                    .height(42.dp)
+                    .padding(horizontal = 4.dp)
+            ) {
+                Icon(
+                    Icons.Outlined.ChatBubbleOutline,
+                    contentDescription = null,
+                    tint = Color(0xFF3C9D6D),
+                    modifier = Modifier.size(22.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    "Comentarios",
+                    color = Color(0xFF3C9D6D),
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
+        }
         }
     }
 

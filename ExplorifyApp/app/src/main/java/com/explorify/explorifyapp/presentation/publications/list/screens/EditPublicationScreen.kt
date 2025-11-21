@@ -42,6 +42,15 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import com.explorify.explorifyapp.data.remote.publications.MediaApi
 import com.explorify.explorifyapp.data.remote.publications.prepareFilePart
+import androidx.exifinterface.media.ExifInterface
+import android.graphics.Matrix
+import androidx.activity.compose.BackHandler
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -58,6 +67,12 @@ fun EditPublicationScreen(
 
     var isLoading by remember { mutableStateOf(false) }
     var isSaving by remember { mutableStateOf(false) }
+    var isUploading by remember { mutableStateOf(false) } // ← ESTE DEBE IR AQUÍ
+
+
+    BackHandler(enabled = isSaving || isUploading) {
+        // Bloqueado mientras se sube / guarda
+    }
 
     var title by rememberSaveable { mutableStateOf("") }
     var description by rememberSaveable { mutableStateOf("") }
@@ -69,7 +84,6 @@ fun EditPublicationScreen(
     var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var uploadedImageUrl by remember { mutableStateOf<String?>(null) }
     var publicId by remember { mutableStateOf<String?>(null) }
-    var isUploading by remember { mutableStateOf(false) }
     var showBottomSheet by remember { mutableStateOf(false) }
     val scrollState = rememberScrollState()
     val focusManager = LocalFocusManager.current
@@ -186,11 +200,14 @@ fun EditPublicationScreen(
 
     Scaffold(
         modifier = Modifier
-            .clickable(
-                indication = null,
-                interactionSource = remember { MutableInteractionSource() }
-            ) { focusManager.clearFocus() },
-        topBar = {
+            .let {
+                if (isSaving || isUploading) it
+                else it.clickable(
+                    indication = null,
+                    interactionSource = remember { MutableInteractionSource() }
+                ) { focusManager.clearFocus() }
+            },
+                topBar = {
             TopAppBar(
                 title = {
                     Text(
@@ -202,8 +219,11 @@ fun EditPublicationScreen(
                     )
                 },
                 navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
+                    IconButton(
+                        onClick = { if (!isSaving && !isUploading) navController.popBackStack() },
+                        enabled = !isSaving && !isUploading
+                    ) {
+                    Icon(
                             Icons.Default.ArrowBack,
                             contentDescription = "Volver",
                             tint = Color(0xFF3C9D6D)
@@ -429,7 +449,8 @@ fun EditPublicationScreen(
                                     isUploading = true
                                     snackbarHostState.showSnackbar("⏳ Subiendo nueva imagen...")
 
-                                    val filePart = navController.context.prepareFilePart("file", selectedImageUri!!)
+                                    val compressed = compressImageEdit(navController.context, selectedImageUri!!)
+                                    val filePart = navController.context.prepareFilePart("file", Uri.fromFile(compressed))
                                     val uploadResult = retrySuspend(times = 3) {
                                         mediaRepo.uploadImage(token, filePart)
                                     }
@@ -499,6 +520,17 @@ fun EditPublicationScreen(
             }
         }
     }
+    if (isSaving || isUploading) {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null,
+                    enabled = true
+                ) {}
+        )
+    }
 }
 
 fun sanitizeEditInput(input: String): String {
@@ -525,4 +557,50 @@ fun sanitizeEditInput(input: String): String {
     }
 
     return clean
+}
+
+fun rotateImageIfRequiredEdit(context: Context, bitmap: Bitmap, uri: Uri): Bitmap {
+    val input = context.contentResolver.openInputStream(uri) ?: return bitmap
+    val exif = ExifInterface(input)
+
+    return when (exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)) {
+        ExifInterface.ORIENTATION_ROTATE_90 -> {
+            val matrix = Matrix()
+            matrix.postRotate(90f)
+            Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        }
+        ExifInterface.ORIENTATION_ROTATE_180 -> {
+            val matrix = Matrix()
+            matrix.postRotate(180f)
+            Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        }
+        ExifInterface.ORIENTATION_ROTATE_270 -> {
+            val matrix = Matrix()
+            matrix.postRotate(270f)
+            Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        }
+        else -> bitmap
+    }
+}
+
+suspend fun compressImageEdit(context: Context, uri: Uri): File = withContext(Dispatchers.IO) {
+    val inputStream = context.contentResolver.openInputStream(uri)
+        ?: throw IllegalStateException("No se pudo leer la imagen")
+
+    val originalBitmap = BitmapFactory.decodeStream(inputStream)
+    val corrected = rotateImageIfRequiredEdit(context, originalBitmap, uri)
+
+    val scaled = Bitmap.createScaledBitmap(
+        corrected,
+        1080,
+        (corrected.height * (1080f / corrected.width)).toInt(),
+        true
+    )
+
+    val file = File(context.cacheDir, "compressed_${System.currentTimeMillis()}.jpg")
+    file.outputStream().use { out ->
+        scaled.compress(Bitmap.CompressFormat.JPEG, 70, out)
+    }
+
+    file
 }

@@ -102,4 +102,5 @@ dependencies {
     //OpenStreetMap OSM
     implementation("org.osmdroid:osmdroid-android:6.1.17")
     implementation("org.osmdroid:osmdroid-wms:6.1.17")
+    implementation("androidx.exifinterface:exifinterface:1.3.6")
 }
