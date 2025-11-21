@@ -2,5 +2,11 @@
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">www.vdvt.somee.com</domain>
+        <domain includeSubdomains="true">explorify-login.runasp.net</domain>
+        <domain includeSubdomains="true">explorify-publications.runasp.net</domain>
+        <domain includeSubdomains="true">explorify-users.runasp.net</domain>
+        <domain includeSubdomains="true">explorify.somee.com</domain>
+        <domain includeSubdomains="true">explorify-users.somee.com</domain>
+        <domain includeSubdomains="true">explorify-comments.somee.com</domain>
     </domain-config>
 </network-security-config>
