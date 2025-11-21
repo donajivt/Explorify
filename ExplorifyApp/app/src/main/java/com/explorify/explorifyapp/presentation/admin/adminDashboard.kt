@@ -189,7 +189,7 @@ fun AdminDashboard( vm: PublicationsListModel,
                     icon = { Icon(Icons.Default.BorderColor, contentDescription = "Buscar") },
                     label = { Text("Reportes") },
                     selected = false,
-                    onClick = {  } //navController.navigate("reportesList")
+                    onClick = { navController.navigate("reportes") } //
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },

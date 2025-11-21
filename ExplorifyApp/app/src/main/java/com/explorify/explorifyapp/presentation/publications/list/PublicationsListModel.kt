@@ -44,14 +44,14 @@ class PublicationsListModel(
     }
 
     fun refresh(token: String) = load(token)
-
+    /*
     fun getPublication(id: String, token: String, onResult: (Publication?) -> Unit) =
         viewModelScope.launch {
             runCatching { getById(id, token) }
                 .onSuccess { onResult(it) }
                 .onFailure { onResult(null) }
         }
-
+    */
     fun delete(id: String, token: String) = viewModelScope.launch {
         uiState = uiState.copy(deletingId = id)
         runCatching { deleteUc(id, token) }

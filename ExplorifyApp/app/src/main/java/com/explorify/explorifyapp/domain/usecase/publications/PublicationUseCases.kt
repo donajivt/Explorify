@@ -2,6 +2,7 @@ package com.explorify.explorifyapp.domain.usecase.publications
 
 import com.explorify.explorifyapp.domain.repository.PublicationRepositoryImpl
 import com.explorify.explorifyapp.data.remote.model.Publication
+import com.explorify.explorifyapp.data.remote.model.PublicationResponse
 
 
 class PublicationUseCases(
@@ -13,7 +14,7 @@ class PublicationUseCases(
     }
 
     class GetPublicationByIdUseCase(private val repo: PublicationRepositoryImpl) {
-        suspend operator fun invoke(id: String, token: String): Publication =
+        suspend operator fun invoke(id: String, token: String): PublicationResponse =
             repo.getById(id, token)
     }
 

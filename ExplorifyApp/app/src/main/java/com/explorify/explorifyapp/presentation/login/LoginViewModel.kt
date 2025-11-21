@@ -70,6 +70,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
    fun verifyCredentials(email: String, password: String, onResult: (Boolean, String) -> Unit) {
         viewModelScope.launch {
             try {
+                Log.d("entrada de datos","${email}+ ${password}")
                 val response = repository.login(email, password)
                 if (response.isSuccess && response.result != null) {
                     val tempToken = response.result.token
@@ -78,7 +79,8 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                     onResult(false, response.message ?: "Contraseña incorrectos")
                 }
             } catch (e: Exception) {
-                onResult(false, "Error: ${e.localizedMessage}")
+                onResult(false, "Error en verficar: ${e.localizedMessage}")
+                Log.d("error en verficarcredencial","${e.message}")
             }
         }
     }

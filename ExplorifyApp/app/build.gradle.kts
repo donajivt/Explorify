@@ -14,7 +14,7 @@ android {
         applicationId = "com.explorify.explorifyapp"
         minSdk = 30
         targetSdk = 36
-        versionCode = 3
+        versionCode = 8
         versionName = "2.0.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -103,4 +103,7 @@ dependencies {
     implementation("org.osmdroid:osmdroid-android:6.1.17")
     implementation("org.osmdroid:osmdroid-wms:6.1.17")
     implementation("androidx.exifinterface:exifinterface:1.3.6")
+
+    implementation ("androidx.compose.runtime:runtime-livedata")
+
 }

@@ -52,6 +52,7 @@ import androidx.compose.ui.res.painterResource
 import coil.request.CachePolicy
 import coil.request.ImageRequest
 import kotlinx.coroutines.async
+import android.util.Log
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -98,7 +99,8 @@ fun PublicationListScreen(
                 // 🚀 Cargar en paralelo para evitar “Usuario desconocido”
                 val usersDeferred = async(Dispatchers.IO) { userRepo.getAllUsers(tk) }
                 val pubsDeferred = async(Dispatchers.IO) { vm.load(tk) }
-
+                val usuarios=userRepo.getAllUsers(tk)
+                Log.d("datos de usuarios: ","${usuarios}")
                 val users = usersDeferred.await()
                 pubsDeferred.await()
 
@@ -256,6 +258,7 @@ fun PublicationListScreen(
                                     navController.navigate("comentarios/${pub.id}")
                                 },
                                 authorName = userMap[pub.userId] ?: "Usuario desconocido"
+
                             )
                         }
                     }

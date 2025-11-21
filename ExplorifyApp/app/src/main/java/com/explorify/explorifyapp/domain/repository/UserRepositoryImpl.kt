@@ -15,4 +15,9 @@ class UserRepositoryImpl(private val api: UsersApi) {
     suspend fun getUserById(id: String, token: String): User {
         return api.getUserById(id, "Bearer $token")
     }
+
+    suspend fun getUserName(id: String, token: String): String {
+        return api.getUserById(id, "Bearer $token").name ?: "Usuario desconocido"
+    }
+
 }

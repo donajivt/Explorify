@@ -57,6 +57,7 @@ fun RegisterScreen(navController: NavController) {
     val isEmailValid = remember(email) {
         email.contains("@") && email.length <= 100
     }
+    val emailVerifyResult by viewModel.emailVerifyResult.collectAsState()
 
 
     LaunchedEffect(registerResult) {
@@ -142,6 +143,14 @@ fun RegisterScreen(navController: NavController) {
                         )
                     )
 
+                    if (emailVerifyResult != null) {
+                        Text(
+                            text = emailVerifyResult!!,
+                            color = Color.Red,
+                            fontSize = 12.sp,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
                     if (registerResult == "El correo ya está registrado") {
                         Text(
                             text = registerResult,
@@ -276,7 +285,15 @@ fun RegisterScreen(navController: NavController) {
 
                                 else -> {
                                     errorMessage = null
-                                    viewModel.register(email.trim(), name.trim(), password.trim())
+                                    coroutineScope.launch {
+                                        val emailOk = viewModel.isEmailVerify(email.trim())
+                                        if (emailOk) {
+                                            viewModel.register(email.trim(), name.trim(), password.trim())
+                                        } else {
+                                            snackbarHostState.showSnackbar("Este correo no existe.")
+                                        }
+                                    }
+                                    //  viewModel.register(email.trim(), name.trim(), password.trim())
                                 }
                             }
 

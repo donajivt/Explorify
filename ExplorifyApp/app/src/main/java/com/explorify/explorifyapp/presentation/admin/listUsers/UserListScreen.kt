@@ -1,5 +1,6 @@
 package com.explorify.explorifyapp.presentation.admin.listUsers
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.collectAsState
@@ -47,6 +48,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -198,7 +201,7 @@ fun UserItem(user: User,onClick:()->Unit) {
                 .background(Color(0xFFE0E0E0)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(
+           Icon(
                 imageVector = Icons.Default.Person,
                 contentDescription = "Usuario",
                 tint =Color.Gray, // MaterialTheme.colorScheme.primary,
@@ -206,6 +209,29 @@ fun UserItem(user: User,onClick:()->Unit) {
                     .size(40.dp)
                     .padding(end = 12.dp)
             )
+            /*if (user.imageUrl.isNotEmpty()) {
+                Log.d("imagen url:"," ${finalImageUrl}")
+                AsyncImage( //imageUrl
+
+                    model = finalImageUrl + "?t=" + System.currentTimeMillis(),
+                    contentDescription = "Foto de perfil",
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+                /* Image(
+                     painter = rememberAsyncImagePainter(imageUrl),
+                     contentDescription = "Foto de perfil",
+                     modifier = Modifier.fillMaxSize(),
+                     contentScale = ContentScale.Crop
+                 )*/
+            } else {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = "Avatar",
+                    modifier = Modifier.size(60.dp),
+                    tint = Color(0xFF355031)
+                )
+            }*/
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column {

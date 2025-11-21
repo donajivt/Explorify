@@ -1,8 +1,10 @@
 package com.explorify.explorifyapp.navigation
 
 
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
+import com.explorify.explorifyapp.data.remote.users.RetrofitUserInstance
 import androidx.navigation.compose.*
 import com.explorify.explorifyapp.presentation.login.LoginScreen
 import androidx.navigation.navArgument
@@ -31,7 +33,17 @@ import com.explorify.explorifyapp.presentation.publications.list.screens.UsersPr
 import com.explorify.explorifyapp.presentation.admin.listUsers.UserListScreen
 import com.explorify.explorifyapp.presentation.admin.perfil.PerfilAdminScreen
 import com.explorify.explorifyapp.presentation.admin.perfil.PerfilUsuarioScreen
-
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.explorify.explorifyapp.data.remote.publications.ReportApi
+import com.explorify.explorifyapp.data.remote.publications.RetrofitUsersInstance
+import com.explorify.explorifyapp.data.remote.users.UsersApiService
+import com.explorify.explorifyapp.presentation.admin.report.ReportViewModel
+import com.explorify.explorifyapp.presentation.admin.report.ReportListScreen
+import com.explorify.explorifyapp.domain.repository.UserRepositoryImpl
+import com.explorify.explorifyapp.domain.repository.ReportRepository
+import com.explorify.explorifyapp.domain.repository.UserRepository
+import com.explorify.explorifyapp.presentation.admin.report.ReportsViewModelFactory
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -93,8 +105,29 @@ fun AppNavigation() {
 
         composable("perfilAdminUsuario/{userId}") { backStackEntry ->
             val userId = backStackEntry.arguments?.getString("userId")
-            PerfilUsuarioScreen(navController=navController) //userId = userId*/)
+            PerfilUsuarioScreen(userId = userId, navController = navController)
         }
+
+        // ------------------------------------------------------
+// Pantalla de publicaciones reportadas
+// ------------------------------------------------------
+        composable("reportes") {
+
+            val reportApi = remember { RetrofitPublicationsInstance.reportApi }
+            val reportRepo = remember { ReportRepository(reportApi) }
+
+            val userRepo = remember { UserRepository(RetrofitUserInstance.api) }
+            val pubRepo = remember { PublicationRepositoryImpl(RetrofitPublicationsInstance.api) }
+
+            val factory = remember { ReportsViewModelFactory(reportRepo, pubRepo, userRepo,pubRepo) }
+            val vm: ReportViewModel = viewModel(factory = factory)
+
+            ReportListScreen(
+                navController = navController,
+                vm = vm
+            )
+        }
+
 
         composable("perfil") {
             PerfilScreen( navController = navController)

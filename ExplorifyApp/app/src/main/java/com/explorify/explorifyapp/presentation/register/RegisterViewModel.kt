@@ -11,6 +11,8 @@ import kotlinx.coroutines.launch
 import com.explorify.explorifyapp.data.remote.dto.User
 import android.util.Log
 import kotlinx.coroutines.delay
+import com.explorify.explorifyapp.data.remote.dto.publications.SingleEmail
+import com.explorify.explorifyapp.data.remote.publications.RetrofitPublicationsInstance
 
 class RegisterViewModel : ViewModel() {
     private val _registerResult = MutableStateFlow<String>("")
@@ -20,6 +22,9 @@ class RegisterViewModel : ViewModel() {
     val isLoading: StateFlow<Boolean> = _isLoading
 
     private val _users = MutableStateFlow<List<User>>(emptyList())
+
+    private val _emailVerifyResult = MutableStateFlow<String?>(null)
+    val emailVerifyResult: StateFlow<String?> = _emailVerifyResult
 
     fun getUsers() {
         viewModelScope.launch {
@@ -46,12 +51,43 @@ class RegisterViewModel : ViewModel() {
         return _users.value.any { it.email.equals(email.trim(), ignoreCase = true) }
     }
 
+    suspend fun isEmailVerify(email: String): Boolean {
+        return try {
+            val body = SingleEmail(email)
+            val response = RetrofitPublicationsInstance.api.verifyEmail(body)
+
+            if (response.isSuccessful) {
+                val data = response.body()
+
+                return if (data?.status == "valid") {
+                    _emailVerifyResult.value = null
+                    true
+                } else {
+                    _emailVerifyResult.value = "El correo no existe (${data?.subStatus})"
+                    false
+                }
+            } else {
+                _emailVerifyResult.value = "Error verificando correo"
+                false
+            }
+        } catch (e: Exception) {
+            _emailVerifyResult.value = "Error: ${e.localizedMessage}"
+            false
+        }
+    }
 
     fun register(email: String, name: String, password: String) {
         if (_isLoading.value) return
         viewModelScope.launch {
             try {
                 _isLoading.value = true
+
+                val emailIsReal = isEmailVerify(email)
+                if (!emailIsReal) {
+                    _registerResult.value = "El correo no existe"
+                    _isLoading.value = false
+                    return@launch
+                }
 
                 val emailExists = isEmailUsed(email)
                 if (emailExists) {

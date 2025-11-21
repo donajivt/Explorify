@@ -50,16 +50,28 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.runtime.collectAsState
 import com.explorify.explorifyapp.domain.repository.UserRepository
-import com.explorify.explorifyapp.data.remote.users.RetrofitUsersInstance
-import com.explorify.explorifyapp.data.remote.dto.users.UserRequest
+import com.explorify.explorifyapp.data.remote.users.RetrofitUserInstance
 import androidx.compose.material3.AlertDialog
 import androidx.compose.ui.platform.LocalFocusManager
+import java.io.File
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import android.content.Context
+import android.net.Uri
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.Image
+import android.graphics.BitmapFactory
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.graphics.asImageBitmap
+import android.util.Log
+import androidx.compose.material.icons.filled.BorderColor
+import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewModel = viewModel(),
 ) {
-    val userRepository = remember { UserRepository(RetrofitUsersInstance.api) }
+    val userRepository = remember { UserRepository(RetrofitUserInstance.api) }
     val perfilViewModel = remember { PerfilViewModel(userRepository) }
 
     var profileName = remember { mutableStateOf("") }
@@ -71,9 +83,11 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
     val focusManager = LocalFocusManager.current
 
     var menuExpanded by remember { mutableStateOf(false) }
+    var selectedImage by remember { mutableStateOf<File?>(null) }
+    val context = LocalContext.current
 
     // 🔐 Validar si hay sesión
-    LaunchedEffect(Unit) {
+    /*LaunchedEffect(Unit) {
 
         val isLoggedIn = loginViewModel.isLoggedIn()
         if (!isLoggedIn) {
@@ -85,13 +99,122 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
         //permissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
        // profileName.value= userData?.username ?: "Usuario"//loginViewModel.userEmail // ✅ use .value
        // email.value =userData?.userEmail?: "correo@ejemplo.com" //loginViewModel.userName
+    } */
+
+    LaunchedEffect(Unit) {
+        loginViewModel.getUserData()
+
+        val isLoggedIn = loginViewModel.isLoggedIn()
+        if (!isLoggedIn) {
+            navController.navigate("login") {
+                popUpTo("perfil") { inclusive = true }
+            }
+        }
+        loginViewModel.loadUserData()
+        /*val token = userData?.token ?: ""
+        val userId = userData?.userId ?: ""
+
+        if (token.isNotEmpty() && userId.isNotEmpty()) {
+            perfilViewModel.getUserById(token, userId)
+        } */
     }
+
+    val userApiData by perfilViewModel.user.collectAsState()
+    Log.d("datos del usuario","${userApiData}")
+    /*val profileImageUrl by remember(userApiData) {
+        mutableStateOf(userApiData?.profileImageUrl ?: "")
+    }*/
+    //var profileImageUrl by remember { mutableStateOf(userApiData?.profileImageUrl ?: "") }
+    //val isLoading by perfilViewModel.isLoading.collectAsState()
+    //val imageUrl = userApiData?.profileImageUrl
     LaunchedEffect(userData) {
+        val token = userData?.token ?: ""
+        val userId = userData?.userId ?: ""
+
+        if (token.isNotEmpty() && userId.isNotEmpty()) {
+            perfilViewModel.getUserById(token, userId)
+        }
         userData?.let {
             profileName.value = it.username ?: ""
             email.value = it.userEmail ?: ""
+            //profileImageUrl = it.profileImageUrl ?: ""
+        }
+        /*userApiData?.let{
+            profileName.value = it.name ?: ""
+            email.value = it.email ?: ""
+            profileImageUrl = it.profileImageUrl ?: ""
+        }*/
+        Log.d("userapidata","${userApiData}")
+    }
+    var profileImageUrl by remember { mutableStateOf("") }
+
+    LaunchedEffect(userApiData) {
+        userApiData?.let {
+            profileImageUrl = it.profileImageUrl ?: ""
+            profileName.value = it.name ?: ""
+            email.value = it.email ?: ""
+            Log.d("profileImageUrl actualizado", profileImageUrl)
         }
     }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        uri?.let {
+            val file = uri.toFile(context)
+            selectedImage = file
+        }
+    }
+
+    val isAdmin = userData?.role == "ADMIN"
+    Log.d("rol: ","${userData?.role}")
+
+    val bottomBarContent: @Composable () -> Unit = {
+        if (isAdmin) {
+            NavigationBar {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Dashboard") },
+                    label = { Text("Dashboard") },
+                    selected = false,
+                    onClick = { navController.navigate("adminDashboard") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.BorderColor, contentDescription = "Reportes") },
+                    label = { Text("Reportes") },
+                    selected = false,
+                    onClick = { navController.navigate("reportes") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil Admin") },
+                    label = { Text("Perfil") },
+                    selected = true,
+                    onClick = { navController.navigate("perfilAdmin") }
+                )
+            }
+        } else {
+            NavigationBar {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
+                    label = { Text("Inicio") },
+                    selected = false,
+                    onClick = { navController.navigate("publicaciones") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+                    label = { Text("Buscar") },
+                    selected = false,
+                    onClick = { navController.navigate("buscar") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
+                    label = { Text("Perfil") },
+                    selected = true,
+                    onClick = {}
+                )
+            }
+        }
+    }
+
 
     Scaffold(
         topBar = {
@@ -104,7 +227,8 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
                 },
             )
         },
-        bottomBar = {
+        bottomBar = bottomBarContent
+    /*{
             NavigationBar {
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
@@ -125,7 +249,7 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
                     onClick = {navController.navigate("perfil")}
                 )
             }
-        }
+        }*/
     ) { padding ->
         Column(
             modifier = Modifier
@@ -158,15 +282,40 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
                 modifier = Modifier
                     .size(90.dp)
                     .clip(CircleShape)
+                    .clickable { launcher.launch("image/*") }
                     .background(Color(0xFFD8E6D0)),
                 contentAlignment = androidx.compose.ui.Alignment.Center
             ) {
-                Icon(
+                if (selectedImage != null) {
+                    Image(
+                        bitmap = BitmapFactory.decodeFile(selectedImage!!.path).asImageBitmap(),
+                        contentDescription = "Imagen seleccionada",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }else if (profileImageUrl.isNotEmpty()) {
+                    // Imagen del servidor usando Coil
+                    Log.d("url imagen: ","${profileImageUrl}")
+                    AsyncImage(
+                        model = "$profileImageUrl?t=${System.currentTimeMillis()}", // timestamp para evitar cache
+                        contentDescription = "Avatar",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                }else {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Avatar",
+                        tint = Color(0xFF355031),
+                        modifier = Modifier.size(60.dp)
+                    )
+                }
+                /*Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Avatar",
                     modifier = Modifier.size(60.dp),
                     tint = Color(0xFF355031)
-                )
+                )*/
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -231,7 +380,7 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
                     } else {
                         // 2. LÓGICA DE ACTUALIZACIÓN (SOLO SI LOS CAMPOS NO ESTÁN VACÍOS)
                         val token = loginViewModel.userData.value?.token ?: ""
-                        val updatedUser = UserRequest(
+                        /*val updatedUser = UserRequest(
                             email = email.value,
                             username = profileName.value,
                         )
@@ -250,6 +399,29 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
                             } else {
                                 // Configurar diálogo para fallo
                                 dialogMessage = "Error al actualizar: $message"
+                                showDialog = true
+                            }
+                        }
+                        */
+                        Log.d("EDIT", "FILE: $selectedImage")
+
+                        perfilViewModel.updateUser(
+                            token,
+                            profileName.value,
+                            email.value,
+                            selectedImage
+                        ) { success, message ->
+
+                            if (success) {
+                                loginViewModel.updateUserData(
+                                    username = profileName.value,
+                                    userEmail = email.value
+                                )
+
+                                dialogMessage = "Perfil actualizado correctamente."
+                                showDialog = true
+                            } else {
+                                dialogMessage = "Error: $message"
                                 showDialog = true
                             }
                         }
@@ -325,6 +497,14 @@ fun ProfileField(
 
     )
 }
+
+fun Uri.toFile(context: Context): File {
+    val inputStream = context.contentResolver.openInputStream(this)!!
+    val file = File(context.cacheDir, "temp_image_${System.currentTimeMillis()}.png")
+    file.outputStream().use { output -> inputStream.copyTo(output) }
+    return file
+}
+
 
 fun sanitizeProfileInput(text: String): String {
     // Lista de caracteres peligrosos SIN incluir el espacio

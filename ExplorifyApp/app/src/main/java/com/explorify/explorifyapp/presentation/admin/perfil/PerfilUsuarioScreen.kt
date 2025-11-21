@@ -17,40 +17,56 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.collectAsState
-import androidx.compose.material.icons.filled.List
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.background
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.BorderColor
-import androidx.compose.material.icons.filled.ExitToApp
-import com.explorify.explorifyapp.data.remote.users.RetrofitUsersInstance
+import androidx.compose.material.icons.filled.Campaign
+import com.explorify.explorifyapp.data.remote.users.RetrofitUserInstance
 import com.explorify.explorifyapp.domain.repository.UserRepository
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.sp
 import com.explorify.explorifyapp.presentation.perfil.PerfilOptionButton
-import com.explorify.explorifyapp.presentation.perfil.PerfilViewModel
+import com.explorify.explorifyapp.data.remote.publications.RetrofitPublicationsInstance
+import com.explorify.explorifyapp.presentation.utils.email.buildPublicationDeletedTemplate
+import androidx.compose.runtime.livedata.observeAsState
+import com.explorify.explorifyapp.domain.repository.PublicationRepositoryImpl
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PerfilUsuarioScreen(navController: NavController,
+fun PerfilUsuarioScreen( userId: String?,navController: NavController,
                  viewModel: LoginViewModel = viewModel()) {
-    val userApi = RetrofitUsersInstance.api
+    val userApi = RetrofitUserInstance.api
     val userRepository = remember { UserRepository(userApi) }
-    val perfilViewModel = remember { PerfilViewModel(userRepository) }
+    val publicationsApi = RetrofitPublicationsInstance.api
+    val publicationsRepository = remember { PublicationRepositoryImpl(publicationsApi) }
+
+    // Crear factory
+    val factory = remember { PerfilUsuarioViewModelFactory(userRepository, publicationsRepository) }
+    // Crear ViewModel con factory
+    val userProfileViewModel: PerfilUsuarioViewModel = viewModel(factory = factory)
+
+    //val perfilViewModel = remember { PerfilViewModel(userRepository) }
     var menuExpanded by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-
+    Log.d("userid","${userId}")
+    val userData by viewModel.userData.collectAsState()
+    //val userId = userData?.userId ?:""
+    val token= userData?.token ?:""
+    val userEmail = userData?.userEmail ?: "correo@ejemplo.com"
+    /*LaunchedEffect(userId) {
+        if (userId != null) {
+            userProfileViewModel.getUserById(token, userId)
+        }
+    }*/
+    val user by userProfileViewModel.user.collectAsState()
     // 🔐 Validar si hay sesión
     LaunchedEffect(Unit) {
         viewModel.getUserData()
@@ -61,6 +77,7 @@ fun PerfilUsuarioScreen(navController: NavController,
             }
         }
     }
+    Log.d("token","${userData?.token}")
     // Collect user data from the ViewModel
     /*val userData by viewModel.userData.collectAsState()
     val userId = userData?.userId ?:""
@@ -69,6 +86,47 @@ fun PerfilUsuarioScreen(navController: NavController,
     val userEmail = userData?.userEmail ?: "correo@ejemplo.com"
     Log.d("PerfilScreen", "Perfildatos: ${userName}+ ${userEmail}")
     */
+    /*LaunchedEffect(userId, userData) {
+        Log.d("launchedeffect","entro a la funcion")
+        val validToken = userData?.token
+        if (userId != null && !validToken.isNullOrBlank()) {
+            Log.d("no son nulos","no nulos")
+            userProfileViewModel.getUserById(validToken, userId)
+        }
+    }*/
+    val vtoken = userData?.token
+    val uid = userId
+    /*LaunchedEffect(vtoken, uid) {
+        Log.d("launchedeffect", "token=$vtoken userId=$uid")
+
+        if (!token.isNullOrBlank() && !uid.isNullOrBlank()) {
+            Log.d("launchedeffect", "Entró a getUserById")
+            userProfileViewModel.getUserById(vtoken, uid)
+        } else {
+            Log.d("launchedeffect", "token o uid inválidos")
+        }
+    }*/
+    LaunchedEffect(vtoken, uid) {
+        Log.d("launched", "token=$vtoken uid=$uid")
+
+        val safeToken = vtoken
+        val safeUserId = uid
+
+        if (!safeToken.isNullOrBlank() && !safeUserId.isNullOrBlank()) {
+            Log.d("GETUSERBYID", "Llamando a getUserById()")
+            userProfileViewModel.getUserById(
+                safeToken,
+                safeUserId
+            )
+        } else {
+            Log.d("GETUSERBYID", "token o userId nulos, no se llama API")
+        }
+    }
+
+    var shouldNavigate by remember { mutableStateOf(false) }
+
+    val emailResult by userProfileViewModel.emailResult.observeAsState("")
+    var showSendEmailDialog by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -147,42 +205,63 @@ fun PerfilUsuarioScreen(navController: NavController,
                 style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray)
             )
                 */
-            Spacer(modifier = Modifier.height(32.dp))
+            if (user != null) {
+                Text(
+                    text = user!!.name,
+                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                )
 
-            // Botones de opciones
-            PerfilOptionButton(
-                icon = Icons.Default.List,
-                text = "Mi Lista de Aventuras"
-            ) {
-                navController.navigate("mispublicaciones")
-            }
+                Text(
+                    text = user!!.email,
+                    style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray)
+                )
 
-            PerfilOptionButton(
-                icon = Icons.Default.Edit,
-                text = "Editar Perfil"
-            ) {
-                navController.navigate("editprofile")
-            }
+                /*Text(
+                    text = "ID: ${user!!.id}",
+                    style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray)
+                )*/
+                Spacer(modifier = Modifier.height(32.dp))
+                // Botones de opciones
+                /*PerfilOptionButton(
+                    icon = Icons.Default.List,
+                    text = "Mi Lista de Aventuras"
+                ) {
+                    navController.navigate("mispublicaciones")
+                } */
 
-            PerfilOptionButton(
-                icon = Icons.Default.ExitToApp,
-                text = "Cerrar Sesión"
-            ) {
-                showLogoutDialog = true
-            }
+                PerfilOptionButton(
+                    icon = Icons.Default.Campaign,
+                    text = "Mandar Notificación"
+                ) {
+                    showSendEmailDialog = true
+                // navController.navigate("")
+                }
 
-            PerfilOptionButton(
-                icon = Icons.Default.Delete,
-                text = "Eliminar Cuenta",
-                textColor = Color.Red
-            ) {
-                showDeleteDialog = true
-                // Lógica para eliminar cuenta
+/*
+                PerfilOptionButton(
+                    icon = Icons.Default.ExitToApp,
+                    text = "Cerrar Sesión"
+                ) {
+                    showLogoutDialog = true
+                }
+*/
+
+                PerfilOptionButton(
+                    icon = Icons.Default.Delete,
+                    text = "Eliminar Usuario",
+                    textColor = Color.Red
+                ) {
+                    showDeleteDialog = true
+                    // Lógica para eliminar cuenta
+                }
+            } else {
+                Text("Cargando usuario...")
             }
         }
     }
 
     // 🔔 Diálogo de confirmación para cerrar sesión
+    /*
     if (showLogoutDialog) {
         AlertDialog(
             onDismissRequest = { showLogoutDialog = false },
@@ -207,7 +286,7 @@ fun PerfilUsuarioScreen(navController: NavController,
             text = { Text("¿Seguro que quieres cerrar sesión?") }
         )
     }
-
+*/
     // 🗑️ Diálogo de eliminar cuenta
     /*if (showDeleteDialog) {
         AlertDialog(
@@ -280,33 +359,52 @@ fun PerfilUsuarioScreen(navController: NavController,
                             deleteMessage = "Por favor, ingresa tu contraseña"
                             return@TextButton
                         }
-                        /*
-                        // 1️⃣ Verificar credenciales sin guardar token
-                        viewModel.verifyCredentials(userEmail, passwordInput) { success, msg ->
 
+                        // 1️⃣ Verificar credenciales sin guardar token
+                        /*viewModel.verifyCredentials(userEmail, passwordInput) { success, msg ->
+                            Log.d("entro en el verificar","${userEmail} +${passwordInput}")
                             if (success) {
                                 val currentToken = userData?.token ?: ""
                                 Log.d("DeleteAccount", "Token: $currentToken")
                                 // 2️⃣ Si login correcto → eliminar cuenta
-                                perfilViewModel.deleteAccount("$currentToken") { ok, message ->
+                                userProfileViewModel.deleteAccount("$currentToken","$user!!.id") { ok, message ->
                                     if (ok) {
                                         deleteMessage = "Cuenta eliminada correctamente"
                                         showDeleteDialog = false
                                         // 3️⃣ Cerrar sesión y volver al login
-                                        viewModel.logout {
+                                      /*  viewModel.logout {
                                             navController.navigate("login") {
                                                 popUpTo("inicio") { inclusive = true }
                                             }
-                                        }
+                                        }*/
                                     } else {
                                         deleteMessage = "Error al eliminar: $message"
+                                        Log.d("error en eliminar  screen","${message}")
                                     }
                                 }
                             } else {
                                 deleteMessage = msg
+                                Log.d("error en verificar","${msg}")
                             }
                         }
                         */
+                        val currentToken = userData?.token ?: ""
+                        Log.d("DeleteAccount", "Token: $currentToken")
+                        Log.d("id del usuario","${user!!.id}")
+                        val idusuario= user!!.id
+                        // 2️⃣ Si login correcto → eliminar cuenta
+                        userProfileViewModel.deleteAccount("$currentToken","$idusuario") { ok, message ->
+                            if (ok) {
+                                deleteMessage = "Cuenta eliminada correctamente"
+                                showDeleteDialog = false
+                                shouldNavigate=true
+                                //navController.navigate("userList")
+
+                            } else {
+                                deleteMessage = "Error al eliminar: $message"
+                                Log.d("error en eliminar  screen","${message}")
+                            }
+                        }
                     }
                 ) {
                     Text("Eliminar", color = Color.Red)
@@ -314,6 +412,46 @@ fun PerfilUsuarioScreen(navController: NavController,
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+    if (shouldNavigate) {
+        LaunchedEffect(Unit) {
+            navController.navigate("userList") {
+                popUpTo("perfilAdmin") { inclusive = true }
+            }
+            shouldNavigate = false
+        }
+    }
+    if (showSendEmailDialog && user != null) {
+
+        AlertDialog(
+            onDismissRequest = { showSendEmailDialog = false },
+            title = { Text("Enviar notificación") },
+            text = { Text("¿Seguro que quieres notificar al usuario?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    val emailBody = buildPublicationDeletedTemplate(
+                        username = user!!.name,
+                        publicationTitle = "Una de tus publicaciones",
+                        reason = "Incumple las normas de la comunidad"
+                    )
+
+                    userProfileViewModel.sendEmail(
+                        to = user!!.email,
+                        subject = "Notificación sobre tu publicación",
+                        body = emailBody
+                    )
+
+                    showSendEmailDialog = false
+                }) {
+                    Text("Enviar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showSendEmailDialog = false }) {
                     Text("Cancelar")
                 }
             }

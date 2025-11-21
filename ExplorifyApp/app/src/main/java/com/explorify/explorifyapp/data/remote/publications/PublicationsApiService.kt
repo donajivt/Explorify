@@ -13,6 +13,11 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
 import com.explorify.explorifyapp.data.remote.dto.PublicationsMapResponse
+import com.explorify.explorifyapp.data.remote.dto.publications.EmailData
+import com.explorify.explorifyapp.data.remote.dto.publications.EmailRequest
+import com.explorify.explorifyapp.data.remote.dto.publications.ResponseVerify
+import com.explorify.explorifyapp.data.remote.dto.publications.SingleEmail
+import com.explorify.explorifyapp.data.remote.model.PublicationResponse
 
 interface PublicationsApiService {
 
@@ -32,7 +37,7 @@ interface PublicationsApiService {
     suspend fun getById(
         @Path("id") id: String,
         @Header("Authorization") token: String
-    ): Response<Publication>
+    ): Response<PublicationResponse>
 
     // 🔹 Crear publicación
     @POST("api/Publication")
@@ -69,4 +74,23 @@ interface PublicationsApiService {
         @Path("location") location: String,
         @Header("Authorization") token: String
     ): Response<List<Publication>>
+
+    // 🔹 Enviar Correo
+    @POST("/api/Email/send")
+    suspend fun sendEmail(
+        @Body body: EmailData,
+    ): Response<EmailRequest>
+
+    //Verificar Correo
+    @POST("/api/Email/verify")
+    suspend fun verifyEmail(
+        @Body body: SingleEmail,
+    ): Response<ResponseVerify>
+
+    //Borra publicacion Admin
+    @DELETE("api/Publication/admin/{id}")
+    suspend fun deleteAdmin(
+        @Path("id") id: String,
+        @Header("Authorization") token: String
+    ): Response<Unit>
 }

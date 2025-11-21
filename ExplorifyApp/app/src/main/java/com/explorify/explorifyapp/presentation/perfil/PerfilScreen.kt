@@ -1,5 +1,6 @@
 package com.explorify.explorifyapp.presentation.perfil
 
+import androidx.compose.ui.text.input.VisualTransformation
 import android.util.Log
 import com.explorify.explorifyapp.presentation.login.LoginViewModel
 import androidx.compose.foundation.layout.*
@@ -32,24 +33,31 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.ExitToApp
-import com.explorify.explorifyapp.data.remote.users.RetrofitUsersInstance
+import com.explorify.explorifyapp.data.remote.users.RetrofitUserInstance
 import com.explorify.explorifyapp.domain.repository.UserRepository
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.material.icons.filled.BorderColor
+import coil.compose.AsyncImage
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PerfilScreen(navController: NavController,
                  viewModel: LoginViewModel = viewModel()) {
-    val userApi = RetrofitUsersInstance.api
+    val userApi = RetrofitUserInstance.api
     val userRepository = remember { UserRepository(userApi) }
     val perfilViewModel = remember { PerfilViewModel(userRepository) }
     var menuExpanded by remember { mutableStateOf(false) }
     var showLogoutDialog by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-
+    var showPasswordDialog by remember { mutableStateOf(false) }
     // 🔐 Validar si hay sesión
-    LaunchedEffect(Unit) {
+   /* LaunchedEffect(Unit) {
         viewModel.getUserData()
         val isLoggedIn = viewModel.isLoggedIn()
         if (!isLoggedIn) {
@@ -57,28 +65,76 @@ fun PerfilScreen(navController: NavController,
                 popUpTo("perfil") { inclusive = true }
             }
         }
-    }
+    }*/
     // Collect user data from the ViewModel
     val userData by viewModel.userData.collectAsState()
     val userId = userData?.userId ?:""
     val token= userData?.token ?:""
     val userName = userData?.username ?: "Usuario"
+    if (token.isNotEmpty() && userId.isNotEmpty()) {
+        Log.d("entro al if","de token y id no nulos")
+        perfilViewModel.getUserById(token, userId)
+    }
     val userEmail = userData?.userEmail ?: "correo@ejemplo.com"
     Log.d("PerfilScreen", "Perfildatos: ${userName}+ ${userEmail}")
+    LaunchedEffect(Unit) {
+        viewModel.getUserData()
 
+        val isLoggedIn = viewModel.isLoggedIn()
+        if (!isLoggedIn) {
+            navController.navigate("login") {
+                popUpTo("perfil") { inclusive = true }
+            }
+        }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Mi Perfil") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
-                    }
-                },
-            )
-        },
-        bottomBar = {
+        val token = viewModel.userData.value?.token ?: ""
+        val userId = viewModel.userData.value?.userId ?: ""
+
+        if (token.isNotEmpty() && userId.isNotEmpty()) {
+            Log.d("entro al if","de token y id no nulos")
+            perfilViewModel.getUserById(token, userId)
+        }
+    }
+    val userApiData by perfilViewModel.user.collectAsState()
+    val isLoading by perfilViewModel.isLoading.collectAsState()
+    val imageUrl = userApiData?.profileImageUrl
+    var profileImageUrl by remember { mutableStateOf("") }
+    LaunchedEffect(userApiData) {
+        userApiData?.profileImageUrl?.let {
+            profileImageUrl = it
+            Log.d("PerfilScreen", "Imagen actualizada: $it")
+        }
+    }
+    val finalName = userApiData?.name ?: userData?.username ?: "Usuario"
+    val finalEmail = userApiData?.email ?: userData?.userEmail ?: "correo@ejemplo.com"
+    val finalImageUrl = userApiData?.profileImageUrl
+    val isAdmin = userData?.role == "ADMIN"
+    Log.d("rol: ","${userData?.role}")
+    val context = LocalContext.current
+
+    val bottomBarContent: @Composable () -> Unit = {
+        if (isAdmin) {
+            NavigationBar {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Dashboard") },
+                    label = { Text("Inicio") },
+                    selected = false,
+                    onClick = { navController.navigate("adminDashboard") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.BorderColor, contentDescription = "Reportes") },
+                    label = { Text("Reportes") },
+                    selected = false,
+                    onClick = { navController.navigate("reportes") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil Admin") },
+                    label = { Text("Perfil") },
+                    selected = true,
+                    onClick = { navController.navigate("perfilAdmin") }
+                )
+            }
+        } else {
             NavigationBar {
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
@@ -100,6 +156,48 @@ fun PerfilScreen(navController: NavController,
                 )
             }
         }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Mi Perfil") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                    }
+                },
+            )
+        },
+        bottomBar = bottomBarContent
+    /*{
+            NavigationBar {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
+                    label = { Text("Inicio") },
+                    selected = true,
+                    onClick = { navController.navigate("adminDashboard") }
+                )
+                /* NavigationBarItem(
+                     icon = { Icon(Icons.Default.BarChart, contentDescription = "Buscar") },
+                     label = { Text("Estadisticas") },
+                     selected = false,
+                     onClick = { } //navController.navigate("buscar")
+                 )*/
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.BorderColor, contentDescription = "Buscar") },
+                    label = { Text("Reportes") },
+                    selected = false,
+                    onClick = { navController.navigate("reportes") } //
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
+                    label = { Text("Perfil") },
+                    selected = false,
+                    onClick = { navController.navigate("perfilAdmin")}//
+                )
+            }
+        } */
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -115,26 +213,49 @@ fun PerfilScreen(navController: NavController,
                     .clip(CircleShape)
                     .background(Color(0xFFD8E6D0)),
                 contentAlignment = Alignment.Center
-            ) {
-                Icon(
+            ) { //!imageUrl.isNullOrEmpty()
+                if (profileImageUrl.isNotEmpty()) {
+                    Log.d("imagen url:"," ${finalImageUrl}")
+                    AsyncImage( //imageUrl
+
+                        model = finalImageUrl + "?t=" + System.currentTimeMillis(),
+                        contentDescription = "Foto de perfil",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
+                   /* Image(
+                        painter = rememberAsyncImagePainter(imageUrl),
+                        contentDescription = "Foto de perfil",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )*/
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Avatar",
+                        modifier = Modifier.size(60.dp),
+                        tint = Color(0xFF355031)
+                    )
+                }
+                /*Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Avatar",
                     modifier = Modifier.size(60.dp),
                     tint = Color(0xFF355031)
-                )
+                )*/
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
             // Nombre
             Text(
-                text = userName,
+                text = finalName,//userName,
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
             )
 
             // Email
             Text(
-                text = userEmail,
+                text = finalEmail,//userEmail,
                 style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray)
             )
 
@@ -153,6 +274,12 @@ fun PerfilScreen(navController: NavController,
                 text = "Editar Perfil"
             ) {
                 navController.navigate("editprofile")
+            }
+
+            PerfilOptionButton(
+                icon= Icons.Default.Edit,
+                text="Editar Contraseña") {
+                showPasswordDialog=true
             }
 
             PerfilOptionButton(
@@ -334,6 +461,122 @@ fun PerfilScreen(navController: NavController,
         )
     }
 
+    if(showPasswordDialog){
+        var oldPass by remember { mutableStateOf("") }
+        var newPass by remember { mutableStateOf("") }
+        var confirmPass by remember { mutableStateOf("") }
+        var errorMsg by remember { mutableStateOf("") }
+        var oldPassVisible by remember { mutableStateOf(false) }
+        var newPassVisible by remember { mutableStateOf(false) }
+        var confirmPassVisible by remember { mutableStateOf(false) }
+
+        AlertDialog(
+            onDismissRequest = { showPasswordDialog = false },
+            title = { Text("Cambiar Contraseña") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = oldPass,
+                        onValueChange = { oldPass = it },
+                        label = { Text("Contraseña actual") },
+                        //visualTransformation = PasswordVisualTransformation(),
+                        visualTransformation = if (oldPassVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { oldPassVisible = !oldPassVisible }) {
+                                Icon(
+                                    imageVector = if (oldPassVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                    contentDescription = null
+                                )
+                            }
+                        },
+                        singleLine = true
+                    )
+                    Spacer(Modifier.height(8.dp))
+
+                    OutlinedTextField(
+                        value = newPass,
+                        onValueChange = { newPass = it },
+                        label = { Text("Nueva contraseña") },
+                        //visualTransformation = PasswordVisualTransformation(),
+                        visualTransformation = if (newPassVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { newPassVisible = !newPassVisible }) {
+                                Icon(
+                                    imageVector = if (newPassVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                    contentDescription = null
+                                )
+                            }
+                        },
+                        singleLine = true
+                    )
+                    Spacer(Modifier.height(8.dp))
+
+                    OutlinedTextField(
+                        value = confirmPass,
+                        onValueChange = { confirmPass = it },
+                        label = { Text("Confirmar nueva contraseña") },
+                        //visualTransformation = PasswordVisualTransformation(),
+                        visualTransformation = if (confirmPassVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { confirmPassVisible = !confirmPassVisible }) {
+                                Icon(
+                                    imageVector = if (confirmPassVisible) Icons.Default.Visibility else Icons.Default.VisibilityOff,
+                                    contentDescription = null
+                                )
+                            }
+                        },
+                        singleLine = true
+                    )
+
+                    if (errorMsg.isNotEmpty()) {
+                        Text(errorMsg, color = Color.Red, fontSize = 12.sp, modifier = Modifier.padding(top = 4.dp))
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        errorMsg = ""
+
+                        if (oldPass.isBlank() || newPass.isBlank() || confirmPass.isBlank()) {
+                            errorMsg = "Todos los campos son obligatorios"
+                            return@TextButton
+                        }
+
+                        if (newPass != confirmPass) {
+                            errorMsg = "Las contraseñas no coinciden"
+                            return@TextButton
+                        }
+
+                        perfilViewModel.changePassword(token, oldPass, newPass) { success, message ->
+                            if (success) {
+                                errorMsg = ""
+                                showPasswordDialog = false
+
+                                Toast.makeText(
+                                    context,
+                                    "Contraseña actualizada correctamente",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            } else {
+                                errorMsg = message
+                            }
+                        }
+                    }
+                ) {
+                    Text("Actualizar", color = Color(0xFF355031))
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = { showPasswordDialog = false }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
 }
 
 
@@ -366,3 +609,4 @@ fun PerfilOptionButton(
         }
     }
 }
+

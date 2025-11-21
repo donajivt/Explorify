@@ -61,7 +61,7 @@ fun UsersProfileScreen(
             try {
                 val user = userRepo.getAllUsers(tk).find { it.id == userId }
                 userName = user?.name ?: "Usuario desconocido"
-                userPhoto = null // si en el futuro agregas campo foto, cámbialo aquí
+                userPhoto =null // si en el futuro agregas campo foto, cámbialo aquí
             } catch (e: Exception) {
                 userName = "Usuario desconocido"
             }

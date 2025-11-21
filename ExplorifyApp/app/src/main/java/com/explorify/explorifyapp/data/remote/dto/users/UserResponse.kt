@@ -6,6 +6,8 @@ data class User(
     val name: String,
     val passwordHash: String,
     val roles: List<String>,
+    val profileImageUrl: String,
+    val cloudinaryPublicId : String,
     val createdAt: String,
     val updatedAt: String
 )
@@ -28,3 +30,7 @@ data class SimpleResponse(
     val message: String
 )
 
+data class Emails(
+    val oldPassword: String,
+    val newPassword: String
+)

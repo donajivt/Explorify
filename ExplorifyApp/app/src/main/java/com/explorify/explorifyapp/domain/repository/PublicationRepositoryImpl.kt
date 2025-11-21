@@ -6,7 +6,13 @@ import com.explorify.explorifyapp.data.remote.mapper.toDomain
 import com.explorify.explorifyapp.data.remote.model.Publication
 import com.explorify.explorifyapp.data.remote.publications.PublicationsApiService
 import retrofit2.HttpException
-
+import com.explorify.explorifyapp.data.remote.dto.publications.EmailData
+import com.explorify.explorifyapp.data.remote.dto.publications.EmailRequest
+import com.explorify.explorifyapp.data.remote.dto.publications.ResponseVerify
+import com.explorify.explorifyapp.data.remote.dto.publications.SingleEmail
+import retrofit2.Response
+import com.explorify.explorifyapp.data.remote.model.PublicationResponse
+import android.util.Log
 
 class PublicationRepositoryImpl(private val api: PublicationsApiService): PublicationRepository {
 
@@ -19,15 +25,13 @@ class PublicationRepositoryImpl(private val api: PublicationsApiService): Public
        val body = response.body()
        return body?.result?.map { it.toDomain() } ?: emptyList()
     }
-
-   override suspend fun getById(id: String, token: String): Publication {
+   override suspend fun getById(id: String, token: String): PublicationResponse {
         val response = api.getById(id, "Bearer $token")
         if (!response.isSuccessful) {
             if (response.code() == 401) throw UnauthorizedException()
             throw HttpException(response)
         }
-        return response.body()?.toDomain()
-            ?: throw IllegalStateException("Publicación no encontrada")
+       return response.body()!!
     }
 
     override suspend fun create(
@@ -43,6 +47,7 @@ class PublicationRepositoryImpl(private val api: PublicationsApiService): Public
         val body = CreatePublicationRequest(imageUrl, title, description, location, latitud, longitud, userId)
         val response = api.create(body, "Bearer $token")
         if (!response.isSuccessful) {
+            Log.d("respuesta del api create","${response.code()}+ ${response.message()}")
             if (response.code() == 401) throw UnauthorizedException()
             throw HttpException(response)
         }
@@ -120,6 +125,24 @@ class PublicationRepositoryImpl(private val api: PublicationsApiService): Public
 
         return body.result.map { it.toDomain() }
     }
+
+        // 🔹 Enviar correo
+   override   suspend fun sendEmail(emailData: EmailData): Response< EmailRequest> {
+            return api.sendEmail(emailData)
+   }
+
+    //Verificar correo
+    override suspend fun verifyEmail(email:SingleEmail): Response<ResponseVerify>{
+        return api.verifyEmail(email)
+    }
+    override suspend fun deleteadmin(id: String, token: String){
+        val response = api.deleteAdmin(id, "Bearer $token")
+        if (!response.isSuccessful) {
+            if (response.code() == 401) throw UnauthorizedException()
+            throw HttpException(response)
+        }
+    }
 }
+
 
 class UnauthorizedException : Exception("Sesión expirada. Vuelve a iniciar sesión.")
