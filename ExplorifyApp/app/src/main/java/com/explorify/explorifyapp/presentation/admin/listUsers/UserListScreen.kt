@@ -141,7 +141,7 @@ fun UserListScreen(navController: NavController,
                     icon = { Icon(Icons.Default.BorderColor, contentDescription = "Buscar") },
                     label = { Text("Reportes") },
                     selected = false,
-                    onClick = {  } //navController.navigate("reportesList")
+                    onClick = { navController.navigate("reportes") } //navController.navigate("reportesList")
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
