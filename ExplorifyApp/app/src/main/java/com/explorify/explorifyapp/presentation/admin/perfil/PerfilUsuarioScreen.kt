@@ -36,6 +36,8 @@ import com.explorify.explorifyapp.presentation.perfil.PerfilOptionButton
 import com.explorify.explorifyapp.data.remote.publications.RetrofitPublicationsInstance
 import com.explorify.explorifyapp.presentation.utils.email.buildPublicationDeletedTemplate
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
 import com.explorify.explorifyapp.domain.repository.PublicationRepositoryImpl
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -67,6 +69,7 @@ fun PerfilUsuarioScreen( userId: String?,navController: NavController,
         }
     }*/
     val user by userProfileViewModel.user.collectAsState()
+    Log.d("Usuario","${user}")
     // 🔐 Validar si hay sesión
     LaunchedEffect(Unit) {
         viewModel.getUserData()
@@ -168,31 +171,62 @@ fun PerfilUsuarioScreen( userId: String?,navController: NavController,
             }
         }
     ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(horizontal = 24.dp, vertical = 32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Avatar circular
+        if (user == null) {
             Box(
-                modifier = Modifier
-                    .size(90.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFD8E6D0)),
+                modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-                Icon(
+                CircularProgressIndicator()
+            }
+        }else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(horizontal = 24.dp, vertical = 32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Avatar circular
+                Box(
+                    modifier = Modifier
+                        .size(90.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFD8E6D0)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    /*  Icon(
                     imageVector = Icons.Default.Person,
                     contentDescription = "Avatar",
                     modifier = Modifier.size(60.dp),
                     tint = Color(0xFF355031)
-                )
-            }
+                )*/
+                    if (user?.profileImageUrl?.isNotBlank() == true) {
+                        Log.d("imagen url:", " ${user!!.profileImageUrl}")
+                        AsyncImage( //imageUrl
 
-            Spacer(modifier = Modifier.height(12.dp))
-            /*
+                            model = user!!.profileImageUrl + "?t=" + System.currentTimeMillis(),
+                            contentDescription = "Foto de perfil",
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+                        )
+                        /* Image(
+                         painter = rememberAsyncImagePainter(imageUrl),
+                         contentDescription = "Foto de perfil",
+                         modifier = Modifier.fillMaxSize(),
+                         contentScale = ContentScale.Crop
+                     )*/
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Avatar",
+                            modifier = Modifier.size(60.dp),
+                            tint = Color(0xFF355031)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+                /*
             // Nombre
             Text(
                 text = userName,
@@ -205,39 +239,39 @@ fun PerfilUsuarioScreen( userId: String?,navController: NavController,
                 style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray)
             )
                 */
-            if (user != null) {
-                Text(
-                    text = user!!.name,
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
-                )
+                if (user != null) {
+                    Text(
+                        text = user!!.name,
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
+                    )
 
-                Text(
-                    text = user!!.email,
-                    style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray)
-                )
+                    Text(
+                        text = user!!.email,
+                        style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray)
+                    )
 
-                /*Text(
+                    /*Text(
                     text = "ID: ${user!!.id}",
                     style = MaterialTheme.typography.bodySmall.copy(color = Color.Gray)
                 )*/
-                Spacer(modifier = Modifier.height(32.dp))
-                // Botones de opciones
-                /*PerfilOptionButton(
+                    Spacer(modifier = Modifier.height(32.dp))
+                    // Botones de opciones
+                    /*PerfilOptionButton(
                     icon = Icons.Default.List,
                     text = "Mi Lista de Aventuras"
                 ) {
                     navController.navigate("mispublicaciones")
                 } */
 
-                PerfilOptionButton(
-                    icon = Icons.Default.Campaign,
-                    text = "Mandar Notificación"
-                ) {
-                    showSendEmailDialog = true
-                // navController.navigate("")
-                }
+                    PerfilOptionButton(
+                        icon = Icons.Default.Campaign,
+                        text = "Mandar Notificación"
+                    ) {
+                        showSendEmailDialog = true
+                        // navController.navigate("")
+                    }
 
-/*
+                    /*
                 PerfilOptionButton(
                     icon = Icons.Default.ExitToApp,
                     text = "Cerrar Sesión"
@@ -246,16 +280,17 @@ fun PerfilUsuarioScreen( userId: String?,navController: NavController,
                 }
 */
 
-                PerfilOptionButton(
-                    icon = Icons.Default.Delete,
-                    text = "Eliminar Usuario",
-                    textColor = Color.Red
-                ) {
-                    showDeleteDialog = true
-                    // Lógica para eliminar cuenta
+                    PerfilOptionButton(
+                        icon = Icons.Default.Delete,
+                        text = "Eliminar Usuario",
+                        textColor = Color.Red
+                    ) {
+                        showDeleteDialog = true
+                        // Lógica para eliminar cuenta
+                    }
+                } else {
+                    Text("Cargando usuario...")
                 }
-            } else {
-                Text("Cargando usuario...")
             }
         }
     }

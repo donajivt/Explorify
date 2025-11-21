@@ -17,7 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Divider
 import androidx.compose.foundation.lazy.items
-import com.explorify.explorifyapp.data.remote.dto.User
+import com.explorify.explorifyapp.data.remote.dto.users.User
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.unit.dp
@@ -50,27 +50,54 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.ui.layout.ContentScale
 import coil.compose.AsyncImage
+import com.explorify.explorifyapp.presentation.login.LoginViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserListScreen(navController: NavController,
-    userListViewModel: UserListViewModel = viewModel()
+    userListViewModel: UserListViewModel = viewModel(),loginViewModel: LoginViewModel = viewModel()
 ) {
-    val users by userListViewModel.users.collectAsState() // Observamos el flujo de usuarios
+   // Observamos el flujo de usuarios
     var searchQuery by remember { mutableStateOf("") }
-
     // Filtrar los usuarios por nombre según la búsqueda
+
+    LaunchedEffect(Unit) {
+        loginViewModel.getUserData()
+        val isLoggedIn = loginViewModel.isLoggedIn()
+        if (!isLoggedIn) {
+            navController.navigate("login") {
+                popUpTo("editprofile") { inclusive = true }
+            }
+        }
+    }
+    val userData by loginViewModel.userData.collectAsState()
+    Log.d("userdata","${userData}")
+
+    // Llamamos a getUsers() cuando se entra por primera vez a la pantalla
+    /*LaunchedEffect(userData) {
+        userListViewModel.getUsers(userData!!.token)
+    }*/
+    /*LaunchedEffect(userData?.token) {
+        if (!userData?.token.isNullOrBlank()) {
+            userListViewModel.getUsers(userData!!.token)
+        } else {
+            Log.e("UserListScreen", "TOKEN ES NULL O VACÍO")
+        }
+    }*/
+    LaunchedEffect(userData) {
+        userData?.token?.let { token ->
+            userListViewModel.getUsers(token)
+        } ?: run {
+            Log.e("UserListScreen", "userData o token es null, no se llamó a getUsers()")
+        }
+    }
+
+    val users by userListViewModel.usuarios.collectAsState()
     val filteredUsers = if (searchQuery.isEmpty()) {
         users
     } else {
         users.filter { it.name.contains(searchQuery, ignoreCase = true) }
     }
-
-    // Llamamos a getUsers() cuando se entra por primera vez a la pantalla
-    LaunchedEffect(Unit) {
-        userListViewModel.getUsers()
-    }
-
     Scaffold(
         topBar = {
             Column {
@@ -201,19 +228,19 @@ fun UserItem(user: User,onClick:()->Unit) {
                 .background(Color(0xFFE0E0E0)),
             contentAlignment = Alignment.Center
         ) {
-           Icon(
+           /*Icon(
                 imageVector = Icons.Default.Person,
                 contentDescription = "Usuario",
                 tint =Color.Gray, // MaterialTheme.colorScheme.primary,
                 modifier = Modifier
                     .size(40.dp)
                     .padding(end = 12.dp)
-            )
-            /*if (user.imageUrl.isNotEmpty()) {
-                Log.d("imagen url:"," ${finalImageUrl}")
+            )*/
+            if (!user.profileImageUrl.isNullOrBlank()) {
+                Log.d("imagen url:"," ${user.profileImageUrl}")
                 AsyncImage( //imageUrl
 
-                    model = finalImageUrl + "?t=" + System.currentTimeMillis(),
+                    model = user.profileImageUrl + "?t=" + System.currentTimeMillis(),
                     contentDescription = "Foto de perfil",
                     modifier = Modifier.fillMaxSize(),
                     contentScale = ContentScale.Crop
@@ -231,7 +258,7 @@ fun UserItem(user: User,onClick:()->Unit) {
                     modifier = Modifier.size(60.dp),
                     tint = Color(0xFF355031)
                 )
-            }*/
+            }
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column {

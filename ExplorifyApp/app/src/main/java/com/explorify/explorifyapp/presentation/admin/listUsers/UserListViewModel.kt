@@ -10,14 +10,17 @@ import com.explorify.explorifyapp.data.remote.auth.RetrofitInstance
 import com.explorify.explorifyapp.data.remote.users.RetrofitUserInstance
 import android.util.Log
 import com.explorify.explorifyapp.data.remote.dto.users.User
+import com.explorify.explorifyapp.domain.repository.UserRepository
 
-class UserListViewModel : ViewModel() {
+class UserListViewModel(
+    private val repository: UserRepository = UserRepository(RetrofitUserInstance.api)
+) : ViewModel() {
 
     private val _users = MutableStateFlow<List<com.explorify.explorifyapp.data.remote.dto.User>>(emptyList())
     val users: StateFlow<List<com.explorify.explorifyapp.data.remote.dto.User>> = _users
     private val _usuarios = MutableStateFlow<List<User>>(emptyList())
     val usuarios: StateFlow<List<User>> = _usuarios
-    fun getUsers() {
+    /*fun getUsers() {
         viewModelScope.launch {
             try {
                 val response = RetrofitInstance.api.getUsers()
@@ -32,7 +35,25 @@ class UserListViewModel : ViewModel() {
             }
         }
     }
+        */
 
+    fun getUsers(token: String) {
+        viewModelScope.launch {
+            try {
+                val response = repository.getUsers(token)
+
+                if (response.isSuccessful && response.body()?.isSuccess == true) {
+                    _usuarios.value = response.body()!!.result
+                    Log.d("Usuarios","${response.body()!!.result}")
+                } else {
+                    Log.e("UserListVM", "Error: ${response.body()?.message}")
+                }
+
+            } catch (e: Exception) {
+                Log.e("UserListVM", "Error excepción: ${e.message}")
+            }
+        }
+    }
   /*  fun getUsuarios() {
         viewModelScope.launch {
             try {
