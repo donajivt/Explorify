@@ -41,7 +41,15 @@ fun LoginScreen(navController: NavController) {
     val loginResult by viewModel.loginResult.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val focusManager = LocalFocusManager.current
-
+    LaunchedEffect(Unit) {
+        viewModel.getUserData()
+        val isLoggedIn = viewModel.isLoggedIn()
+        if (isLoggedIn) {
+            navController.navigate("splash") {
+                popUpTo("perfil") { inclusive = true }
+            }
+        }
+    }
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         containerColor = Color.Transparent // Para que se vea el fondo con la imagen
