@@ -59,6 +59,7 @@ fun CommentsScreen(
     var sending by remember { mutableStateOf(false) }
     var confirmDeleteId by remember { mutableStateOf<String?>(null) }
     val focusManager = LocalFocusManager.current
+    var commentsCount by remember { mutableStateOf(0) }
 
     // Cache estable de IDs temporales (evita claves duplicadas)
     val keyCache = remember { mutableStateMapOf<String, String>() }
@@ -80,6 +81,7 @@ fun CommentsScreen(
         }
         token?.let { tk ->
             viewModel.load(publicacionId, tk)
+            commentsCount = viewModel.uiState.comentarios.size
             try {
                 val users = withContext(Dispatchers.IO) { userRepo.getAllUsers(tk) }
                 userMap = users.associate { u -> u.id to u.name }
@@ -87,6 +89,10 @@ fun CommentsScreen(
                 println("⚠️ Error al obtener usuarios: ${e.message}")
             }
         }
+    }
+
+    LaunchedEffect(uiState.comentarios) {
+        commentsCount = uiState.comentarios.size
     }
 
     // Simular "tiempo real": refrescar lista cada 5 segundos
@@ -110,7 +116,7 @@ fun CommentsScreen(
             ) { focusManager.clearFocus() },
         topBar = {
             TopAppBar(
-                title = { Text("Comentarios") },
+                title = { Text("Comentarios ($commentsCount)") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
@@ -183,6 +189,12 @@ fun CommentsScreen(
 
                                             // Recargar los comentarios desde el backend
                                             viewModel.load(publicacionId, token!!)
+                                            commentsCount = viewModel.uiState.comentarios.size
+
+                                            // 🔥 Notificar a la pantalla anterior que hay que actualizar el contador
+                                            navController.previousBackStackEntry
+                                                ?.savedStateHandle
+                                                ?.set("refreshComments", true)
                                         } catch (e: Exception) {
                                             println("Error al crear comentario: ${e.message}")
                                         } finally {
@@ -305,11 +317,15 @@ fun CommentsScreen(
 
                                 // 🔥 1. BORRAR INSTANTÁNEAMENTE
                                 uiState.comentarios = originalList.filter { it.id != id }
+                                commentsCount = uiState.comentarios.size
 
                                 try {
                                     // 🔥 2. MANDAR LA API (background)
                                     token?.let { tk ->
                                         viewModel.deleteComentario(id, tk)
+                                        navController.previousBackStackEntry
+                                            ?.savedStateHandle
+                                            ?.set("refreshComments", true)
                                     }
                                 } catch (e: Exception) {
                                     // ❌ 3. SI FALLA → REVERTIR LISTA

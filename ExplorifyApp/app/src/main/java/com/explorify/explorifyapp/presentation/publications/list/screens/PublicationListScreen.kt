@@ -53,6 +53,9 @@ import coil.request.CachePolicy
 import coil.request.ImageRequest
 import kotlinx.coroutines.async
 import android.util.Log
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.explorify.explorifyapp.data.remote.model.User
+import com.explorify.explorifyapp.data.remote.publications.RetrofitComentariosInstance
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -73,7 +76,7 @@ fun PublicationListScreen(
 
     // 🧠 Mapa de usuarios (id → nombre)
     val userRepo = remember { UserRepositoryImpl(RetrofitUsersInstance.api) }
-    var userMap by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+    var userMap by remember { mutableStateOf<Map<String, User>>(emptyMap()) }
     val listState = rememberLazyListState()
 
     // 🔹 Obtener token para cargar publicaciones y usuarios
@@ -105,7 +108,7 @@ fun PublicationListScreen(
                 pubsDeferred.await()
 
                 // 🔁 Actualiza el mapa de usuarios en Compose
-                userMap = users.associate { u -> u.id to u.name }
+                userMap = users.associateBy { it.id }
 
                 println("✅ Usuarios cargados: ${userMap.keys}")
             } catch (e: Exception) {
@@ -192,7 +195,7 @@ fun PublicationListScreen(
                         vm.refresh(token!!)
                         try {
                             val users = userRepo.getAllUsers(token!!)
-                            userMap = users.associate { u -> u.id to u.name }
+                            userMap = users.associateBy { it.id }
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
@@ -257,8 +260,8 @@ fun PublicationListScreen(
                                 onViewComments = {
                                     navController.navigate("comentarios/${pub.id}")
                                 },
-                                authorName = userMap[pub.userId] ?: "Usuario desconocido"
-
+                                user = userMap[pub.userId],
+                                navController = navController
                             )
                         }
                     }
@@ -292,9 +295,11 @@ fun PublicationCard(
     onViewMap: () -> Unit,
     onViewProfile: () -> Unit,
     onViewComments: () -> Unit,
-    authorName: String
+    user: User?,
+    navController: NavController
 ) {
     val isDark = isSystemInDarkTheme()
+    val scope = rememberCoroutineScope()
 
     val backgroundColor = if (isDark) Color(0xFF2B2F2D) else Color(0xFFF7F8F5)
     val textPrimary = if (isDark) Color.White else Color(0xFF1A1A1A)
@@ -321,18 +326,33 @@ fun PublicationCard(
                     .padding(14.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // Avatar
-                Box(
-                    modifier = Modifier
-                        .size(44.dp)
-                        .background(color = Color(0xFF3C9D6D), shape = CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(26.dp)
+                if (user?.profileImageUrl.isNullOrEmpty()) {
+
+                    // Si NO tiene foto → icono default
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp)
+                            .background(Color(0xFF3C9D6D), CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(26.dp)
+                        )
+                    }
+
+                } else {
+
+                    // Si SÍ tiene foto → mostrar AsyncImage
+                    AsyncImage(
+                        model = user.profileImageUrl,
+                        contentDescription = "Foto de perfil",
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
                     )
                 }
 
@@ -340,7 +360,7 @@ fun PublicationCard(
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = authorName,
+                            text = user?.name ?: "Usuario desconocido",
                         color = textPrimary,
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium)
                     )
@@ -555,23 +575,94 @@ fun PublicationCard(
 
                 Spacer(Modifier.height(14.dp))
 
-            TextButton(
-                onClick = onViewComments,
+            var commentsCount by remember(publication.id) { mutableStateOf<Int?>(null) }
+            val context = LocalContext.current
+
+            LaunchedEffect(publication.id) {
+                val tk = AppDatabase.getInstance(context).authTokenDao().getToken()?.token
+
+                if (!tk.isNullOrEmpty()) {
+                    try {
+                        val response = RetrofitComentariosInstance.api.getCount(
+                            publicacionId = publication.id,
+                            token = "Bearer $tk"
+                        )
+
+                        if (response.isSuccessful) {
+                            commentsCount = response.body()?.count ?: 0
+                        } else {
+                            commentsCount = 0
+                        }
+
+                    } catch (e: Exception) {
+                        commentsCount = 0
+                    }
+                }
+            }
+
+            val lifecycleOwner = LocalLifecycleOwner.current
+
+            LaunchedEffect(true) {
+                val navEntry = navController.currentBackStackEntry
+
+                navEntry?.savedStateHandle
+                    ?.getLiveData<Boolean>("refreshComments")
+                    ?.observe(lifecycleOwner) { refresh ->
+                        if (refresh == true) {
+                            scope.launch {
+                                val tk = withContext(Dispatchers.IO) {
+                                    AppDatabase.getInstance(context).authTokenDao().getToken()?.token
+                                }
+
+                                if (!tk.isNullOrEmpty()) {
+                                    try {
+                                        val resp = RetrofitComentariosInstance.api.getCount(
+                                            publicacionId = publication.id,
+                                            token = "Bearer $tk"
+                                        )
+
+                                        if (resp.isSuccessful) {
+                                            commentsCount = resp.body()?.count ?: commentsCount
+                                        }
+
+                                    } catch (_: Exception) {}
+                                }
+                            }
+
+                            navEntry.savedStateHandle["refreshComments"] = false
+                        }
+                    }
+            }
+
+            Row(
                 modifier = Modifier
-                    .height(42.dp)
-                    .padding(horizontal = 4.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+                    .height(52.dp)
+                    .clickable { onViewComments() }
+                    .padding(horizontal = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Icon(
-                    Icons.Outlined.ChatBubbleOutline,
-                    contentDescription = null,
-                    tint = Color(0xFF3C9D6D),
-                    modifier = Modifier.size(22.dp)
-                )
-                Spacer(Modifier.width(8.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Outlined.ChatBubbleOutline,
+                        contentDescription = null,
+                        tint = Color(0xFF3C9D6D),
+                        modifier = Modifier.size(26.dp)
+                    )
+                    Spacer(Modifier.width(12.dp))
+                    Text(
+                        "Comentarios",
+                        color = Color(0xFF3C9D6D),
+                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium)
+                    )
+                }
+
                 Text(
-                    "Comentarios",
+                    text = commentsCount?.toString() ?: "...",
                     color = Color(0xFF3C9D6D),
-                    style = MaterialTheme.typography.bodyMedium
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                 )
             }
         }

@@ -75,10 +75,14 @@ class ComentarioRepositoryImpl(private val api: ComentariosApiService) {
     }
 
     suspend fun getCount(publicacionId: String, token: String): Int {
-        val response = api.getCount(publicacionId, "Bearer $token")
+        val response = api.getCount(
+            publicacionId = publicacionId,
+            token = "Bearer $token"
+        )
+
         if (!response.isSuccessful) throw HttpException(response)
 
         val body = response.body()
-        return body?.result ?: 0
+        return body?.count ?: 0
     }
 }

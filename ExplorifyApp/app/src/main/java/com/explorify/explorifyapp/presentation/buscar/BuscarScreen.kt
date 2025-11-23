@@ -57,6 +57,7 @@ import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import android.app.Activity
 import android.net.ConnectivityManager
+import android.os.Looper
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -67,7 +68,10 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.rememberTransformableState
 import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.graphicsLayer
 import java.io.File
 
@@ -1734,6 +1738,7 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
     var isImageLoading by remember { mutableStateOf(true) }
     var showFullImage by remember { mutableStateOf(false) }
     var showFullDescription by remember { mutableStateOf(false) }
+    var lastSelectedPoint by rememberSaveable { mutableStateOf<GeoPoint?>(null) }
 
     // Launcher para dialogo del sistema
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
@@ -1762,6 +1767,31 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
         }
     }
 
+    // 🔥 Listener continuo: en cuanto el GPS se activa, obtenemos la ubicación real
+    DisposableEffect(Unit) {
+        val callback = object : LocationCallback() {
+            override fun onLocationResult(result: LocationResult) {
+                val location = result.lastLocation
+                if (location != null) {
+                    userLocation = GeoPoint(location.latitude, location.longitude)
+                    locationEnabled = true
+                }
+            }
+        }
+
+        try {
+            fusedLocationClient.requestLocationUpdates(
+                locationRequest,
+                callback,
+                Looper.getMainLooper()
+            )
+        } catch (_: SecurityException) {}
+
+        onDispose {
+            fusedLocationClient.removeLocationUpdates(callback)
+        }
+    }
+
     // Validar sesión y cargar datos
     LaunchedEffect(Unit) {
         val isLoggedIn = loginViewModel.isLoggedIn()
@@ -1777,7 +1807,8 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
             try {
                 val users = userRepo.getAllUsers(token)
                 userMap = users.associate { u -> u.id to u.name }
-            } catch (_: Exception) { }
+            } catch (_: Exception) {
+            }
         }
     }
 
@@ -1849,13 +1880,23 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
         }
     }
 
-    // Actualizar el mapa cuando cambie la ubicación
     LaunchedEffect(userLocation) {
+        // 🚫 No mover el mapa si venimos de una publicación
+        if (lastSelectedPoint != null) return@LaunchedEffect
+
         userLocation?.let { loc ->
             mapView.controller.setCenter(loc)
             mapView.controller.setZoom(16.0)
         }
     }
+
+    LaunchedEffect(lastSelectedPoint) {
+        lastSelectedPoint?.let { point ->
+            mapView.controller.setCenter(point)
+            mapView.controller.setZoom(17.0)
+        }
+    }
+
 
     Scaffold(
         topBar = {
@@ -1897,7 +1938,7 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                 .padding(paddingValues)
                 .background(Color(0xFFF5F5F5))
         ) {
-           /* // Buscador
+            /* // Buscador
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -1982,6 +2023,7 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                             }
                             IconButton(
                                 onClick = {
+                                    lastSelectedPoint = null
                                     userLocation?.let { loc ->
                                         mapView.controller.setCenter(loc)
                                         mapView.controller.setZoom(16.0)
@@ -2009,7 +2051,9 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                                 mapView.controller.setCenter(point)
                                 mapView.controller.setZoom(16.0)
                             }
-                        } catch (e: Exception) { e.printStackTrace() }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     }
                 },
                 enabled = searchQuery.isNotEmpty(), // desactivado si está vacío
@@ -2024,12 +2068,7 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
             }
 
 
-            LaunchedEffect(userLocation) {
-                userLocation?.let { loc ->
-                    mapView.controller.setCenter(loc)
-                    mapView.controller.setZoom(16.0)
-                }
-            }
+
 
             // Mapa
             Box(
@@ -2049,7 +2088,8 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                         val userMarker = Marker(map).apply {
                             position = location
                             title = "Tu ubicación"
-                            icon = ContextCompat.getDrawable(context, android.R.drawable.star_big_off)
+                            icon =
+                                ContextCompat.getDrawable(context, android.R.drawable.star_big_off)
                         }
                         map.overlays.add(userMarker)
                     }
@@ -2063,8 +2103,18 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                                 position = GeoPoint(lat, lon)
                                 title = pub.title
                                 snippet = pub.description
-                                icon = ContextCompat.getDrawable(context, android.R.drawable.star_big_on)
+                                icon = ContextCompat.getDrawable(
+                                    context,
+                                    android.R.drawable.star_big_on
+                                )
                                 setOnMarkerClickListener { _, _ ->
+                                    val lat = pub.latitud.toDoubleOrNull()
+                                    val lon = pub.longitud.toDoubleOrNull()
+
+                                    if (lat != null && lon != null) {
+                                        lastSelectedPoint = GeoPoint(lat, lon)      // 👈 guardar posición
+                                    }
+
                                     selectedPublication = pub
                                     true
                                 }
@@ -2092,102 +2142,122 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                 }
             }
 
-            // Popup de publicación
+            // --- POPUP DE PUBLICACIÓN ---
             selectedPublication?.let { pub ->
-                Dialog(onDismissRequest = { selectedPublication = null }) {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        elevation = CardDefaults.cardElevation(8.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .background(Color.White)
-                                .padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            val authorName = remember(userMap, pub.userId) {
-                                userMap[pub.userId] ?: "Usuario desconocido"
-                            }
+                Dialog(
+                    onDismissRequest = { selectedPublication = null },
+                    properties = DialogProperties(usePlatformDefaultWidth = false)
+                ) {
 
-                            Row(
+                    // Necesario para que funcione "ver más / ver menos"
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .verticalScroll(rememberScrollState())
+                            .background(Color.Black.copy(alpha = 0.40f))
+                            .clickable(enabled = true) { selectedPublication = null }  // cerrar al tocar fuera
+                    ) {
+
+                        Card(
+                            modifier = Modifier
+                                .padding(24.dp)
+                                .align(Alignment.Center)
+                                .fillMaxWidth(),
+                            shape = RoundedCornerShape(22.dp),
+                            elevation = CardDefaults.cardElevation(12.dp)
+                        ) {
+                            Column(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color(0xFF355031))
-                                    .padding(horizontal = 12.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
+                                    .background(Color.White)
+                                    .padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Text(
-                                    text = authorName,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    modifier = Modifier.weight(1f),
-                                    color = Color.White
-                                )
-                                Box(
+
+                                // --- HEADER ---
+                                Row(
                                     modifier = Modifier
-                                        .size(28.dp)
-                                        .clip(CircleShape)
-                                        .background(Color.Red)
-                                        .clickable { selectedPublication = null },
-                                    contentAlignment = Alignment.Center
+                                        .fillMaxWidth()
+                                        .background(Color(0xFF355031))
+                                        .padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
+
+                                    // Nombre clickeable → Ir a perfil
+                                    Text(
+                                        text = userMap[pub.userId] ?: "Usuario desconocido",
+                                        color = Color.White,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .clickable {
+                                                selectedPublication = null   // ← CERRAR POPUP ANTES
+                                                navController.navigate("perfilUsuario/${pub.userId}")
+                                            }
+                                    )
+
                                     Icon(
                                         imageVector = Icons.Default.Close,
                                         contentDescription = "Cerrar",
                                         tint = Color.White,
-                                        modifier = Modifier.size(18.dp)
+                                        modifier = Modifier
+                                            .size(28.dp)
+                                            .clickable { selectedPublication = null }
                                     )
                                 }
-                            }
 
-                            Spacer(modifier = Modifier.height(8.dp))
-                            // Imagen con loader bonito
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(180.dp)
-                                    .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFFEAEAEA)),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                AsyncImage(
-                                    model = pub.imageUrl,
-                                    contentDescription = pub.title,
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                // --- IMAGEN ---
+                                var loadingSmall by remember { mutableStateOf(true) }
+
+                                Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(180.dp)
-                                        .clip(RoundedCornerShape(12.dp))
-                                        .clickable {
-                                            showFullImage = true
-                                        },
-                                    contentScale = ContentScale.Crop
-                                )
-
-                                if (isImageLoading) {
-                                    CircularProgressIndicator(color = Color(0xFF3C9D6D))
-                                }
-                            }
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(pub.title, style = MaterialTheme.typography.titleMedium, color = Color.Gray)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            val maxChars = 160
-
-                            Column {
-                                Text(
-                                    text = if (showFullDescription) pub.description else pub.description.take(maxChars),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = Color.Gray
-                                )
-
-                                if (pub.description.length > maxChars) {
-                                    Text(
-                                        text = if (showFullDescription) "Ver menos" else "Ver más",
-                                        color = Color(0xFF3C9D6D),
+                                        .height(220.dp)
+                                        .clip(RoundedCornerShape(14.dp))
+                                        .background(Color(0xFFEAEAEA)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    AsyncImage(
+                                        model = pub.imageUrl,
+                                        contentDescription = pub.title,
                                         modifier = Modifier
-                                            .padding(top = 4.dp)
-                                            .clickable { showFullDescription = !showFullDescription }
+                                            .fillMaxSize()
+                                            .clickable { showFullImage = true },
+                                        contentScale = ContentScale.Crop,
+                                        onSuccess = { loadingSmall = false },
+                                        onError = { loadingSmall = false }
+                                    )
+
+                                    if (loadingSmall) {
+                                        CircularProgressIndicator(color = Color(0xFF3C9D6D))
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                // --- TÍTULO ---
+                                Text(
+                                    pub.title,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = Color(0xFF444444)
+                                )
+
+                                Spacer(modifier = Modifier.height(12.dp))
+
+                                // --- DESCRIPCIÓN CON SCROLL SOLO SI ES LARGA ---
+                                val maxHeight = 180.dp // altura máxima visible antes de scrollear
+
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(min = 0.dp, max = maxHeight)
+                                        .verticalScroll(rememberScrollState())
+                                ) {
+                                    Text(
+                                        text = pub.description,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.Gray
                                     )
                                 }
                             }
@@ -2207,17 +2277,13 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                     var scale by remember { mutableStateOf(1f) }
                     var offsetX by remember { mutableStateOf(0f) }
                     var offsetY by remember { mutableStateOf(0f) }
+                    var loadingFull by remember { mutableStateOf(true) }
 
-                    var loading by remember { mutableStateOf(true) }
-
-                    // 🔥 El pan y zoom SOLO afecta la imagen, no el contenedor
                     val transformState = rememberTransformableState { zoomChange, panChange, _ ->
-
                         val newScale = (scale * zoomChange).coerceIn(1f, 4f)
 
-                        // Límites para NO sacar la imagen de pantalla
-                        val maxX = (newScale - 1f) * 500f
-                        val maxY = (newScale - 1f) * 800f
+                        val maxX = (newScale - 1f) * 600f
+                        val maxY = (newScale - 1f) * 900f
 
                         offsetX = (offsetX + panChange.x).coerceIn(-maxX, maxX)
                         offsetY = (offsetY + panChange.y).coerceIn(-maxY, maxY)
@@ -2232,10 +2298,9 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                         contentAlignment = Alignment.Center
                     ) {
 
-                        // 🔥 AQUÍ va el transformable (solo sobre la imagen)
                         AsyncImage(
                             model = selectedPublication!!.imageUrl,
-                            contentDescription = "Vista completa",
+                            contentDescription = selectedPublication!!.title,
                             modifier = Modifier
                                 .fillMaxSize()
                                 .graphicsLayer(
@@ -2244,26 +2309,23 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                                     translationX = offsetX,
                                     translationY = offsetY
                                 )
-                                .transformable(transformState), // 👈 SOLO aquí
+                                .transformable(transformState),
                             contentScale = ContentScale.Fit,
-                            onSuccess = { loading = false },
-                            onError = { loading = false }
+                            onSuccess = { loadingFull = false },
+                            onError = { loadingFull = false }
                         )
 
-                        if (loading) {
-                            CircularProgressIndicator(
-                                color = Color.White,
-                                modifier = Modifier.size(50.dp)
-                            )
+                        if (loadingFull) {
+                            CircularProgressIndicator(color = Color.White)
                         }
 
                         IconButton(
                             onClick = { showFullImage = false },
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
-                                .padding(16.dp)
-                                .size(42.dp)
-                                .background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                                .padding(20.dp)
+                                .size(45.dp)
+                                .background(Color.Black.copy(alpha = 0.5f), CircleShape)
                         ) {
                             Icon(
                                 Icons.Default.Close,

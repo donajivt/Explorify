@@ -15,6 +15,11 @@ data class GenericResponse<T>(
     val message: String?
 )
 
+data class CommentsCountResponse(
+    val publicacionId: String,
+    val count: Int
+)
+
 interface ComentariosApiService {
 
     @GET("api/Comentarios")
@@ -27,7 +32,8 @@ interface ComentariosApiService {
     suspend fun getCount(
         @Query("publicacionId") publicacionId: String,
         @Header("Authorization") token: String
-    ): Response<GenericResponse<Int>>
+    ): Response<CommentsCountResponse>
+
 
     @POST("api/Comentarios")
     suspend fun create(

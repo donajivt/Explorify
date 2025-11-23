@@ -2,6 +2,9 @@ package com.explorify.explorifyapp.presentation.publications.list.screens
 
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.rememberTransformableState
+import androidx.compose.foundation.gestures.transformable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -29,6 +32,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import com.explorify.explorifyapp.data.remote.model.User
+import java.time.OffsetDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,6 +57,8 @@ fun UsersProfileScreen(
     var token by remember { mutableStateOf<String?>(null) }
     var userName by remember { mutableStateOf<String?>(null) }
     var userPhoto by remember { mutableStateOf<String?>(null) }
+    var userData by remember { mutableStateOf<User?>(null) }
+    var showPhotoFullScreen by remember { mutableStateOf(false) }
     var publications by remember { mutableStateOf<List<Publication>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
 
@@ -59,16 +71,24 @@ fun UsersProfileScreen(
         delay(200)
         token?.let { tk ->
             try {
-                val user = userRepo.getAllUsers(tk).find { it.id == userId }
-                userName = user?.name ?: "Usuario desconocido"
-                userPhoto =null // si en el futuro agregas campo foto, cámbialo aquí
+                userData = userRepo.getAllUsers(tk).find { it.id == userId }
+
+                userName = userData?.name ?: "Usuario desconocido"
+                userPhoto = userData?.profileImageUrl
             } catch (e: Exception) {
                 userName = "Usuario desconocido"
             }
 
             try {
                 val pubs = publicationRepo.getUserPublications(userId, tk)
-                publications = pubs
+
+                publications = pubs.sortedByDescending { pub ->
+                    try {
+                        OffsetDateTime.parse(pub.createdAt).toEpochSecond()
+                    } catch (_: Exception) {
+                        0L
+                    }
+                }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
@@ -127,6 +147,7 @@ fun UsersProfileScreen(
                                         modifier = Modifier
                                             .size(100.dp)
                                             .clip(CircleShape)
+                                            .clickable { showPhotoFullScreen = true }
                                     )
                                 } else {
                                     Icon(
@@ -184,9 +205,67 @@ fun UsersProfileScreen(
                                 onViewComments = {
                                     navController.navigate("comentarios/${pub.id}")
                                 },
-                                authorName = userName ?: "Usuario"
+                                user = userData,
+                                navController = navController
                             )
                             Spacer(Modifier.height(12.dp))
+                        }
+                    }
+                }
+                // 🔥 Visor a pantalla completa con zoom de foto de perfil
+                if (showPhotoFullScreen && !userPhoto.isNullOrEmpty()) {
+                    Dialog(
+                        onDismissRequest = { showPhotoFullScreen = false },
+                        properties = DialogProperties(usePlatformDefaultWidth = false)
+                    ) {
+                        var scale by remember { mutableStateOf(1f) }
+                        var offsetX by remember { mutableStateOf(0f) }
+                        var offsetY by remember { mutableStateOf(0f) }
+
+                        val transformState = rememberTransformableState { zoomChange, panChange, _ ->
+                            val newScale = (scale * zoomChange).coerceIn(1f, 4f)
+                            val maxOffset = (newScale - 1f) * 350f
+
+                            offsetX = (offsetX + panChange.x).coerceIn(-maxOffset, maxOffset)
+                            offsetY = (offsetY + panChange.y).coerceIn(-maxOffset, maxOffset)
+                            scale = newScale
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Black)
+                                .transformable(transformState),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            AsyncImage(
+                                model = userPhoto,
+                                contentDescription = "Foto perfil grande",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .graphicsLayer(
+                                        scaleX = scale,
+                                        scaleY = scale,
+                                        translationX = offsetX,
+                                        translationY = offsetY
+                                    ),
+                                contentScale = ContentScale.Fit
+                            )
+
+                            IconButton(
+                                onClick = { showPhotoFullScreen = false },
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(16.dp)
+                                    .size(40.dp)
+                                    .background(Color.Black.copy(alpha = 0.4f), CircleShape)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Cerrar",
+                                    tint = Color.White
+                                )
+                            }
                         }
                     }
                 }

@@ -8,6 +8,7 @@ import com.explorify.explorifyapp.domain.usecase.publications.PublicationUseCase
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import com.explorify.explorifyapp.data.remote.publications.RetrofitComentariosInstance
 import com.explorify.explorifyapp.domain.repository.UnauthorizedException
 
 data class PublicationListState(
@@ -58,5 +59,20 @@ class PublicationsListModel(
             .onSuccess { load(token) }
             .onFailure { e -> uiState = uiState.copy(error = e.message) }
         uiState = uiState.copy(deletingId = null)
+    }
+
+    suspend fun getCommentsCount(publicacionId: String, token: String): Int {
+        return try {
+            val response = RetrofitComentariosInstance.api
+                .getCount(publicacionId, "Bearer $token")
+
+            if (response.isSuccessful) {
+                response.body()?.count ?: 0
+            } else {
+                0
+            }
+        } catch (e: Exception) {
+            0
+        }
     }
 }
