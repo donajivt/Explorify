@@ -78,3 +78,6 @@ app.UseCors(corsPolicy);
 app.MapControllers();
 
 app.Run();
+
+// Hacer la clase Program accesible para pruebas de integración
+public partial class Program { }
