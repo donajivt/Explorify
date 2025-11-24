@@ -63,7 +63,7 @@ namespace Explorify.Api.Publications.UnitTests.Services
         [InlineData("test@test.com", "Subject", "")]
         [InlineData(null, "Subject", "Body")]
         public async Task SendEmailAsync_ConCamposVacios_DeberiaRetornarError(
-            string to, string subject, string body)
+            string? to, string subject, string body)
         {
             // Arrange
             var emailDto = new EmailDto

@@ -73,7 +73,7 @@ namespace Explorify.Api.Publications.UnitTests.Services
         [InlineData(null, "user123", "Reason")]
         [InlineData("  ", "user123", "Reason")]
         public async Task CreateReportAsync_PublicationIdInvalido_DeberiaLanzarExcepcion(
-            string publicationId, string userId, string reason)
+            string? publicationId, string userId, string reason)
         {
             // Act
             Func<Task> act = async () => await _service.CreateReportAsync(
@@ -92,7 +92,7 @@ namespace Explorify.Api.Publications.UnitTests.Services
         [InlineData("pub123", null, "Reason")]
         [InlineData("pub123", "  ", "Reason")]
         public async Task CreateReportAsync_UserIdInvalido_DeberiaLanzarExcepcion(
-            string publicationId, string userId, string reason)
+            string publicationId, string? userId, string reason)
         {
             // Act
             Func<Task> act = async () => await _service.CreateReportAsync(
@@ -108,7 +108,7 @@ namespace Explorify.Api.Publications.UnitTests.Services
         [InlineData("pub123", "user123", null)]
         [InlineData("pub123", "user123", "  ")]
         public async Task CreateReportAsync_ReasonInvalido_DeberiaLanzarExcepcion(
-            string publicationId, string userId, string reason)
+            string publicationId, string userId, string? reason)
         {
             // Act
             Func<Task> act = async () => await _service.CreateReportAsync(
@@ -197,7 +197,7 @@ namespace Explorify.Api.Publications.UnitTests.Services
         [InlineData("")]
         [InlineData(null)]
         [InlineData("  ")]
-        public async Task GetReportByIdAsync_ConIdInvalido_DeberiaLanzarExcepcion(string id)
+        public async Task GetReportByIdAsync_ConIdInvalido_DeberiaLanzarExcepcion(string? id)
         {
             // Act
             Func<Task> act = async () => await _service.GetReportByIdAsync(id);
@@ -238,7 +238,7 @@ namespace Explorify.Api.Publications.UnitTests.Services
         [InlineData(null)]
         [InlineData("  ")]
         public async Task GetReportsByPublicationIdAsync_ConIdInvalido_DeberiaLanzarExcepcion(
-            string publicationId)
+            string? publicationId)
         {
             // Act
             Func<Task> act = async () => await _service.GetReportsByPublicationIdAsync(publicationId);
@@ -279,7 +279,7 @@ namespace Explorify.Api.Publications.UnitTests.Services
         [InlineData("")]
         [InlineData(null)]
         [InlineData("  ")]
-        public async Task GetReportsByUserIdAsync_ConIdInvalido_DeberiaLanzarExcepcion(string userId)
+        public async Task GetReportsByUserIdAsync_ConIdInvalido_DeberiaLanzarExcepcion(string? userId)
         {
             // Act
             Func<Task> act = async () => await _service.GetReportsByUserIdAsync(userId);
