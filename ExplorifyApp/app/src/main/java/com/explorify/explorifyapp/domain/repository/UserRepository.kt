@@ -42,12 +42,15 @@ class UserRepository(private val api: UsersApiService) {
         token: String,
         username: String,
         email: String,
+        profileImageUrl: String,
+        cloudinaryPublicId: String,
         imageFile: File?
     ): Response<SimpleResponse> {
 
         val usernameBody = username.toRequestBody("text/plain".toMediaType())
         val emailBody = email.toRequestBody("text/plain".toMediaType())
-
+        val profileImageUrlBody = profileImageUrl.toRequestBody("text/plain".toMediaType())
+        val cloudinaryPublicIdBody = cloudinaryPublicId.toRequestBody("text/plain".toMediaType())
         val imagePart: MultipartBody.Part? = imageFile?.let { file ->
             //val requestFile = file.asRequestBody("image/*".toMediaType())
             val mimeType = when (file.extension.lowercase()) {
@@ -68,6 +71,8 @@ class UserRepository(private val api: UsersApiService) {
         return api.editUser(
             username = usernameBody,
             email = emailBody,
+            profileImageUrl= profileImageUrlBody,
+            cloudinaryPublicId =cloudinaryPublicIdBody,
             profileImage = imagePart,
             token = "Bearer $token"
         )

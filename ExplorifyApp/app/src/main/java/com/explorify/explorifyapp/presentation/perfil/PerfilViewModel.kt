@@ -51,6 +51,8 @@ class PerfilViewModel(
         token: String,
         username: String,
         email: String,
+        profileImageUrl: String,
+        cloudinaryPublicId: String,
         newImageFile: File?,
         //userRequest: UserRequest,
         onResult: (Boolean, String) -> Unit
@@ -76,7 +78,7 @@ class PerfilViewModel(
             }
                 */
                 //val response = repository.editCurrentUser(token, userRequest)
-                val response = repository.editCurrentUser(token, username, email, newImageFile)
+                val response = repository.editCurrentUser(token, username, email,profileImageUrl,cloudinaryPublicId,newImageFile)
                 if (response.isSuccessful && response.body()?.isSuccess == true) {
                     onResult(true, response.body()?.result ?: "Perfil actualizado correctamente")
                 } else {

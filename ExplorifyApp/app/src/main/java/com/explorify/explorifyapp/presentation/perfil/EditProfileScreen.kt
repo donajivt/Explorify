@@ -66,6 +66,8 @@ import androidx.compose.ui.graphics.asImageBitmap
 import android.util.Log
 import androidx.compose.material.icons.filled.BorderColor
 import coil.compose.AsyncImage
+import java.io.FileOutputStream
+import android.graphics.Bitmap
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
@@ -147,12 +149,15 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
         Log.d("userapidata","${userApiData}")
     }
     var profileImageUrl by remember { mutableStateOf("") }
+    //var oldprofileImageUrl by remember { mutableStateOf("") }
+    var cloudinarypublicid by remember { mutableStateOf("") }
 
     LaunchedEffect(userApiData) {
         userApiData?.let {
             profileImageUrl = it.profileImageUrl ?: ""
             profileName.value = it.name ?: ""
             email.value = it.email ?: ""
+            cloudinarypublicid = it.cloudinaryPublicId ?: ""
             Log.d("profileImageUrl actualizado", profileImageUrl)
         }
     }
@@ -214,7 +219,6 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
             }
         }
     }
-
 
     Scaffold(
         topBar = {
@@ -405,11 +409,30 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
                         */
                         Log.d("EDIT", "FILE: $selectedImage")
 
+                        var imageToUpload = selectedImage!!
+
+                        val sizeMB = imageToUpload.length() / (1024 * 1024)
+                        Log.d("tamaño de imagen","${sizeMB}")
+                        if (sizeMB > 1) {
+                            val compressed = compressImage(imageToUpload, context)
+                            val compressedMB = compressed.length() / (1024 * 1024)
+
+                            if (compressedMB > 1) {
+                                dialogMessage = "La imagen sigue pesando demasiado incluso después de comprimirla."
+                                showDialog = true
+                                return@Button
+                            }
+
+                            imageToUpload = compressed
+                        }
+
                         perfilViewModel.updateUser(
                             token,
                             profileName.value,
                             email.value,
-                            selectedImage
+                            profileImageUrl,
+                            cloudinarypublicid,
+                            imageToUpload//selectedImage
                         ) { success, message ->
 
                             if (success) {
@@ -498,11 +521,26 @@ fun ProfileField(
     )
 }
 
+
+
 fun Uri.toFile(context: Context): File {
     val inputStream = context.contentResolver.openInputStream(this)!!
     val file = File(context.cacheDir, "temp_image_${System.currentTimeMillis()}.png")
     file.outputStream().use { output -> inputStream.copyTo(output) }
     return file
+}
+
+fun compressImage(file: File, context: Context): File {
+    val bitmap = BitmapFactory.decodeFile(file.path)
+
+    val compressedFile = File(context.cacheDir, "compressed_${file.name}")
+
+    val output = FileOutputStream(compressedFile)
+    bitmap.compress(Bitmap.CompressFormat.JPEG, 70, output) // calidad 70%
+    output.flush()
+    output.close()
+
+    return compressedFile
 }
 
 

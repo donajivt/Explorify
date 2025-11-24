@@ -34,18 +34,20 @@ interface UsersApiService {
         @Path("id") userId: String
     ): Response<UserResponse>
 
-    // 🔹 Obtener el usuario actual (por token)
+    // Obtener el usuario actual (por token)
     @GET("api/Users/me")
     suspend fun getUser(
         @Header("Authorization") token: String
     ): UserResponse
 
-    // 🔹 Editar usuario actual
+    // Editar usuario actual
     @Multipart
     @PUT("api/Users/me")
     suspend fun editUser(
         @Part("Username") username: RequestBody,
         @Part("Email") email: RequestBody,
+        @Part("ProfileImageUrl") profileImageUrl: RequestBody,
+        @Part("CloudinaryPublicId") cloudinaryPublicId: RequestBody,
         @Part profileImage: MultipartBody.Part? =null,
         @Header("Authorization") token: String
     ): Response<SimpleResponse>
