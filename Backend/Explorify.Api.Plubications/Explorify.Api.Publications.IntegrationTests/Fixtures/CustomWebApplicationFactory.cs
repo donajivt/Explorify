@@ -25,6 +25,7 @@ namespace Explorify.Api.Publications.IntegrationTests.Fixtures
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
+
             builder.ConfigureAppConfiguration((context, config) =>
             {
                 config.AddInMemoryCollection(new Dictionary<string, string>
