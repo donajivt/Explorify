@@ -1,167 +1,170 @@
-# Pipeline de CI/CD para Explorify.Api.Likes
-name: Api-Likes - CI/CD Pipeline
+name: Explorify API Publications - CI/CD Pipeline
 
 on:
-  # Se ejecuta en push a las ramas principales
   push:
-    branches:
-      - main
-      - develop
+    branches: [ main, develop ]
     paths:
-      - 'Backend/api-likes/**'
+      - 'Backend/Explorify.Api.Plubications/**' # Nota: Revisa si es "Public..." o "Plubic..."
       - '.github/workflows/**'
-  
-  # Se ejecuta en Pull Requests hacia main o develop
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [ main, develop ]
     paths:
-      - 'Backend/api-likes/**'
-  
-  # Permite ejecución manual desde la interfaz de GitHub
+      - 'Backend/Explorify.Api.Plubications/**'
   workflow_dispatch:
 
 env:
   DOTNET_VERSION: '9.0.x'
-  PROJECT_PATH: Backend/api-likes
-  SOLUTION_FILE: api-likes.sln
-  BUILD_CONFIGURATION: Release
+  WORKING_DIRECTORY: ./Backend/Explorify.Api.Plubications # Ojo con el typo en el nombre de la carpeta
+  # Configuración de Build
+  BUILD_CONFIG: Release
 
 jobs:
-  
-  build:
-    name: Build and Test
+  # ------------------------------------------------------------------
+  # JOB 1: BUILD & TEST (Compilación y Pruebas con Base de Datos)
+  # ------------------------------------------------------------------
+  build-and-test:
+    name: Build, Test & Publish Artifacts
     runs-on: ubuntu-latest
     
-    steps:
-      # Paso 1: Checkout del código fuente
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
-      # Paso 2: Configurar .NET SDK
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-      
-      # Paso 3: Cache de paquetes NuGet
-      - name: Cache NuGet packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-
-      
-      # Paso 4: Restaurar dependencias
-      - name: Restore dependencies
-        run: dotnet restore ${{ env.PROJECT_PATH }}/${{ env.SOLUTION_FILE }}
-      
-      # Paso 5: Construcción del proyecto
-      - name: Build solution
-        run: dotnet build ${{ env.PROJECT_PATH }}/${{ env.SOLUTION_FILE }} --configuration ${{ env.BUILD_CONFIGURATION }} --no-restore
-      
-      # Paso 6: Ejecutar pruebas unitarias
-      - name: Run unit tests
-        run: dotnet test ${{ env.PROJECT_PATH }}/${{ env.SOLUTION_FILE }} --configuration ${{ env.BUILD_CONFIGURATION }} --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx" --collect:"XPlat Code Coverage"
-        continue-on-error: true
-      
-      # Paso 7: Publicar resultados de pruebas
-      - name: Publish test results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
-        with:
-          files: '**/test-results.trx'
-        continue-on-error: true
-      
-      # Paso 8: Publicar la aplicación
-      - name: Publish application
-        run: dotnet publish ${{ env.PROJECT_PATH }}/Explorify.Api.Likes/Explorify.Api.Likes.csproj --configuration ${{ env.BUILD_CONFIGURATION }} --output ${{ env.PROJECT_PATH }}/publish --no-build
-      
-      # Paso 9: Subir artefactos
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: explorify-api-likes-build
-          path: ${{ env.PROJECT_PATH }}/publish
-          retention-days: 7
+    # Servicio de MongoDB para los tests de integración (Tomado de tu primer archivo)
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ping: 1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
-  code-quality:
-    name: Code Quality Analysis
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Restore dependencies
+      run: dotnet restore
+      working-directory: ${{ env.WORKING_DIRECTORY }}
+
+    - name: Build
+      run: dotnet build --no-restore --configuration ${{ env.BUILD_CONFIG }}
+      working-directory: ${{ env.WORKING_DIRECTORY }}
+
+    # Pruebas Unitarias
+    - name: Run Unit Tests
+      run: |
+        dotnet test Explorify.Api.Publications.UnitTests/ \
+          --no-build \
+          --configuration ${{ env.BUILD_CONFIG }} \
+          --logger "trx;LogFileName=unit-tests.trx" \
+          --collect:"XPlat Code Coverage" \
+          --results-directory ./TestResults/UnitTests
+      working-directory: ${{ env.WORKING_DIRECTORY }}
+
+    # Pruebas de Integración (Usando el servicio de Mongo)
+    - name: Run Integration Tests
+      run: |
+        dotnet test Explorify.Api.Publications.IntegrationTests/ \
+          --no-build \
+          --configuration ${{ env.BUILD_CONFIG }} \
+          --logger "trx;LogFileName=integration-tests.trx" \
+          --collect:"XPlat Code Coverage" \
+          --results-directory ./TestResults/IntegrationTests
+      working-directory: ${{ env.WORKING_DIRECTORY }}
+      env:
+        ASPNETCORE_ENVIRONMENT: Testing
+
+    # Generar reporte de cobertura (Opcional pero recomendado)
+    - name: Generate Coverage Report
+      uses: danielpalme/ReportGenerator-GitHub-Action@5.2.0
+      with:
+        reports: '**/coverage.cobertura.xml'
+        targetdir: 'coveragereport'
+        reporttypes: 'Html;Badges;Cobertura'
+        sourcedirs: ${{ env.WORKING_DIRECTORY }}
+
+    # Publicar la aplicación (Generar los binarios listos para deploy)
+    - name: Publish Application
+      run: dotnet publish Explorify.Api.Plubications.csproj --configuration ${{ env.BUILD_CONFIG }} --output ./publish --no-build
+      working-directory: ${{ env.WORKING_DIRECTORY }}
+
+    # Subir el artefacto compilado para usarlo en el Job de Deploy
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: publications-api-build
+        path: ${{ env.WORKING_DIRECTORY }}/publish
+        retention-days: 3
+
+    # Subir resultados de tests para verlos en GitHub
+    - name: Upload Test Results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: ${{ env.WORKING_DIRECTORY }}/TestResults/
+
+  # ------------------------------------------------------------------
+  # JOB 2: CODE QUALITY (Análisis estático y formato)
+  # ------------------------------------------------------------------
+  quality:
+    name: Code Quality & Security
     runs-on: ubuntu-latest
-    needs: build
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-      
-      # Análisis de seguridad
-      - name: Security scan
-        run: dotnet list ${{ env.PROJECT_PATH }}/${{ env.SOLUTION_FILE }} package --vulnerable --include-transitive
-        continue-on-error: true
-      
-      # Verificación de formato de código
-      - name: Check code formatting
-        run: dotnet format ${{ env.PROJECT_PATH }}/${{ env.SOLUTION_FILE }} --verify-no-changes --verbosity diagnostic
-        continue-on-error: true
+    needs: build-and-test # Se ejecuta después de asegurar que compila
 
-  deploy-dev:
-    name: Deploy to Development
-    runs-on: ubuntu-latest
-    needs: [build, code-quality]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
-    environment:
-      name: development
-      url: https://dev-api.explorify.com
-    
     steps:
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: explorify-api-likes-build
-          path: ./publish
-      
-      - name: Deploy to development server
-        run: |
-          echo "Desplegando Explorify.Api.Likes a servidor de desarrollo..."
-          # Aquí iría tu comando real de despliegue (scp, rsync, kubectl, etc.)
-        env:
-          DEPLOY_KEY: ${{ secrets.DEV_DEPLOY_KEY }}
+    - name: Checkout code
+      uses: actions/checkout@v4
 
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Check code formatting
+      run: |
+        dotnet tool install -g dotnet-format
+        dotnet format --verify-no-changes --verbosity diagnostic
+      working-directory: ${{ env.WORKING_DIRECTORY }}
+
+    - name: Vulnerability Scan
+      run: dotnet list package --vulnerable --include-transitive
+      working-directory: ${{ env.WORKING_DIRECTORY }}
+      continue-on-error: true
+
+  # ------------------------------------------------------------------
+  # JOB 3: DEPLOY (Solo en rama main)
+  # ------------------------------------------------------------------
   deploy-prod:
     name: Deploy to Production
     runs-on: ubuntu-latest
-    needs: [build, code-quality]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [build-and-test, quality] # Espera a que TODO esté verde
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     environment:
       name: production
-      url: https://api.explorify.com
-    
+
     steps:
-      - name: Download build artifacts
+      - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: explorify-api-likes-build
+          name: publications-api-build
           path: ./publish
-      
+
       - name: Deploy to production server
-        run: |
-          echo "Desplegando Explorify.Api.Likes a servidor de producción..."
-          # Aquí iría tu script de despliegue real
+        run: echo "🚀 Desplegando a producción..."
+        # Aquí va tu lógica real de despliegue (SSH, Azure, AWS, etc.)
         env:
           DEPLOY_KEY: ${{ secrets.PROD_DEPLOY_KEY }}
-      
-      - name: Notify deployment success
-        if: success()
-        run: |
-          echo "Despliegue exitoso de Explorify.Api.Likes en producción
