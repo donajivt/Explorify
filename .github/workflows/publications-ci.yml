@@ -1,4 +1,4 @@
-name: Explorify API - CI/CD Pipeline
+name: Explorify API Publications - CI/CD Pipeline
 
 on:
   push:
