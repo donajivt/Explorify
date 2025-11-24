@@ -1,8 +1,9 @@
-    plugins {
+plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     id("kotlin-kapt")
+    id("com.google.gms.google-services")
 
 }
 
@@ -103,10 +104,14 @@ dependencies {
     implementation("org.osmdroid:osmdroid-android:6.1.17")
     implementation("org.osmdroid:osmdroid-wms:6.1.17")
     implementation("androidx.exifinterface:exifinterface:1.3.6")
+    implementation(platform("com.google.firebase:firebase-bom:34.6.0"))
+    implementation("com.google.firebase:firebase-messaging")
+    implementation("androidx.compose.runtime:runtime:1.6.0")
+    implementation("androidx.activity:activity-compose:1.8.2")
+    implementation("androidx.compose.material3:material3:1.2.0")
+    implementation ("androidx.compose.runtime:runtime-livedata")
+    implementation("com.datadoghq:dd-sdk-android-rum:3.3.0")
 
     implementation ("androidx.compose.runtime:runtime-livedata")
-
-
-    implementation ("androidx.compose.runtime:runtime-livedata")
-
+    implementation("com.datadoghq:dd-sdk-android-webview:3.3.0")
 }

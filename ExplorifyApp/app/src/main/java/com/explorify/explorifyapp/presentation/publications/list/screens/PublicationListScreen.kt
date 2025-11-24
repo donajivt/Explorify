@@ -1,5 +1,6 @@
 package com.explorify.explorifyapp.presentation.publications.list.screens
 
+import android.content.pm.PackageManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -53,9 +54,15 @@ import coil.request.CachePolicy
 import coil.request.ImageRequest
 import kotlinx.coroutines.async
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import androidx.compose.runtime.LaunchedEffect
+import android.os.Build
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.explorify.explorifyapp.data.remote.model.User
 import com.explorify.explorifyapp.data.remote.publications.RetrofitComentariosInstance
+import android.Manifest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,6 +73,23 @@ fun PublicationListScreen(
     onOpenDetail: (String) -> Unit,
     viewModel: LoginViewModel = viewModel()
 ) {
+
+    LaunchedEffect(Unit) {
+        Log.e("RUM_DEBUG", ">>> startView PUBLICATION_LIST")
+        com.datadog.android.rum.GlobalRumMonitor.get().startView(
+            "publication_list",
+            "PantallaPublicaciones"
+        )
+    }
+
+    DisposableEffect(Unit) {
+        onDispose {
+            Log.e("RUM_DEBUG", ">>> stopView PUBLICATION_LIST")
+            com.datadog.android.rum.GlobalRumMonitor.get().stopView("publication_list")
+        }
+    }
+
+
     val context = LocalContext.current
     val state = vm.uiState
     val swipeState = rememberSwipeRefreshState(isRefreshing = state.loading)
@@ -81,6 +105,41 @@ fun PublicationListScreen(
 
     // 🔹 Obtener token para cargar publicaciones y usuarios
     var token by remember { mutableStateOf<String?>(null) }
+
+    // 🔥 Lanzador para solicitar permiso POST_NOTIFICATIONS
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        // Puedes imprimir en log
+        Log.d("NOTIF_DEBUG", "Resultado del permiso → isGranted = $isGranted")
+        println("NOTIFICATION PERMISSION GRANTED? $isGranted")
+    }
+
+// 🔥 Lógica para pedir el permiso una sola vez
+    LaunchedEffect(Unit) {
+        Log.d("NOTIF_DEBUG", "Entró a LaunchedEffect para pedir permiso")
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+            Log.d("NOTIF_DEBUG", "Versión Android >= 13, revisando permiso")
+
+            val permissionCheck = ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.POST_NOTIFICATIONS
+            )
+
+            Log.d("NOTIF_DEBUG", "Estado del permiso: $permissionCheck")
+
+            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+                Log.d("NOTIF_DEBUG", "Permiso NO otorgado → lanzando ventana")
+                notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            } else {
+                Log.d("NOTIF_DEBUG", "Permiso YA otorgado → no se lanzará nada")
+            }
+        } else {
+            Log.d("NOTIF_DEBUG", "Android < 13 → NO requiere permiso de notificaciones.")
+        }
+    }
 
     LaunchedEffect(Unit) {
         val isLoggedIn = viewModel.isLoggedIn()

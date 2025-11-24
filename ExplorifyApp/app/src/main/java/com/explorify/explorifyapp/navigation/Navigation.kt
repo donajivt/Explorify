@@ -3,6 +3,7 @@ package com.explorify.explorifyapp.navigation
 
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavType
 import com.explorify.explorifyapp.data.remote.users.RetrofitUserInstance
 import androidx.navigation.compose.*
@@ -45,7 +46,7 @@ import com.explorify.explorifyapp.domain.repository.UserRepository
 import com.explorify.explorifyapp.presentation.admin.report.ReportsViewModelFactory
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppNavigation() {
+fun AppNavigation(startPostId: String? = null) {
     val navController = rememberNavController()
 
     // ✅ Inicialización de capa de datos para publicaciones
@@ -225,5 +226,12 @@ fun AppNavigation() {
         }
 
 
+    }
+
+    LaunchedEffect(startPostId) {
+        if (!startPostId.isNullOrEmpty()) {
+            // 🔥 Navega directo a comentarios
+            navController.navigate("comentarios/$startPostId")
+        }
     }
 }
