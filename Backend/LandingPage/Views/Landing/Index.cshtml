@@ -1,0 +1,448 @@
+﻿@{
+    ViewData["Title"] = "Descarga nuestra App";
+}
+
+@section Meta {
+    <meta name="description" content="Descarga la aplicación oficial Explorify.">
+}
+
+<div class="background"></div>
+<canvas id="particles"></canvas>
+
+<!-- ELEMENTOS LATERALES -->
+<img src="/img/avion.png" class="side-el left-el slow-float" />
+<img src="/img/flor.png" class="side-el right-el slow-float2" />
+
+<img src="/img/flor.png" class="side-el left-el bottom-float" />
+<img src="/img/avion.png" class="side-el right-el bottom-float2" />
+
+<div class="landing">
+    <div class="logo-cloud">
+        <img src="/img/nube.png" class="nube" />
+        <img src="/img/Explori.png" class="logo" />
+    </div>
+
+    <h1 class="title">Explora el Mundo con Explorify</h1>
+    <p class="subtitle">Vive aventuras. Comparte historias. Inspira a otros.</p>
+
+    <a class="download-btn" href="https://play.google.com/store/apps/details?id=TU_APP_ID" target="_blank">
+        DESCARGAR AHORA 🌿
+    </a>
+</div>
+
+
+<style>
+    /* === FONDO VERDE ANIMADO === */
+    .background {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, #003c1e, #006a32, #009f4d);
+        background-size: 400% 400%;
+        animation: bgShift 12s ease infinite;
+        z-index: -3;
+        overflow: hidden;
+    }
+
+    @@keyframes bgShift {
+        0%
+
+    {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+
+    }
+
+    /* PARTICULAS */
+    #particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -2;
+    }
+
+    /* === ELEMENTOS LATERALES (flores y mariposas) === */
+    .side-el {
+        position: fixed;
+        width: 120px;
+        opacity: 0.9;
+        z-index: -1;
+        filter: drop-shadow(0 0 10px rgba(255,255,255,0.4));
+    }
+
+    /* LADO IZQUIERDO */
+    .left-el {
+        left: 20px;
+    }
+
+    /* LADO DERECHO */
+    .right-el {
+        right: 20px;
+    }
+
+    /* Animaciones suaves */
+    .slow-float {
+        top: 10%;
+        animation: floatSide 6s ease-in-out infinite;
+    }
+
+    .slow-float2 {
+        top: 15%;
+        animation: floatSide2 7s ease-in-out infinite;
+    }
+
+    .bottom-float {
+        bottom: 10%;
+        animation: bottomRise 7s ease-in-out infinite;
+    }
+
+    .bottom-float2 {
+        bottom: 12%;
+        animation: bottomRise2 8s ease-in-out infinite;
+    }
+
+    @@keyframes floatSide {
+        0%
+
+    {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-15px) rotate(6deg);
+    }
+
+    100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    }
+
+    @@keyframes floatSide2 {
+        0%
+
+    {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-20px) rotate(-6deg);
+    }
+
+    100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    }
+
+    @@keyframes bottomRise {
+        0%
+
+    {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(10px) rotate(4deg);
+    }
+
+    100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    }
+
+    @@keyframes bottomRise2 {
+        0%
+
+    {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(14px) rotate(-4deg);
+    }
+
+    100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    }
+
+
+    /* CONTENIDO CENTRAL */
+    .landing {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        color: white;
+        position: relative;
+    }
+    /* === LOGO SOBRE NUBE === */
+    .logo-cloud {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 320px;
+        height: 160px;
+        margin-bottom: 20px;
+    }
+
+    .nube {
+        position: absolute;
+        width: 240px;
+        opacity: 0.95;
+        filter: drop-shadow(0 0 15px rgba(255,255,255,0.75));
+        animation: cloudFloat 5s ease-in-out infinite;
+        z-index: 1;
+    }
+
+    @@keyframes cloudFloat {
+        0% {
+            transform: translateY(0px) scale(1);
+        }
+
+        50% {
+            transform: translateY(-8px) scale(1.03);
+        }
+
+        100% {
+            transform: translateY(0px) scale(1);
+        }
+    }
+    .logo {
+        position: relative;
+        z-index: 5;
+    }
+
+    @@media (max-width: 450px) {
+        .nube {
+            width: 160px;
+            filter: drop-shadow(0 0 10px rgba(255,255,255,0.75));
+        }
+
+        .logo-cloud {
+            margin-bottom: 10px;
+        }
+    }
+
+    @@keyframes float {
+        0%
+
+    {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-12px);
+    }
+
+    100% {
+        transform: translateY(0px);
+    }
+
+    }
+
+    .logo {
+        width: 100px;
+    }
+    .title {
+        font-family: "Poppins", "Montserrat", sans-serif;
+        letter-spacing: 1.5px;
+    }
+
+    .subtitle {
+        font-size: 1.3rem;
+        opacity: .95;
+        margin-bottom: 40px;
+        text-shadow: 0 0 12px rgba(0,255,150,0.4);
+    }
+
+    /* BOTON */
+    .download-btn {
+        background: linear-gradient(135deg, #00ff99, #00e67a, #00ffbb);
+        padding: 20px 60px;
+        color: white;
+        font-size: 1.7rem;
+        font-weight: 900;
+        border-radius: 50px;
+        box-shadow: 0 0 25px #00ff99, 0 0 50px rgba(0,255,150,0.7);
+        text-decoration: none;
+        letter-spacing: 1px;
+        transition: .25s;
+        animation: btnGlow 2s ease-in-out infinite;
+    }
+
+    @@keyframes btnGlow {
+        0%
+
+    {
+        box-shadow: 0 0 25px #00ff99;
+    }
+
+    50% {
+        box-shadow: 0 0 55px #00ffcc;
+    }
+
+    100% {
+        box-shadow: 0 0 25px #00ff99;
+    }
+
+    }
+
+    .download-btn:hover {
+        transform: scale(1.12);
+    }
+    /* === CONTENEDOR ORGÁNICO OVALADO RESPONSIVE === */
+    .core-container {
+        position: relative;
+        height: calc(100vh - 40px);
+        max-height: 100vh;
+        width: 100%;
+        max-width: 480px;
+        margin: auto;
+        margin-top: 20px; 
+        padding: 30px 25px;
+
+        border-radius: 150px / 90px;
+        background: rgba(0, 65, 35, 0.52);
+        backdrop-filter: blur(12px);
+        border: 2px solid rgba(135, 255, 180, 0.35);
+        box-shadow: 0 0 40px rgba(0, 255, 150, 0.25), inset 0 0 18px rgba(255,255,255,0.12), inset 0 0 35px rgba(0, 255, 150, 0.3);
+        animation: organicGlow 6s ease-in-out infinite alternate;
+        overflow: hidden;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    @@media (max-height: 700px) {
+        .core-container
+
+    {
+        padding: 20px 20px;
+        border-radius: 110px / 80px;
+    }
+
+    .logo {
+        width: 120px;
+    }
+    .title {
+        font-size: 2.2rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+
+    .download-btn {
+        padding: 15px 40px;
+        font-size: 1.2rem;
+    }
+
+    }
+
+    /* Animación orgánica leve */
+    @@keyframes organicGlow {
+        0%
+
+    {
+        border-radius: 150px / 90px;
+        box-shadow: 0 0 30px rgba(0, 255, 150, 0.2), inset 0 0 20px rgba(255,255,255,0.1), inset 0 0 30px rgba(0, 255, 180, 0.25);
+    }
+
+    100% {
+        border-radius: 170px / 100px;
+        box-shadow: 0 0 50px rgba(0, 255, 150, 0.35), inset 0 0 30px rgba(255,255,255,0.15), inset 0 0 40px rgba(0, 255, 180, 0.45);
+    }
+
+    }
+
+    /* LIENZO DE PARTÍCULAS INTERIOR */
+    #coreParticles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        border-radius: inherit;
+    }
+</style>
+<script>
+    const canvas = document.getElementById("particles");
+    const ctx = canvas.getContext("2d");
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    const particlesArr = [];
+    const numParticles = 120;
+
+    class Particle {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 3 + 1;
+            this.speedX = (Math.random() - 0.5) * 0.6;
+            this.speedY = (Math.random() - 0.5) * 0.6;
+        }
+
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+            if (this.x < 0) this.x = canvas.width;
+            if (this.x > canvas.width) this.x = 0;
+            if (this.y < 0) this.y = canvas.height;
+            if (this.y > canvas.height) this.y = 0;
+        }
+
+        draw() {
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fillStyle = "rgba(0,255,120,0.7)";
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = "#00ff99";
+            ctx.fill();
+        }
+    }
+
+    function initParticles() {
+        particlesArr.length = 0;
+        for (let i = 0; i < numParticles; i++) {
+            particlesArr.push(new Particle());
+        }
+    }
+
+    function animateParticles() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        particlesArr.forEach(p => {
+            p.update();
+            p.draw();
+        });
+        requestAnimationFrame(animateParticles);
+    }
+
+    initParticles();
+    animateParticles();
+</script>

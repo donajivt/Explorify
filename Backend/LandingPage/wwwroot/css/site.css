@@ -1,0 +1,164 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+  color: var(--bs-secondary-color);
+  text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+  text-align: start;
+}
+/* LANDING PAGE STYLES */
+.landing-hero {
+    background: linear-gradient(180deg, #e9f5ec 0%, #ffffff 60%);
+    padding: 4.5rem 0;
+}
+
+/* Hero text */
+.hero-title {
+    color: #375A3E;
+    font-size: 3.2rem;
+    letter-spacing: .6px;
+}
+
+.hero-sub {
+    color: #4d5850;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* CTA button grande y animado */
+.btn-cta {
+    background: linear-gradient(90deg,#4F805D 0%, #375A3E 100%);
+    color: #fff;
+    border-radius: 50px;
+    padding: .95rem 1.6rem;
+    font-weight: 600;
+    transform: translateY(0);
+    animation: cta-pulse 2.6s infinite;
+    display: inline-flex;
+    align-items: center;
+    gap: .6rem;
+}
+
+@keyframes cta-pulse {
+    0% {
+        box-shadow: 0 6px 18px rgba(79,128,93,0.18);
+        transform: translateY(0);
+    }
+
+    50% {
+        box-shadow: 0 12px 30px rgba(79,128,93,0.22);
+        transform: translateY(-6px);
+    }
+
+    100% {
+        box-shadow: 0 6px 18px rgba(79,128,93,0.18);
+        transform: translateY(0);
+    }
+}
+
+/* Outline secondary button */
+.btn-outline-cta {
+    border: 1px solid #4F805D;
+    color: #375A3E;
+    border-radius: 40px;
+    padding: .6rem 1rem;
+}
+
+/* Hero features list */
+.hero-features {
+    list-style: none;
+    padding-left: 0;
+    margin-top: 1rem;
+    color: #556058;
+}
+
+    .hero-features li {
+        margin-bottom: .4rem;
+    }
+
+/* Mockup */
+.mockup-wrap {
+    width: 320px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.mockup-phone {
+    width: 100%;
+    border-radius: 28px;
+    box-shadow: 0 20px 40px rgba(18,45,25,0.08);
+    border: 10px solid white;
+}
+
+/* small badge on mockup */
+.mockup-badge {
+    position: absolute;
+    top: 8%;
+    right: -6%;
+    background: #ffb703;
+    color: #fff;
+    padding: .4rem .6rem;
+    border-radius: 12px;
+    font-weight: 600;
+    transform: rotate(-12deg);
+}
+
+/* Advantage cards */
+.adv-card {
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 8px 28px rgba(18,45,25,0.04);
+    height: 100%;
+}
+
+.adv-icon {
+    font-size: 2rem;
+    color: #4F805D;
+}
+
+/* Testimonials */
+.test-card {
+    border-radius: 12px;
+    background: white;
+    min-height: 120px;
+}
+
+/* Bottom CTA */
+.landing-cta .btn-cta {
+    padding: .9rem 2.4rem;
+    font-size: 1.1rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2.2rem;
+    }
+
+    .mockup-wrap {
+        width: 220px;
+    }
+}

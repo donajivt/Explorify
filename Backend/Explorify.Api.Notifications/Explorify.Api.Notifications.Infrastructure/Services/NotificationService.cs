@@ -3,6 +3,7 @@ using Explorify.Api.Notifications.Application.Dtos;
 using FirebaseAdmin;
 using FirebaseAdmin.Messaging;
 using Google.Apis.Auth.OAuth2;
+using System;
 
 namespace Explorify.Api.Notifications.Application.Services
 {
@@ -14,11 +15,16 @@ namespace Explorify.Api.Notifications.Application.Services
         {
             _repository = repository;
 
+            var jsonCredential = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS_JSON");
+
+            if (string.IsNullOrEmpty(jsonCredential))
+                throw new Exception("❌ La variable de entorno GOOGLE_APPLICATION_CREDENTIALS_JSON no está configurada.");
+
             if (FirebaseApp.DefaultInstance == null)
             {
                 FirebaseApp.Create(new AppOptions()
                 {
-                    Credential = GoogleCredential.FromFile("explorify-2-firebase-adminsdk-fbsvc-74d9484234.json")
+                    Credential = GoogleCredential.FromJson(jsonCredential)
                 });
             }
         }
@@ -47,11 +53,11 @@ namespace Explorify.Api.Notifications.Application.Services
                     DeviceToken = request.DeviceToken
                 });
 
-                return new ResponseDto { Result = response, Message = "Notificación enviada correctamente" };
+                return new ResponseDto { Result = response, Message = "📨 Notificación enviada correctamente" };
             }
             catch (Exception ex)
             {
-                return new ResponseDto { IsSuccess = false, Message = ex.Message };
+                return new ResponseDto { IsSuccess = false, Message = $"⚠ Error enviando notificación: {ex.Message}" };
             }
         }
 
