@@ -12,5 +12,6 @@ namespace Explorify.Api.User.Application.Interfaces
         Task<ResponseDto> GetAllUsersAsync();
         Task<ResponseDto> GetUserByIdAsync(string id);
         Task<ResponseDto> UpdatePasswordAsync(string userId, UserPasswordDto dto);
+        Task<ResponseDto> UpdateDeviceTokenAsync(string userId, UserDeviceTokenUpdate dto);
     }
 }

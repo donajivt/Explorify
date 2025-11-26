@@ -71,7 +71,13 @@ namespace Explorify.Api.User.Api.Controllers
             var response = await _userService.UpdatePasswordAsync(userId, dto);
             return Ok(response);
         }
-
+        [HttpPut("device-token")]
+        public async Task<IActionResult> UpdateDeviceToken(/*string userId,*/ [FromBody] UserDeviceTokenUpdate dto)
+        {
+            var userId = GetUserIdFromToken();
+            var response = await _userService.UpdateDeviceTokenAsync(userId, dto);
+            return Ok(response);
+        }
         [HttpDelete("me")]
         public async Task<IActionResult> DeleteProfile()
         {

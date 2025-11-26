@@ -26,6 +26,8 @@ namespace Explorify.Api.User.Domain.Entities
         public string? ProfileImageUrl { get; set; }
         [BsonElement("CloudinaryPublicId")]
         public string? CloudinaryPublicId { get; set; }
+        [BsonElement("DeviceToken")]
+        public string? DeviceToken { get; set; }
 
         [BsonElement("CreatedAt")]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

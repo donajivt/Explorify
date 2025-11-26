@@ -152,6 +152,18 @@ namespace Explorify.Api.User.Application.Services
             }
             return response;
         }
+        public async Task<ResponseDto> UpdateDeviceTokenAsync(string userId, UserDeviceTokenUpdate dto)
+        {
+            var user = await _userRepository.GetByIdAsync(userId);
+            if (user == null)
+                return new ResponseDto { IsSuccess = false, Message = "Usuario no encontrado" };
 
+            user.DeviceToken = dto.DeviceToken;
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _userRepository.UpdateAsync(user);
+
+            return new ResponseDto { Result = "Perfil actualizado correctamente" };
+        }
     }
 }
