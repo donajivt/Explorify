@@ -19,7 +19,7 @@ namespace Explorify.Api.Publications.Infraestructure.Publication
             var secret = settingsSection.GetValue<string>("Secret");
             var issuer = settingsSection.GetValue<string>("Issuer");
             var audience = settingsSection.GetValue<string>("Audience");
-            var key = Encoding.ASCII.GetBytes(secret);
+            var key = Encoding.UTF8.GetBytes(secret);
 
             builder.Services.AddAuthentication(x =>
             {

@@ -1,4 +1,4 @@
-name: Explorify API - CI/CD Pipeline
+name: Explorify API Publications - CI/CD Pipeline
 
 on:
   push:
@@ -98,7 +98,7 @@ jobs:
 
     # Publicar la aplicación (Generar los binarios listos para deploy)
     - name: Publish Application
-      run: dotnet publish Explorify.Api.Plubications.csproj --configuration ${{ env.BUILD_CONFIG }} --output ./publish --no-build
+      run: dotnet publish --configuration ${{ env.BUILD_CONFIG }} --output ./publish --no-build
       working-directory: ${{ env.WORKING_DIRECTORY }}
 
     # Subir el artefacto compilado para usarlo en el Job de Deploy

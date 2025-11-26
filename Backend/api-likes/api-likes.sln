@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36401.2 d17.14
+VisualStudioVersion = 17.14.36401.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Explorify.Api.Likes", "Explorify.Api.Likes\Explorify.Api.Likes.csproj", "{9E345CC5-1892-4DD3-A0E1-EA0CE6E017C4}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Explorify.Api.Likes.Domain", "Explorify.Api.Likes.Domain\Explorify.Api.Likes.Domain.csproj", "{02F8FF30-2C8D-4DB0-B6A9-1058A8F740F1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Explorify.Api.Likes.Infrastructure", "Explorify.Api.Likes.Infrastructure\Explorify.Api.Likes.Infrastructure.csproj", "{A359F28C-3004-4A4B-8C0B-F5B4BDCEB70B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Explorify.Api.Likes.Tests", "Explorify.Api.Likes.Tests\Explorify.Api.Likes.Tests.csproj", "{464935BB-7D8D-4116-8C73-4F601A526A06}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{A359F28C-3004-4A4B-8C0B-F5B4BDCEB70B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A359F28C-3004-4A4B-8C0B-F5B4BDCEB70B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A359F28C-3004-4A4B-8C0B-F5B4BDCEB70B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{464935BB-7D8D-4116-8C73-4F601A526A06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{464935BB-7D8D-4116-8C73-4F601A526A06}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{464935BB-7D8D-4116-8C73-4F601A526A06}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{464935BB-7D8D-4116-8C73-4F601A526A06}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

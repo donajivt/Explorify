@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36401.2 d17.14
+VisualStudioVersion = 17.14.36401.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Comentarios.API", "Comentarios.API\Comentarios.API.csproj", "{E2429251-45AF-4838-8BC6-DE4CD96320FF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Comentarios.API.Tests", "Comentarios.API.Tests\Comentarios.API.Tests.csproj", "{8C858F1D-5DAA-4FA1-B687-258A8C2131ED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{E2429251-45AF-4838-8BC6-DE4CD96320FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E2429251-45AF-4838-8BC6-DE4CD96320FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E2429251-45AF-4838-8BC6-DE4CD96320FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C858F1D-5DAA-4FA1-B687-258A8C2131ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C858F1D-5DAA-4FA1-B687-258A8C2131ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C858F1D-5DAA-4FA1-B687-258A8C2131ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C858F1D-5DAA-4FA1-B687-258A8C2131ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

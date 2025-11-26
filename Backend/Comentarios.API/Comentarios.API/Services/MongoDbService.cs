@@ -19,14 +19,14 @@ public class MongoDbService
         _comentariosCollection = database.GetCollection<Comentario>(mongoSettings.Value.CommentsCollection);
     }
 
-    public async Task<bool> PublicacionExiste(string publicacionId)
+    public virtual async Task<bool> PublicacionExiste(string publicacionId)
     {
         var count = await _publicacionesCollection
             .CountDocumentsAsync(p => p.Id == publicacionId);
         return count > 0;
     }
 
-    public async Task<List<Comentario>> ObtenerComentarios(string publicacionId)
+    public virtual async Task<List<Comentario>> ObtenerComentarios(string publicacionId)
     {
         return await _comentariosCollection
             .Find(c => c.PublicacionId == publicacionId)
@@ -34,19 +34,19 @@ public class MongoDbService
             .ToListAsync();
     }
 
-    public async Task<Comentario> AgregarComentario(Comentario comentario)
+    public virtual async Task<Comentario> AgregarComentario(Comentario comentario)
     {
         await _comentariosCollection.InsertOneAsync(comentario);
         return comentario;
     }
 
-    public async Task<long> ContarComentarios(string publicacionId)
+    public virtual async Task<long> ContarComentarios(string publicacionId)
     {
         return await _comentariosCollection
             .CountDocumentsAsync(c => c.PublicacionId == publicacionId);
     }
 
-    public async Task<bool> EliminarComentario(string comentarioId, string userId)
+    public virtual async Task<bool> EliminarComentario(string comentarioId, string userId)
     {
         var result = await _comentariosCollection.DeleteOneAsync(
             c => c.Id == comentarioId && c.UserId == userId);

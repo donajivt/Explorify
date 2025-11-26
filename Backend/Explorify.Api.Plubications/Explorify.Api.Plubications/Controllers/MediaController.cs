@@ -39,7 +39,7 @@ namespace Explorify.Api.Publications.Controllers
 
         [HttpPost("upload/video")]
         [Consumes("multipart/form-data")] // <-- Buena práctica
-        public async Task<IActionResult> UploadVideo(IFormFile file, [FromForm] string? folder = null) 
+        public async Task<IActionResult> UploadVideo(IFormFile file, [FromForm] string? folder = null)
         {
             try
             {
