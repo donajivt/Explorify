@@ -71,8 +71,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.graphicsLayer
+import com.explorify.explorifyapp.data.remote.publications.RetrofitComentariosInstance
 import java.io.File
 
 
@@ -2144,6 +2146,23 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
 
             // --- POPUP DE PUBLICACIÓN ---
             selectedPublication?.let { pub ->
+                // 🔥 Contador de comentarios (se carga desde API)
+                val tk = loginViewModel.token
+                var commentsCount by remember { mutableStateOf(0) }
+
+                LaunchedEffect(pub.id) {
+                    if (!tk.isNullOrEmpty()) {
+                        try {
+                            val resp = RetrofitComentariosInstance.api.getCount(
+                                publicacionId = pub.id,
+                                token = "Bearer $tk"
+                            )
+                            if (resp.isSuccessful) {
+                                commentsCount = resp.body()?.count ?: 0
+                            }
+                        } catch (_: Exception) { }
+                    }
+                }
                 Dialog(
                     onDismissRequest = { selectedPublication = null },
                     properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -2260,6 +2279,44 @@ fun BuscarScreen(navController: NavController, loginViewModel: LoginViewModel = 
                                         color = Color.Gray
                                     )
                                 }
+                                Spacer(Modifier.height(12.dp))
+
+// 🔥 SECCIÓN DE COMENTARIOS
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            selectedPublication = null   // cerrar popup
+                                            navController.navigate("comentarios/${pub.id}")
+                                        }
+                                        .padding(vertical = 12.dp, horizontal = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
+                                ) {
+
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(
+                                            Icons.Outlined.ChatBubbleOutline,
+                                            contentDescription = null,
+                                            tint = Color(0xFF3C9D6D),
+                                            modifier = Modifier.size(26.dp)
+                                        )
+                                        Spacer(Modifier.width(10.dp))
+                                        Text(
+                                            text = "Comentarios",
+                                            color = Color(0xFF3C9D6D),
+                                            style = MaterialTheme.typography.bodyLarge
+                                        )
+                                    }
+
+                                    Text(
+                                        text = commentsCount.toString(),
+                                        color = Color(0xFF3C9D6D),
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                }
+
+                                Spacer(Modifier.height(12.dp))
                             }
                         }
                     }

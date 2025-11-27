@@ -71,4 +71,10 @@ interface UsersApiService {
         @Header("Authorization") token: String,
         @Body passwords: Emails
     ): Response<SimpleResponse>
+
+    @PUT("api/Users/device-token")
+    suspend fun updateDeviceToken(
+        @Header("Authorization") token: String,
+        @Body body: Map<String, String>
+    ): Response<SimpleResponse>
 }

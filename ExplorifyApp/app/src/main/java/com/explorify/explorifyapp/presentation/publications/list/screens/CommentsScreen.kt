@@ -1,5 +1,6 @@
 package com.explorify.explorifyapp.presentation.publications.list.screens
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,12 +34,18 @@ import androidx.compose.animation.core.spring
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.style.TextOverflow
+import coil.compose.AsyncImage
+import com.explorify.explorifyapp.data.remote.model.User
+import com.explorify.explorifyapp.messaging.RetrofitNotificationInstance
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,8 +53,11 @@ import java.util.*
 fun CommentsScreen(
     navController: NavController,
     publicacionId: String,
+    ownerId: String,
     viewModel: CommentsViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
 ) {
+
+    Log.e("DEBUG_NOTIF", "OWNER_ID = $ownerId")
     val uiState = viewModel.uiState
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -69,7 +79,7 @@ fun CommentsScreen(
             com.explorify.explorifyapp.data.remote.publications.RetrofitUsersInstance.api
         )
     }
-    var userMap by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+    var userMap by remember { mutableStateOf<Map<String, User>>(emptyMap()) }
 
     // Cargar token e info de usuario actual
     LaunchedEffect(Unit) {
@@ -84,7 +94,7 @@ fun CommentsScreen(
             commentsCount = viewModel.uiState.comentarios.size
             try {
                 val users = withContext(Dispatchers.IO) { userRepo.getAllUsers(tk) }
-                userMap = users.associate { u -> u.id to u.name }
+                userMap = users.associateBy { u -> u.id }
             } catch (e: Exception) {
                 println("⚠️ Error al obtener usuarios: ${e.message}")
             }
@@ -108,7 +118,8 @@ fun CommentsScreen(
     Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .imePadding()
+            .windowInsetsPadding(WindowInsets.ime)
+            .navigationBarsPadding()
             .clickable(
                 // 👇 al tocar fuera, cierra teclado
                 indication = null,
@@ -133,8 +144,7 @@ fun CommentsScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 8.dp)
-                    . imePadding (),
+                        .padding(start = 12.dp, end = 12.dp, bottom = 8.dp, top = 14.dp), // 🔥 aquí
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     BasicTextField(
@@ -145,7 +155,7 @@ fun CommentsScreen(
                         },
                         modifier = Modifier
                             .weight(1f)
-                            .heightIn(min = 40.dp, max = 120.dp)
+                            .heightIn(min = 40.dp, max = 80.dp) // 🔥 más pequeño
                             .clip(RoundedCornerShape(16.dp))
                             .background(Color(0xFFF1F1F1))
                             .padding(horizontal = 16.dp, vertical = 10.dp),
@@ -153,12 +163,17 @@ fun CommentsScreen(
                             Box(
                                 Modifier
                                     .fillMaxWidth()
-                                    .verticalScroll(rememberScrollState())
                             ) {
                                 if (newComment.isEmpty()) {
                                     Text("Escribe un comentario...", color = Color.Gray)
                                 }
-                                innerTextField()
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(max = 60.dp)
+                                ) {
+                                    innerTextField()
+                                }
                             }
                         }
                     )
@@ -184,6 +199,30 @@ fun CommentsScreen(
                                             // Llamar API para crear comentario
                                             viewModel.addComentario(publicacionId, commentText, token!!)
 
+                                            val ownerUser = userMap[ownerId]
+
+                                            if (ownerUser != null &&
+                                                !ownerUser.deviceToken.isNullOrBlank() &&
+                                                ownerUser.id != myUserId
+                                            ) {
+                                                val notificationBody = mapOf(
+                                                    "userId" to ownerUser.id,
+                                                    "title" to "Nuevo comentario",
+                                                    "message" to "Alguien comentó tu publicación",
+                                                    "deviceToken" to ownerUser.deviceToken!!,
+                                                    "publicacionId" to publicacionId
+                                                )
+
+                                                try {
+                                                    Log.e("NOTIF_DEBUG", "📤 Enviando notificación con body: $notificationBody")
+                                                    val resp = RetrofitNotificationInstance.api.sendNotification(notificationBody)
+                                                    Log.e("NOTIF_DEBUG", "Notificación enviada: code=${resp.code()}")
+                                                } catch (e: Exception) {
+                                                    Log.e("NOTIF_DEBUG", "Error enviando notificación: ${e.message}")
+                                                }
+                                            } else {
+                                                Log.e("NOTIF_DEBUG", "❌ No se envió notificación (sin token o eres tú mismo)")
+                                            }
                                             // Pequeño delay para que se perciba natural (sin parpadeo)
                                             delay(1000)
 
@@ -220,7 +259,7 @@ fun CommentsScreen(
                 .padding(padding)
                 .background(Color.White),
             contentPadding = PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(6.dp)
         ) {
             if (uiState.comentarios.isEmpty()) {
                 item {
@@ -249,45 +288,84 @@ fun CommentsScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .animateContentSize(animationSpec = spring())
-                                .padding(vertical = 4.dp),
+                                .padding(vertical = 6.dp),
                             verticalAlignment = Alignment.Top
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.AccountCircle,
-                                contentDescription = null,
-                                tint = Color(0xFF3C9D6D),
-                                modifier = Modifier.size(40.dp)
+                            val userImage = userMap[comentario.userId]?.profileImageUrl
+
+                            // --- FOTO DE PERFIL ---
+                            AsyncImage(
+                                model = userImage ?: "https://ui-avatars.com/api/?name=${
+                                    (userMap[comentario.userId]?.name ?: "U")
+                                }&background=3C9D6D&color=fff&size=128",
+                                contentDescription = "Foto de perfil",
+                                modifier = Modifier
+                                    .size(34.dp)
+                                    .clip(RoundedCornerShape(50))
+                                    .border(1.dp, Color(0xFFE0E0E0), RoundedCornerShape(50))
                             )
 
-                            Spacer(Modifier.width(8.dp))
+                            Spacer(Modifier.width(10.dp))
 
-                            Column(Modifier.weight(1f)) {
-                                Text(
-                                    text = if (comentario.userId == myUserId) "Tú"
-                                    else userMap[comentario.userId] ?: "Usuario desconocido",
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF2B2B2B)
-                                )
+                            // --- BURBUJA DEL COMENTARIO ---
+                            Column(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = 16.dp)
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(Color(0xFFF8F8F8)) // gris suave
+                                    .border(
+                                        width = 1.dp,
+                                        color = Color(0xFFE2E2E2),  // borde gris clarito
+                                        shape = RoundedCornerShape(16.dp)
+                                    )
+                                    .padding(horizontal = 14.dp, vertical = 10.dp)
+                            ) {
+
+                                // Nombre + fecha
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = if (comentario.userId == myUserId) "Tú"
+                                        else userMap[comentario.userId]?.name ?: "Usuario",
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = Color(0xFF202020)
+                                    )
+
+                                    Spacer(Modifier.width(8.dp))
+
+                                    Text(
+                                        text = comentario.createdAt.take(10),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = Color.Gray
+                                    )
+                                }
+
+                                Spacer(Modifier.height(4.dp))
+
                                 Text(
                                     text = comentario.text,
-                                    color = Color(0xFF444444),
-                                    modifier = Modifier.padding(top = 2.dp)
+                                    color = Color(0xFF3A3A3A),
+                                    maxLines = 2,                         // 🔥 solo 2 líneas
+                                    overflow = TextOverflow.Ellipsis,     // agrega "..."
+                                    modifier = Modifier.padding(end = 4.dp)
                                 )
-                                Text(
-                                    text = comentario.createdAt.take(10),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = Color.Gray
-                                )
-                            }
 
-                            if (comentario.userId == myUserId) {
-                                IconButton(onClick = { confirmDeleteId = comentario.id }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "Eliminar",
-                                        tint = Color.Red
-                                    )
+                                Spacer(Modifier.height(6.dp))
+
+                                // ACCIONES
+                                Row {
+                                    if (comentario.userId == myUserId) {
+                                        Spacer(Modifier.width(14.dp))
+
+                                        Text(
+                                            text = "Eliminar",
+                                            color = Color.Red,
+                                            style = MaterialTheme.typography.labelSmall,
+                                            modifier = Modifier.clickable {
+                                                confirmDeleteId = comentario.id
+                                            }
+                                        )
+                                    }
                                 }
                             }
                         }

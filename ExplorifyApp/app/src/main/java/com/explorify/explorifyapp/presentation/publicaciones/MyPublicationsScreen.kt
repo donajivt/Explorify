@@ -67,7 +67,7 @@ fun MyPublicationsScreen(navController: NavController, loginViewModel: LoginView
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                 ),
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigate("perfil") }) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
                     }
                 },

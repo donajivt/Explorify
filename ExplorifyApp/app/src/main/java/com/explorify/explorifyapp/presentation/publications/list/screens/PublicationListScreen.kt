@@ -63,6 +63,8 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.explorify.explorifyapp.data.remote.model.User
 import com.explorify.explorifyapp.data.remote.publications.RetrofitComentariosInstance
 import android.Manifest
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.ui.platform.LocalFocusManager
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -106,6 +108,8 @@ fun PublicationListScreen(
     // 🔹 Obtener token para cargar publicaciones y usuarios
     var token by remember { mutableStateOf<String?>(null) }
 
+    var commentsMap by remember { mutableStateOf<Map<String, Int>>(emptyMap()) }
+
     // 🔥 Lanzador para solicitar permiso POST_NOTIFICATIONS
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -115,29 +119,18 @@ fun PublicationListScreen(
         println("NOTIFICATION PERMISSION GRANTED? $isGranted")
     }
 
-// 🔥 Lógica para pedir el permiso una sola vez
+// 🔥 Lógica FINAL para pedir el permiso solo aquí
     LaunchedEffect(Unit) {
-        Log.d("NOTIF_DEBUG", "Entró a LaunchedEffect para pedir permiso")
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 
-            Log.d("NOTIF_DEBUG", "Versión Android >= 13, revisando permiso")
-
-            val permissionCheck = ContextCompat.checkSelfPermission(
+            val granted = ContextCompat.checkSelfPermission(
                 context,
                 Manifest.permission.POST_NOTIFICATIONS
-            )
+            ) == PackageManager.PERMISSION_GRANTED
 
-            Log.d("NOTIF_DEBUG", "Estado del permiso: $permissionCheck")
-
-            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-                Log.d("NOTIF_DEBUG", "Permiso NO otorgado → lanzando ventana")
+            if (!granted) {
                 notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-            } else {
-                Log.d("NOTIF_DEBUG", "Permiso YA otorgado → no se lanzará nada")
             }
-        } else {
-            Log.d("NOTIF_DEBUG", "Android < 13 → NO requiere permiso de notificaciones.")
         }
     }
 
@@ -165,6 +158,28 @@ fun PublicationListScreen(
                 Log.d("datos de usuarios: ","${usuarios}")
                 val users = usersDeferred.await()
                 pubsDeferred.await()
+
+                // Despues de pubsDeferred.await()
+                val newComments = mutableMapOf<String, Int>()
+
+                for (pub in vm.uiState.items) {
+                    try {
+                        val res = RetrofitComentariosInstance.api.getCount(
+                            publicacionId = pub.id,
+                            token = "Bearer $tk"
+                        )
+
+                        if (res.isSuccessful) {
+                            newComments[pub.id] = res.body()?.count ?: 0
+                        } else {
+                            newComments[pub.id] = 0
+                        }
+                    } catch (e: Exception) {
+                        newComments[pub.id] = 0
+                    }
+                }
+
+                commentsMap = newComments
 
                 // 🔁 Actualiza el mapa de usuarios en Compose
                 userMap = users.associateBy { it.id }
@@ -204,6 +219,51 @@ fun PublicationListScreen(
             AppDatabase.getInstance(context).authTokenDao().getToken()?.userId
         }
         value = id
+    }
+    // 🔍 Estados de búsqueda y filtrado
+    var searchQuery by remember { mutableStateOf("") }
+    var selectedFilter by remember { mutableStateOf("Todos") }
+    val focusManager = LocalFocusManager.current
+
+    // 🔥 Forzar carga inicial del filtro
+    LaunchedEffect(Unit) {
+        selectedFilter = selectedFilter   // ⬅ activa recomposición inicial
+    }
+
+    // 📌 Lista filtrada (MVP)
+    val filteredItems = remember(state.items, searchQuery, selectedFilter, commentsMap) {
+        state.items
+            // FILTRO POR SEARCH
+            .filter { pub ->
+                pub.title.contains(searchQuery, ignoreCase = true) ||
+                        pub.description.contains(searchQuery, ignoreCase = true)
+            }
+            // FILTRO POR DROPDOWN
+            .filter { pub ->
+                when (selectedFilter) {
+                    "Esta semana" -> pub.createdAt.isFromThisWeek()
+                    "Este mes" -> pub.createdAt.isFromThisMonth()
+                    "Más comentados" -> (commentsMap[pub.id] ?: 0) > 0
+                    else -> true
+                }
+            }
+            .sortedWith(
+                when (selectedFilter) {
+                    "Todos" ->
+                        compareByDescending { it.createdAt.parseDateOrNull() }
+
+                    "Más comentados" ->
+                        compareByDescending { commentsMap[it.id] ?: 0 }
+
+                    "Esta semana" ->
+                        compareByDescending { it.createdAt.parseDateOrNull() }
+
+                    "Este mes" ->
+                        compareByDescending { it.createdAt.parseDateOrNull() }
+
+                    else -> compareByDescending { it.createdAt.parseDateOrNull() }
+                }
+            )
     }
 
     Scaffold(
@@ -246,100 +306,218 @@ fun PublicationListScreen(
             }
         }
     ) { padding ->
-        SwipeRefresh(
-            state = swipeState,
-            onRefresh = {
-                scope.launch {
-                    if (!token.isNullOrEmpty()) {
-                        vm.refresh(token!!)
-                        try {
-                            val users = userRepo.getAllUsers(token!!)
-                            userMap = users.associateBy { it.id }
-                        } catch (e: Exception) {
-                            e.printStackTrace()
-                        }
-                    }
-                }
-            },
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = null
+                ) {
+                    focusManager.clearFocus() // 🔥 Oculta teclado
+                }
         ) {
-            when {
-                state.loading && state.items.isEmpty() -> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
-                }
-
-                state.error != null && state.items.isEmpty() -> {
-                    Column(
-                        Modifier
-                            .fillMaxSize()
-                            .padding(16.dp),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text("Error: ${state.error}", color = MaterialTheme.colorScheme.error)
-                        Spacer(Modifier.height(8.dp))
-                        OutlinedButton(onClick = {
-                            scope.launch {
-                                if (!token.isNullOrEmpty()) {
-                                    vm.refresh(token!!)
-                                }
+            SwipeRefresh(
+                state = swipeState,
+                onRefresh = {
+                    scope.launch {
+                        if (!token.isNullOrEmpty()) {
+                            vm.refresh(token!!)
+                            try {
+                                val users = userRepo.getAllUsers(token!!)
+                                userMap = users.associateBy { it.id }
+                            } catch (e: Exception) {
+                                e.printStackTrace()
                             }
-                        }) {
-                            Text("Reintentar")
                         }
                     }
-                }
-
-                else -> {
-                    LazyColumn(
-                        state = listState,
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        items(state.items, key = { it.id }) { pub ->
-                            PublicationCard(
-                                publication = pub,
-                                onOpen = { onOpenDetail(pub.id) },
-                                onViewMap = {
-                                    val lat = pub.latitud.toString()
-                                    val lon = pub.longitud.toString()
-                                    val name = Uri.encode(pub.location)
-                                    navController.navigate("map/$lat/$lon/$name")
-                                },
-                                onViewProfile = {
-                                    if (pub.userId == userId)
-                                        navController.navigate("mispublicaciones")
-                                    else
-                                        navController.navigate("perfilUsuario/${pub.userId}")
-                                },
-                                onViewComments = {
-                                    navController.navigate("comentarios/${pub.id}")
-                                },
-                                user = userMap[pub.userId],
-                                navController = navController
-                            )
+                },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+            ) {
+                when {
+                    state.loading && state.items.isEmpty() -> {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
                         }
                     }
 
-                    // 🚀 Monitorear el final del scroll (solo para mostrar feedback visual)
-                    LaunchedEffect(listState) {
-                        snapshotFlow {
-                            val lastVisible = listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index
-                            val total = listState.layoutInfo.totalItemsCount
-                            lastVisible to total
-                        }.distinctUntilChanged()
-                            .collect { (lastVisible, total) ->
-                                if (lastVisible != null && total > 0 && lastVisible >= total - 3) {
-                                    // No carga más, solo da retroalimentación visual
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar("Llegaste al final 🏁")
+                    state.error != null && state.items.isEmpty() -> {
+                        Column(
+                            Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text("Error: ${state.error}", color = MaterialTheme.colorScheme.error)
+                            Spacer(Modifier.height(8.dp))
+                            OutlinedButton(onClick = {
+                                scope.launch {
+                                    if (!token.isNullOrEmpty()) {
+                                        vm.refresh(token!!)
                                     }
                                 }
+                            }) {
+                                Text("Reintentar")
                             }
+                        }
+                    }
+
+                    else -> {
+                        LazyColumn(
+                            state = listState,
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            item {
+                                Column(Modifier.fillMaxWidth()) {
+
+                                    // =======================
+                                    // NUEVO SEARCH MEJORADO
+                                    // =======================
+                                    OutlinedTextField(
+                                        value = searchQuery,
+                                        onValueChange = { searchQuery = it },
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .background(
+                                                MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                                RoundedCornerShape(20.dp)
+                                            )
+                                            .padding(bottom = 8.dp),
+                                        placeholder = {
+                                            Text("Buscar por título o descripción…")
+                                        },
+                                        leadingIcon = {
+                                            Icon(Icons.Default.Search, contentDescription = "Buscar")
+                                        },
+                                        singleLine = true,
+                                        shape = RoundedCornerShape(20.dp),
+                                        colors = TextFieldDefaults.colors(
+                                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                                            unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                                            disabledContainerColor = MaterialTheme.colorScheme.surface,
+
+                                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                                            unfocusedIndicatorColor = Color.LightGray,
+                                        )
+                                    )
+
+                                    Spacer(Modifier.height(6.dp))
+
+                                    // ======================
+                                    // NUEVO DROPDOWN BONITO
+                                    // ======================
+                                    var expanded by remember { mutableStateOf(false) }
+
+                                    Box(Modifier.fillMaxWidth()) {
+                                        Surface(
+                                            shape = RoundedCornerShape(16.dp),
+                                            color = MaterialTheme.colorScheme.surfaceVariant,
+                                            tonalElevation = 2.dp,
+                                            modifier = Modifier
+                                                .padding(top = 4.dp)
+                                                .widthIn(min = 110.dp)
+                                                .height(38.dp)
+                                                .clickable { expanded = true }
+                                        ) {
+                                            Row(
+                                                modifier = Modifier
+                                                    .padding(horizontal = 12.dp)
+                                                    .fillMaxHeight(),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Icon(
+                                                    Icons.Default.FilterList,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+
+                                                Spacer(Modifier.width(6.dp))
+
+                                                Text(
+                                                    selectedFilter,
+                                                    color = MaterialTheme.colorScheme.primary,
+                                                    style = MaterialTheme.typography.bodyMedium
+                                                )
+
+                                                Spacer(Modifier.width(6.dp))
+
+                                                Icon(
+                                                    Icons.Default.ArrowDropDown,
+                                                    contentDescription = null,
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                            }
+                                        }
+
+                                        DropdownMenu(
+                                            expanded = expanded,
+                                            onDismissRequest = { expanded = false },
+                                        ) {
+                                            listOf("Todos", "Más comentados", "Esta semana", "Este mes")
+                                                .forEach { option ->
+                                                    DropdownMenuItem(
+                                                        text = { Text(option) },
+                                                        onClick = {
+                                                            selectedFilter = option
+                                                            expanded = false
+                                                        }
+                                                    )
+                                                }
+                                        }
+                                    }
+
+                                    Spacer(Modifier.height(12.dp))
+                                }
+                            }
+
+                            // 👉 AHORA SÍ: lista filtrada
+                            items(filteredItems, key = { it.id }) { pub ->
+                                PublicationCard(
+                                    publication = pub,
+                                    onOpen = { onOpenDetail(pub.id) },
+                                    onViewMap = {
+                                        val lat = pub.latitud.toString()
+                                        val lon = pub.longitud.toString()
+                                        val name = Uri.encode(pub.location)
+                                        navController.navigate("map/$lat/$lon/$name")
+                                    },
+                                    onViewProfile = {
+                                        if (pub.userId == userId)
+                                            navController.navigate("mispublicaciones")
+                                        else
+                                            navController.navigate("perfilUsuario/${pub.userId}")
+                                    },
+                                    onViewComments = {
+                                        navController.currentBackStackEntry?.savedStateHandle?.set("ownerId", pub.userId)
+                                        navController.navigate("comentarios/${pub.id}")
+                                    },
+                                            user = userMap[pub.userId],
+                                    navController = navController,
+                                    commentsMap = commentsMap
+                                )
+                            }
+                        }
+
+                        // 🚀 Monitorear el final del scroll (solo para mostrar feedback visual)
+                        LaunchedEffect(listState) {
+                            snapshotFlow {
+                                val lastVisible =
+                                    listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index
+                                val total = listState.layoutInfo.totalItemsCount
+                                lastVisible to total
+                            }.distinctUntilChanged()
+                                .collect { (lastVisible, total) ->
+                                    if (lastVisible != null && total > 0 && lastVisible >= total - 3) {
+                                        // No carga más, solo da retroalimentación visual
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar("Llegaste al final 🏁")
+                                        }
+                                    }
+                                }
+                        }
                     }
                 }
             }
@@ -355,7 +533,8 @@ fun PublicationCard(
     onViewProfile: () -> Unit,
     onViewComments: () -> Unit,
     user: User?,
-    navController: NavController
+    navController: NavController,
+    commentsMap: Map<String, Int>
 ) {
     val isDark = isSystemInDarkTheme()
     val scope = rememberCoroutineScope()
@@ -719,7 +898,7 @@ fun PublicationCard(
                 }
 
                 Text(
-                    text = commentsCount?.toString() ?: "...",
+                    (commentsMap[publication.id] ?: commentsCount ?: 0).toString(),
                     color = Color(0xFF3C9D6D),
                     style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold)
                 )
@@ -733,4 +912,25 @@ private fun String.formatAsDate(): String = try {
     odt.toLocalDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
 } catch (_: Exception) {
     this
+}
+
+private fun String.parseDateOrNull(): OffsetDateTime? = try {
+    OffsetDateTime.parse(this)
+} catch (_: Exception) { null }
+
+private fun String.isFromThisWeek(): Boolean {
+    return try {
+        val date = OffsetDateTime.parse(this).toLocalDate()
+        val now = java.time.LocalDate.now()
+        val startOfWeek = now.with(java.time.DayOfWeek.MONDAY)
+        date >= startOfWeek
+    } catch (_: Exception) { false }
+}
+
+private fun String.isFromThisMonth(): Boolean {
+    return try {
+        val date = OffsetDateTime.parse(this).toLocalDate()
+        val now = java.time.LocalDate.now()
+        date.year == now.year && date.month == now.month
+    } catch (_: Exception) { false }
 }

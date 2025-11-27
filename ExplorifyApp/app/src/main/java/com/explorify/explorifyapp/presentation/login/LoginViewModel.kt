@@ -11,6 +11,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import com.explorify.explorifyapp.data.remote.auth.decodeJwtPayload
 import com.explorify.explorifyapp.data.remote.room.AuthToken
+import com.google.firebase.messaging.FirebaseMessaging
 
 /*class LoginViewModel : ViewModel() {
 
@@ -119,6 +120,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                         role = payload?.optString("http://schemas.microsoft.com/ws/2008/06/identity/claims/role")
                         // Guardar token en Room
                         repository.saveToken(token!!, userName, userId, userEmail,role!!)
+                        sendDeviceTokenToBackend(token!!)
                         // maybe also save role in DB here
                     } else {
                         Log.e("LoginViewModel", "Token was null after login")
@@ -207,6 +209,36 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     }
     fun resetLoginResult() {
         _loginResult.value = ""
+    }
+
+    private fun sendDeviceTokenToBackend(jwtToken: String) {
+        FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+            if (!task.isSuccessful) {
+                Log.e("FCM_TOKEN", "❌ No se pudo obtener el FCM token")
+                return@addOnCompleteListener
+            }
+
+            val fcmToken = task.result ?: return@addOnCompleteListener
+            Log.e("FCM_TOKEN", "🔥 FCM Token obtenido = $fcmToken")
+
+            viewModelScope.launch {
+                try {
+                    val response = repository.updateDeviceToken(
+                        jwtToken,
+                        mapOf("deviceToken" to fcmToken)
+                    )
+
+                    if (response.isSuccess) {
+                        Log.e("FCM_TOKEN", "✅ DeviceToken ACTUALIZADO en backend")
+                    } else {
+                        Log.e("FCM_TOKEN", "❌ Error backend ${response.message}")
+                    }
+
+                } catch (e: Exception) {
+                    Log.e("FCM_TOKEN", "❌ Error enviando token: ${e.message}")
+                }
+            }
+        }
     }
 
 }

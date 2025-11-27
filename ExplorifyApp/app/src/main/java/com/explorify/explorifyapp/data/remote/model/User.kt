@@ -7,5 +7,6 @@ data class User(
     @SerializedName("name") val name: String,
     @SerializedName("email") val email: String,
     @SerializedName("profileImageUrl") val profileImageUrl: String? = null,
-    @SerializedName("cloudinaryPublicId") val cloudinaryPublicId: String? = null
+    @SerializedName("cloudinaryPublicId") val cloudinaryPublicId: String? = null,
+    val deviceToken: String?
 )

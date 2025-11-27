@@ -206,7 +206,8 @@ fun UsersProfileScreen(
                                     navController.navigate("comentarios/${pub.id}")
                                 },
                                 user = userData,
-                                navController = navController
+                                navController = navController,
+                                commentsMap = emptyMap()
                             )
                             Spacer(Modifier.height(12.dp))
                         }

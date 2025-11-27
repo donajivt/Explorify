@@ -12,16 +12,26 @@ object NotificationHelper {
 
     private const val CHANNEL_ID = "explorify_channel"
 
-    fun showNotification(context: Context, title: String, message: String, postId: String?) {
+    fun showNotification(
+        context: Context,
+        title: String,
+        message: String,
+        publicacionId: String?
+    ) {
 
         val intent = Intent(context, MainActivity::class.java).apply {
-            putExtra("postId", postId)
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            putExtra("publicacionId", publicacionId)
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+
+            android.util.Log.d("NOTIF_HELPER", "postId enviado por notificación: $publicacionId")
         }
+
+        // 🔥 requestCode único por notificación
+        val requestCode = System.currentTimeMillis().toInt()
 
         val pendingIntent = PendingIntent.getActivity(
             context,
-            0,
+            requestCode,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -30,17 +40,23 @@ object NotificationHelper {
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle(title)
             .setContentText(message)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
             .build()
 
-        // 🔥 VALIDAR PERMISO ANTES DE MOSTRAR
+        // Solo si tenemos permiso
         if (androidx.core.content.ContextCompat.checkSelfPermission(
                 context,
                 android.Manifest.permission.POST_NOTIFICATIONS
             ) == android.content.pm.PackageManager.PERMISSION_GRANTED
         ) {
-            NotificationManagerCompat.from(context).notify(1, notification)
+
+            // 🔥 notificationId único para que no se sobrescriban
+            val notificationId = System.currentTimeMillis().toInt()
+
+            NotificationManagerCompat.from(context).notify(notificationId, notification)
         }
     }
 }

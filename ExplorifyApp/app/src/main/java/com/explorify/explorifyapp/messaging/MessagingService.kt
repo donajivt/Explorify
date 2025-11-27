@@ -7,54 +7,35 @@ import com.google.firebase.messaging.RemoteMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlin.text.get
 
 class MessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
 
-        Log.d("FCM_TOKEN", "Nuevo token recibido: $token")
+        Log.e("FCM_TOKEN", "🔥 Nuevo token FCM generado = $token")
 
-        // Guardamos el token en servidor
-        CoroutineScope(Dispatchers.IO).launch {
-            sendTokenToBackend(token)
-        }
+        // No guardar en Room, no enviar al backend.
+        // Se enviará cuando el usuario inicie sesión (LoginViewModel).
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
 
-        val title = message.data["title"] ?: message.notification?.title ?: "Explorify"
-        val body = message.data["body"] ?: message.notification?.body ?: "Tienes una nueva notificación"
-        val postId = message.data["postId"]
+        Log.e("FCM_PUSH", "🔥 LLEGÓ UNA NOTIFICACIÓN")
+        Log.e("FCM_PUSH", "Raw payload completo: ${message.data}")
 
-        Log.d("FCM_DEBUG", "Llega notificación con postId: $postId")
-
+        val title = message.data["title"] ?: "Explorify"
+        val body = (message.data["body"] ?: message.data["message"])
+            ?.takeIf { it.isNotBlank() }
+            ?: "Tienes una nueva notificación"
+        val publicacionId = message.data["publicacionId"]
+        Log.e("FCM_PUSH", "PUBLICACION_ID RECIBIDO = $publicacionId")
         NotificationHelper.showNotification(
             context = this,
             title = title,
             message = body,
-            postId = postId
+            publicacionId = publicacionId
         )
-    }
-
-    private suspend fun sendTokenToBackend(token: String) {
-        val dao = AppDatabase.getInstance(applicationContext).authTokenDao()
-        val userId = dao.getToken()?.userId ?: return
-
-        val body = mapOf(
-            "userId" to userId,
-            "title" to "Registro de token",
-            "message" to "",
-            "deviceToken" to token
-        )
-
-        try {
-            val response = RetrofitNotificationInstance.api.registerToken(body)
-            Log.d("FCM_TOKEN", "Token registrado en backend")
-        } catch (e: Exception) {
-            Log.e("FCM_TOKEN", "Error enviando token: ${e.message}")
-        }
     }
 }

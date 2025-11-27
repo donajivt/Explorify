@@ -217,11 +217,24 @@ fun AppNavigation(startPostId: String? = null) {
         }
 
 
-        composable("comentarios/{publicacionId}") { backStackEntry ->
+        composable(
+            route = "comentarios/{publicacionId}",
+            arguments = listOf(
+                navArgument("publicacionId") { type = NavType.StringType }
+            )
+        ) { backStackEntry ->
+
             val publicacionId = backStackEntry.arguments?.getString("publicacionId") ?: ""
+
+            val ownerId = navController.previousBackStackEntry
+                ?.savedStateHandle
+                ?.get<String>("ownerId") ?: ""
+
+
             CommentsScreen(
                 navController = navController,
-                publicacionId = publicacionId
+                publicacionId = publicacionId,
+                ownerId = ownerId,
             )
         }
 
@@ -230,8 +243,9 @@ fun AppNavigation(startPostId: String? = null) {
 
     LaunchedEffect(startPostId) {
         if (!startPostId.isNullOrEmpty()) {
-            // 🔥 Navega directo a comentarios
-            navController.navigate("comentarios/$startPostId")
+            navController.navigate("comentarios/$startPostId") {
+                launchSingleTop = true
+            }
         }
     }
 }
