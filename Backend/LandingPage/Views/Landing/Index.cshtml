@@ -23,8 +23,68 @@
     <!-- CSS Files -->
     <link rel="stylesheet" href="~/css/design-system.css">
     <link rel="stylesheet" href="~/css/landing.css">
-    
+
     <style>
+        /* ANIMACIÓN SUAVE PARA EL BOTÓN */
+        @@keyframes pulseGlow {
+            0%
+
+        {
+            transform: scale(1);
+            box-shadow: 0 0 0 rgba(89, 201, 149, 0.6);
+        }
+
+        50% {
+            transform: scale(1.06);
+            box-shadow: 0 0 20px rgba(89, 201, 149, 0.7);
+        }
+
+        100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 rgba(89, 201, 149, 0.6);
+        }
+
+        }
+
+        /* BOTÓN MÁS GRANDE, REDONDO Y LLAMATIVO */
+        .download-btn {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 18px 32px;
+            background: linear-gradient(135deg, #4CAF8F, #6FD8A9);
+            color: white;
+            border-radius: 18px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            letter-spacing: 0.5px;
+            transition: transform .3s ease, box-shadow .3s ease;
+            animation: pulseGlow 3s infinite;
+            border: none;
+            text-decoration: none;
+        }
+
+            .download-btn:hover {
+                transform: scale(1.12);
+                box-shadow: 0 8px 25px rgba(79, 189, 140, 0.65);
+            }
+
+        .btn-icon svg {
+            width: 36px;
+            height: 36px;
+        }
+
+        .btn-text .btn-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .btn-text .btn-store {
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+        }
         /* Override body to prevent any scroll */
         body {
             overflow: hidden !important;
@@ -106,9 +166,9 @@
         <footer class="footer">
             <p class="footer-text">
                 © 2025 Explorify. Hecho con 💚 por exploradores. 
-                <a href="#">Privacidad</a> · 
-                <a href="#">Términos</a> · 
-                <a href="#">Contacto</a>
+                <a href="https://explorify.runasp.net/Home/Privacidad">Privacidad</a> ·
+                <a href="https://explorify.runasp.net/Home/Terminos">Términos</a> ·
+                <a href="https://explorify.runasp.net/Home/Nosotros">Contacto</a>
             </p>
         </footer>
     </section>
