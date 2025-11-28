@@ -1073,9 +1073,10 @@ fun ReportDialog(
                 }
 
                 Spacer(Modifier.height(20.dp))
-
+                val canSubmit = selectedReason.isNotEmpty() &&
+                        (selectedReason != "Otro" || description.isNotBlank())
                 Button(
-                    enabled = !loading && selectedReason.isNotEmpty(),
+                    enabled = !loading && canSubmit,
                     modifier = Modifier.fillMaxWidth(),
                     onClick = {
                         loading = true
