@@ -1,0 +1,183 @@
+/* ============================================
+   EXPLORIFY - DESIGN SYSTEM (Subtle Green Theme)
+   Colores verdes sutiles y minimalistas
+   ============================================ */
+
+/* === VARIABLES CSS === */
+:root {
+    /* Paleta Verde Sutil */
+    --color-primary: #5FB07D;
+    /* Verde Menta Suave */
+    --color-primary-light: #7BC99C;
+    --color-primary-dark: #4A9B6A;
+
+    --color-secondary: #3A5A40;
+    /* Verde Bosque */
+    --color-secondary-light: #588157;
+    --color-accent: #A3B18A;
+    /* Verde Salvia */
+
+    /* Gradientes Verdes */
+    --gradient-green: linear-gradient(135deg, #5FB07D 0%, #7BC99C 100%);
+    --gradient-forest: linear-gradient(135deg, #3A5A40 0%, #588157 100%);
+    --gradient-sage: linear-gradient(135deg, #A3B18A 0%, #DAD7CD 100%);
+
+    /* Neutrales */
+    --color-dark: #1B2418;
+    --color-dark-light: #2D3A2E;
+    --color-light: #F5F5F0;
+    --color-white: #FFFFFF;
+
+    /* Colores de Fondo */
+    --bg-primary: #FAFAF8;
+    --bg-dark: #1B2418;
+
+    /* Colores de Texto */
+    --text-primary: #1B2418;
+    --text-secondary: #3A5A40;
+    --text-light: #588157;
+    --text-white: #FFFFFF;
+
+    /* Sombras Sutiles */
+    --shadow-sm: 0 2px 8px rgba(59, 90, 64, 0.08);
+    --shadow-md: 0 4px 16px rgba(59, 90, 64, 0.12);
+    --shadow-lg: 0 8px 32px rgba(59, 90, 64, 0.15);
+    --shadow-xl: 0 16px 48px rgba(59, 90, 64, 0.2);
+
+    /* Espaciado */
+    --spacing-xs: 0.5rem;
+    --spacing-sm: 1rem;
+    --spacing-md: 1.5rem;
+    --spacing-lg: 2rem;
+    --spacing-xl: 3rem;
+    --spacing-2xl: 4rem;
+
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --radius-xl: 30px;
+    --radius-full: 9999px;
+
+    /* Tipografía */
+    --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-display: 'Outfit', 'Inter', sans-serif;
+
+    /* Transiciones */
+    --transition-fast: 150ms ease-in-out;
+    --transition-base: 300ms ease-in-out;
+    --transition-slow: 500ms ease-in-out;
+}
+
+/* === RESET Y BASE === */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: var(--font-primary);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    overflow: hidden;
+    /* Sin scroll */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* === TIPOGRAFÍA === */
+h1 {
+    font-family: var(--font-display);
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.03em;
+    color: var(--text-primary);
+}
+
+h2 {
+    font-family: var(--font-display);
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--text-secondary);
+}
+
+p {
+    font-size: clamp(1rem, 2vw, 1.25rem);
+    line-height: 1.7;
+    color: var(--text-light);
+}
+
+/* === UTILIDADES === */
+.text-gradient {
+    background: var(--gradient-green);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* === ANIMACIONES === */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-15px) rotate(2deg);
+    }
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+    h1 {
+        font-size: clamp(2rem, 8vw, 3.5rem);
+    }
+
+    p {
+        font-size: 1rem;
+    }
+}
