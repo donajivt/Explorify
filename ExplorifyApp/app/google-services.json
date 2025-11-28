@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "181013021584",
+    "project_id": "explorify-2",
+    "storage_bucket": "explorify-2.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:181013021584:android:6811faeb8e72eb04112915",
+        "android_client_info": {
+          "package_name": "com.android.explorify"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbmTXtLgZqj0WGJkUw5Yh3UNUjeXKqx2Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:181013021584:android:26f3f7b49a9ff17e112915",
+        "android_client_info": {
+          "package_name": "com.explorify.explorifyapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbmTXtLgZqj0WGJkUw5Yh3UNUjeXKqx2Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
