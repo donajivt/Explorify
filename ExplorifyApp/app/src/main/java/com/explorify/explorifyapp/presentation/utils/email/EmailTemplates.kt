@@ -24,7 +24,6 @@ fun buildEmailTemplate(
                 <p style="margin-top: 40px;">Atentamente,<br><b>Equipo de Explorify</b></p>
 
                 <hr>
-                <small>Este mensaje fue generado automáticamente, por favor no respondas directamente a este correo.</small>
             </body>
         </html>
     """.trimIndent()
@@ -53,3 +52,4 @@ fun buildPublicationDeletedTemplate(
         details = details
     )
 }
+ /*  <small>Este mensaje fue generado automáticamente, por favor no respondas directamente a este correo.</small>*/

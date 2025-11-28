@@ -129,7 +129,7 @@ fun UserListScreen(navController: NavController,
                     icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
                     label = { Text("Inicio") },
                     selected = false,
-                    onClick = { navController.navigate("adminDashboard") }
+                    onClick = { navController.navigate("publicaciones") }//adminDashboard
                 )
                 /* NavigationBarItem(
                      icon = { Icon(Icons.Default.BarChart, contentDescription = "Buscar") },

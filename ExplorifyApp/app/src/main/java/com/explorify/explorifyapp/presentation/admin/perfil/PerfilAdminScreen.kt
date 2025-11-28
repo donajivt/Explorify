@@ -116,7 +116,7 @@ fun PerfilAdminScreen(navController: NavController,
                     icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
                     label = { Text("Inicio") },
                     selected = false,
-                    onClick = { navController.navigate("adminDashboard") }
+                    onClick = { navController.navigate("publicaciones") } //navController.navigate("adminDashboard")
                 )
                 /* NavigationBarItem(
                      icon = { Icon(Icons.Default.BarChart, contentDescription = "Buscar") },
@@ -128,7 +128,7 @@ fun PerfilAdminScreen(navController: NavController,
                     icon = { Icon(Icons.Default.BorderColor, contentDescription = "Buscar") },
                     label = { Text("Reportes") },
                     selected = false,
-                    onClick = {  } //navController.navigate("reportesList")
+                    onClick = {  navController.navigate("reportes") } //navController.navigate("reportesList")
                 )
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },

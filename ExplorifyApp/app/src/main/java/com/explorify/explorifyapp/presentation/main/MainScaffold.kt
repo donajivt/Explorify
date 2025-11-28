@@ -18,6 +18,8 @@ import com.explorify.explorifyapp.presentation.perfil.PerfilScreen
 import com.explorify.explorifyapp.presentation.publications.list.screens.PublicationListScreen
 import com.explorify.explorifyapp.data.remote.publications.RetrofitPublicationsInstance
 import com.explorify.explorifyapp.domain.repository.PublicationRepositoryImpl
+import com.explorify.explorifyapp.domain.repository.ReportRepository
+import com.explorify.explorifyapp.domain.usecase.publications.CreateReportUseCase
 import com.explorify.explorifyapp.domain.usecase.publications.PublicationUseCases
 import com.explorify.explorifyapp.presentation.publicaciones.MyPublicationsScreen
 import com.explorify.explorifyapp.presentation.publications.list.PublicationsListModel
@@ -31,10 +33,13 @@ fun MainScaffold(parentNavController: NavHostController) {
     // --- ViewModel de publicaciones
     val api = remember { RetrofitPublicationsInstance.api }
     val repo = remember { PublicationRepositoryImpl(api) }
+    val reportapi = remember { RetrofitPublicationsInstance.reportApi }
+    val  ReportRepo = remember {  ReportRepository(reportapi) }
     val getAllUC = remember { PublicationUseCases.GetPublicationsUseCase(repo) }
     val getByIdUC = remember { PublicationUseCases.GetPublicationByIdUseCase(repo) }
     val deleteUC = remember { PublicationUseCases.DeletePublicationUseCase(repo) }
-    val publicationsVM = remember { PublicationsListModel(getAllUC, getByIdUC, deleteUC) }
+    val reportUc=remember { CreateReportUseCase(ReportRepo) }
+    val publicationsVM = remember { PublicationsListModel(getAllUC, getByIdUC, deleteUC,reportUc) }
 
     // --- Scaffold global
     Scaffold(

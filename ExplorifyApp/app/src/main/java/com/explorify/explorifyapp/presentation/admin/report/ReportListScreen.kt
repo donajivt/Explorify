@@ -62,6 +62,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.width
+import androidx.compose.material3.TextButton
+import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.AlertDialog
 
 @ExperimentalMaterial3Api
 @Composable
@@ -69,7 +75,7 @@ fun ReportListScreen(
     vm: ReportViewModel,
     navController: NavController,
     userListVM: UserListViewModel = viewModel(),
-            viewModel: LoginViewModel = viewModel()
+    viewModel: LoginViewModel = viewModel()
 ) {
     val context = LocalContext.current
     val items = vm.reportedItems
@@ -109,8 +115,8 @@ fun ReportListScreen(
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
                     label = { Text("Inicio") },
-                    selected = true,
-                    onClick = { navController.navigate("adminDashboard") }
+                    selected = false,
+                    onClick = {navController.navigate("publicaciones") } //navController.navigate("adminDashboard")
                 )
                 /* NavigationBarItem(
                      icon = { Icon(Icons.Default.BarChart, contentDescription = "Buscar") },
@@ -121,7 +127,7 @@ fun ReportListScreen(
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.BorderColor, contentDescription = "Buscar") },
                     label = { Text("Reportes") },
-                    selected = false,
+                    selected = true,
                     onClick = { navController.navigate("reportes") } //
                 )
                 NavigationBarItem(
@@ -133,14 +139,12 @@ fun ReportListScreen(
             }
         }
     ) { padding ->
-
         when {
             loading -> {
                 Box(Modifier.fillMaxSize(), Alignment.Center) {
                     CircularProgressIndicator()
                 }
             }
-
             error != null -> {
                 Text("Error: $error", color = Color.Red)
             }
@@ -148,11 +152,17 @@ fun ReportListScreen(
             /*items.isEmpty() -> {
                 Text("No hay publicaciones reportadas", Modifier.padding(20.dp))
             }*/
-
             else -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        //.padding(padding),
+                        .padding(horizontal = 20.dp, vertical = 12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                 if (items.isEmpty()) {
                     Text(
-                        "No hay publicaciones reportadas válidas (todas fueron eliminadas)",
+                        "No hay publicaciones reportadas válidas.",
                         Modifier.padding(20.dp)
                     )
                 } else {
@@ -166,7 +176,7 @@ fun ReportListScreen(
                             Log.d("userData","${userData}")
                             val name = userData?.first ?: "Usuario desconocido"
                             val image = userData?.second
-                            ReportedPublicationCard(
+                            ReportedPublicationFullCard(
                                 item = item,
                                 authorName = name,
                                 authorImage = image,
@@ -175,17 +185,245 @@ fun ReportListScreen(
                                     vm.deletePublication(item.publication, token!!) {
                                         vm.load(token!!)
                                     }
-                                }
+                                },
+                                navController = navController
                             )
                         }
                     }
                 }
 
             }
-        }
+        }}
     }
 }
 
+@Composable
+fun ReportedPublicationFullCard(
+    item: ReportedPublicationItem,
+    authorName: String,
+    authorImage: String?,
+    onDelete: () -> Unit,
+    navController: NavController
+) {
+    var showDialog by remember { mutableStateOf(false) }
+    var expanded by remember { mutableStateOf(false) }
+    var overflowingDesc by remember { mutableStateOf(false) }
+    var titleExpanded by remember { mutableStateOf(false) }
+    var overflowingTitle by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFF1E1B1C) // Fondo dark
+        ),
+        elevation = CardDefaults.cardElevation(8.dp)
+    ) {
+
+        Column {
+
+            // ::::::::::::::::: IMAGEN ::::::::::::::::::
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(230.dp)
+                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+            ) {
+                AsyncImage(
+                    model = item.publication.imageUrl,
+                    contentDescription = item.publication.title,
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.Crop
+                )
+
+                // Difuminado inferior
+                Box(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(100.dp)
+                        .align(Alignment.BottomCenter)
+                        .background(
+                            brush = Brush.verticalGradient(
+                                listOf(
+                                    Color.Transparent,
+                                    Color.Black.copy(alpha = 0.7f)
+                                )
+                            )
+                        )
+                )
+
+                // Etiqueta
+                Box(
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .background(
+                            Color.Black.copy(alpha = 0.4f), // Fondo transparente
+                            shape = RoundedCornerShape(10.dp)
+                        )
+                        .padding(horizontal = 10.dp, vertical = 6.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+
+                        // FOTO DEL AUTOR
+                        AsyncImage(
+                            model = authorImage,
+                            contentDescription = "Autor",
+                            modifier = Modifier
+                                .size(22.dp)
+                                .clip(CircleShape)
+                                .border(1.dp, Color.White.copy(alpha = 0.4f), CircleShape),
+                            contentScale = ContentScale.Crop
+                        )
+
+                        Spacer(Modifier.width(6.dp))
+
+                        // NOMBRE DEL AUTOR
+                        Text(
+                            authorName,
+                            color = Color.White,
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                }
+
+                // Botón eliminar
+                Row(
+                    modifier = Modifier.align(Alignment.TopEnd)
+                        .padding(10.dp)
+                ) {
+                    IconButton(
+                        onClick = { showDialog = true },
+                        modifier = Modifier
+                            .size(46.dp)
+                            .background(Color.Red.copy(alpha = 0.5f), CircleShape)
+                    ) {
+                        Icon(Icons.Default.Delete, null, tint = Color.White)
+                    }
+                }
+            }
+
+            // ::::::::::::::::: CUERPO ::::::::::::::::::
+            Column(modifier = Modifier.padding(12.dp)) {
+
+                // Título
+                Text(
+                    text = item.publication.title,
+                    style = MaterialTheme.typography.titleMedium.copy(
+                        fontWeight = FontWeight.ExtraBold,
+                        color = Color.White
+                    ),
+                    maxLines = if (titleExpanded) Int.MAX_VALUE else 1,
+                    overflow = TextOverflow.Ellipsis,
+                    onTextLayout = { layout ->
+                        overflowingTitle = if (titleExpanded) {
+                            false
+                        } else {
+                            layout.didOverflowWidth
+                        }
+                    }
+                )
+
+                if (overflowingTitle) {
+                    Text(
+                        text = if (titleExpanded) "Ver menos ▲" else "Ver más ▼",
+                        color = Color(0xFF64B5F6),
+                        modifier = Modifier
+                            .padding(top = 2.dp)
+                            .clickable { titleExpanded = !titleExpanded }
+                    )
+                }
+
+                Spacer(Modifier.height(4.dp))
+
+                // Descripción con expand/collapse
+                Text(
+                    text = item.publication.description,
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = Color(0xFFDDDDDD)
+                    ),
+                    maxLines = if (expanded) Int.MAX_VALUE else 3,
+                    overflow = TextOverflow.Ellipsis,
+                    onTextLayout = { layout ->
+                        if (layout.hasVisualOverflow) overflowingDesc = true
+                    }
+                )
+
+                if (overflowingDesc) {
+                    Text(
+                        text = if (expanded) "Ver menos ▲" else "Ver más ▼",
+                        color = Color(0xFF64B5F6),
+                        modifier = Modifier
+                            .padding(top = 4.dp)
+                            .clickable { expanded = !expanded }
+                    )
+                }
+
+                Spacer(Modifier.height(10.dp))
+
+                // Autor
+
+                Spacer(Modifier.height(14.dp))
+
+                // :::::::::::::::::: INFO DE REPORTES ::::::::::::::::::
+
+                Text(
+                    "Total reportes: ${item.reports.size}",
+                    color = Color(0xFFBFAE94)
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                Text("Reportado por:", color = Color.White)
+                item.reporterNames.forEach {
+                    Text("• $it", color = Color.LightGray)
+                }
+
+                Spacer(Modifier.height(10.dp))
+
+                Text(
+                    "Último reporte: " +
+                            (item.reports.maxByOrNull { it.createdAt }?.createdAt ?: "—"),
+                    color = Color.Gray
+                )
+            }
+        }
+    }
+
+    // ::::::::::::::::: DIÁLOGO ELIMINAR ::::::::::::::::::
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+            },
+            title = { Text("Eliminar publicación") },
+            text = { Text("¿Seguro que deseas eliminar esta publicación?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    onDelete()
+                    showDialog = false
+                }) {
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+}
+
+
+
+/*
 @Composable
 fun ReportedPublicationCard(
     item: ReportedPublicationItem,
@@ -299,8 +537,25 @@ fun ReportedPublicationCard(
     }
 }
 
+*/
+/* Row(verticalAlignment = Alignment.CenterVertically) {
+                    AsyncImage(
+                        model = authorImage,
+                        contentDescription = "Autor",
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                            .border(1.dp, Color.White.copy(alpha = 0.3f), CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
 
+                    Spacer(Modifier.width(10.dp))
 
+                    Text(
+                        text = authorName,
+                        style = MaterialTheme.typography.labelLarge.copy(color = Color.White)
+                    )
+                }*/
 /*
 @Composable
 fun ReportedPublicationCard(

@@ -3,7 +3,8 @@ package com.explorify.explorifyapp.domain.usecase.publications
 import com.explorify.explorifyapp.domain.repository.PublicationRepositoryImpl
 import com.explorify.explorifyapp.data.remote.model.Publication
 import com.explorify.explorifyapp.data.remote.model.PublicationResponse
-
+import com.explorify.explorifyapp.domain.repository.ReportRepository
+import com.explorify.explorifyapp.data.remote.dto.publications.CreateReportRequest
 
 class PublicationUseCases(
     private val repo: PublicationRepositoryImpl
@@ -48,5 +49,11 @@ class PublicationUseCases(
     class DeletePublicationUseCase(private val repo: PublicationRepositoryImpl) {
         suspend operator fun invoke(id: String, token: String) =
             repo.delete(id, token)
+    }
+}
+
+class CreateReportUseCase(private val repo: ReportRepository) {
+    suspend operator fun invoke(request: CreateReportRequest, token: String): String {
+        return repo.createReport(request, token)
     }
 }

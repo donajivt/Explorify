@@ -43,6 +43,7 @@ import com.explorify.explorifyapp.presentation.admin.report.ReportListScreen
 import com.explorify.explorifyapp.domain.repository.UserRepositoryImpl
 import com.explorify.explorifyapp.domain.repository.ReportRepository
 import com.explorify.explorifyapp.domain.repository.UserRepository
+import com.explorify.explorifyapp.domain.usecase.publications.CreateReportUseCase
 import com.explorify.explorifyapp.presentation.admin.report.ReportsViewModelFactory
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,14 +53,17 @@ fun AppNavigation(startPostId: String? = null) {
     // ✅ Inicialización de capa de datos para publicaciones
     val api = remember { RetrofitPublicationsInstance.api }
     val repo = remember { PublicationRepositoryImpl(api) }
+    val reportapi = remember { RetrofitPublicationsInstance.reportApi }
+    val  ReportRepo = remember {  ReportRepository(reportapi) }
 
     // ✅ Use cases
     val getAllUC = remember { PublicationUseCases.GetPublicationsUseCase(repo) }
     val getByIdUC = remember { PublicationUseCases.GetPublicationByIdUseCase(repo) }
     val deleteUC = remember { PublicationUseCases.DeletePublicationUseCase(repo) }
+    val reportUc=remember { CreateReportUseCase(ReportRepo) }
 
     // ✅ ViewModel compartido para la lista
-    val publicationsVM = remember { PublicationsListModel(getAllUC, getByIdUC, deleteUC) }
+    val publicationsVM = remember { PublicationsListModel(getAllUC, getByIdUC, deleteUC,reportUc) }
 
     NavHost(navController = navController, startDestination = "splash") {
 
@@ -70,7 +74,6 @@ fun AppNavigation(startPostId: String? = null) {
         composable("main") {
             MainScaffold(parentNavController = navController)
         }
-
 
         composable("login") {
             LoginScreen(navController = navController)
@@ -212,8 +215,9 @@ fun AppNavigation(startPostId: String? = null) {
         composable(
             route = "perfilUsuario/{userId}"
         ) { backStackEntry ->
+            //vm = publicationsVM
             val userId = backStackEntry.arguments?.getString("userId") ?: ""
-            UsersProfileScreen(navController = navController, userId = userId)
+            UsersProfileScreen(navController = navController, userId = userId,publicationsVM)
         }
 
 

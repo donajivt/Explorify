@@ -9,7 +9,10 @@ import kotlinx.coroutines.launch
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import com.explorify.explorifyapp.data.remote.publications.RetrofitComentariosInstance
+import com.explorify.explorifyapp.domain.repository.ReportRepository
 import com.explorify.explorifyapp.domain.repository.UnauthorizedException
+import com.explorify.explorifyapp.domain.usecase.publications.CreateReportUseCase
+import com.explorify.explorifyapp.data.remote.dto.publications.CreateReportRequest
 
 data class PublicationListState(
     val loading: Boolean = false,
@@ -22,7 +25,8 @@ data class PublicationListState(
 class PublicationsListModel(
     private val getAll: PublicationUseCases.GetPublicationsUseCase,
     private val getById: PublicationUseCases.GetPublicationByIdUseCase,
-    private val deleteUc: PublicationUseCases.DeletePublicationUseCase
+    private val deleteUc: PublicationUseCases.DeletePublicationUseCase,
+    private val reportUc: CreateReportUseCase
 ) : ViewModel() {
 
     var uiState by mutableStateOf(PublicationListState())
@@ -75,4 +79,32 @@ class PublicationsListModel(
             0
         }
     }
+
+    fun reportPublication(
+        publicationId: String,
+        userId: String,
+        reason: String,
+        description: String,
+        token: String,
+        onResult: (Boolean, String) -> Unit
+    ) = viewModelScope.launch {
+
+        val request = CreateReportRequest(
+            publicationId = publicationId,
+            reportedByUserId = userId,
+            reason = reason,
+            description = description
+        )
+
+        runCatching {
+            reportUc(request, token)
+        }
+            .onSuccess { msg ->
+                onResult(true, msg)
+            }
+            .onFailure { e ->
+                onResult(false, e.message ?: "Error")
+            }
+    }
+
 }

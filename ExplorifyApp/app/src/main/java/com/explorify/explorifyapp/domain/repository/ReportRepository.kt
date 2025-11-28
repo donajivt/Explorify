@@ -2,7 +2,7 @@ package com.explorify.explorifyapp.domain.repository
 
 import com.explorify.explorifyapp.data.remote.publications.ReportApi
 import com.explorify.explorifyapp.data.remote.dto.publications.Report
-
+import com.explorify.explorifyapp.data.remote.dto.publications.CreateReportRequest
 
 class ReportRepository(private val api: ReportApi) {
 
@@ -34,10 +34,14 @@ class ReportRepository(private val api: ReportApi) {
         return response.body() ?: emptyList()
     }
 
-    /*suspend fun createReport(request: CreateReportRequest, token: String): SimpleReportResponse {
+    suspend fun createReport(request: CreateReportRequest, token: String): String {
         val response = api.createReport(request, "Bearer $token")
-        if (!response.isSuccessful) throw Exception(response.message())
 
-        return response.body()!!
-    }*/
+        if (!response.isSuccessful) {
+            throw Exception(response.errorBody()?.string() ?: "Error desconocido")
+        }
+
+        return response.body()?.message ?: "Reporte enviado"
+    }
+
 }

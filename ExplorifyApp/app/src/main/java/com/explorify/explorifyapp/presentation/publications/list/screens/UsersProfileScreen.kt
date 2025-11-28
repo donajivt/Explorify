@@ -38,13 +38,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.explorify.explorifyapp.data.remote.model.User
+import com.explorify.explorifyapp.presentation.publications.list.PublicationsListModel
 import java.time.OffsetDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UsersProfileScreen(
     navController: NavController,
-    userId: String
+    userId: String,
+    vm: PublicationsListModel
 ) {
     val context = LocalContext.current
     val userRepo = remember { UserRepositoryImpl(RetrofitUsersInstance.api) }
@@ -207,7 +209,8 @@ fun UsersProfileScreen(
                                 },
                                 user = userData,
                                 navController = navController,
-                                commentsMap = emptyMap()
+                                commentsMap = emptyMap(),
+                                vm= vm
                             )
                             Spacer(Modifier.height(12.dp))
                         }

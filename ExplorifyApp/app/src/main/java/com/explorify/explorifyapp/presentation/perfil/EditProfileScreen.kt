@@ -87,7 +87,7 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
     var menuExpanded by remember { mutableStateOf(false) }
     var selectedImage by remember { mutableStateOf<File?>(null) }
     val context = LocalContext.current
-
+    var imageToUpload by remember { mutableStateOf<File?>(null) }
     // 🔐 Validar si hay sesión
     /*LaunchedEffect(Unit) {
 
@@ -214,7 +214,7 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
                     icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
                     label = { Text("Perfil") },
                     selected = true,
-                    onClick = {}
+                    onClick = { navController.navigate("perfil")}
                 )
             }
         }
@@ -409,45 +409,71 @@ fun EditProfileScreen(navController: NavController, loginViewModel: LoginViewMod
                         */
                         Log.d("EDIT", "FILE: $selectedImage")
 
-                        var imageToUpload = selectedImage!!
+                        var imageToUpload = selectedImage
+                        if(imageToUpload != null){
+                            val sizeMB = imageToUpload.length() / (1024 * 1024)
+                            Log.d("tamaño de imagen","${sizeMB}")
+                            if (sizeMB > 1) {
+                                val compressed = compressImage(imageToUpload, context)
+                                val compressedMB = compressed.length() / (1024 * 1024)
 
-                        val sizeMB = imageToUpload.length() / (1024 * 1024)
-                        Log.d("tamaño de imagen","${sizeMB}")
-                        if (sizeMB > 1) {
-                            val compressed = compressImage(imageToUpload, context)
-                            val compressedMB = compressed.length() / (1024 * 1024)
+                                if (compressedMB > 1) {
+                                    dialogMessage = "La imagen sigue pesando demasiado incluso después de comprimirla."
+                                    showDialog = true
+                                    return@Button
+                                }
+                                Log.d("tamaño de imagen comprimido","${compressedMB}")
+                                imageToUpload = compressed
+                            }
+                            perfilViewModel.updateUser(
+                                token,
+                                profileName.value,
+                                email.value,
+                                profileImageUrl,
+                                cloudinarypublicid,
+                                imageToUpload//selectedImage
+                            ) { success, message ->
 
-                            if (compressedMB > 1) {
-                                dialogMessage = "La imagen sigue pesando demasiado incluso después de comprimirla."
-                                showDialog = true
-                                return@Button
+                                if (success) {
+                                    loginViewModel.updateUserData(
+                                        username = profileName.value,
+                                        userEmail = email.value
+                                    )
+
+                                    dialogMessage = "Perfil actualizado correctamente."
+                                    showDialog = true
+                                } else {
+                                    dialogMessage = "Error: $message"
+                                    showDialog = true
+                                }
+                            }
+                        }else{
+                            perfilViewModel.updateUser(
+                                token,
+                                profileName.value,
+                                email.value,
+                                profileImageUrl,
+                                cloudinarypublicid,
+                                selectedImage
+                            ) { success, message ->
+
+                                if (success) {
+                                    loginViewModel.updateUserData(
+                                        username = profileName.value,
+                                        userEmail = email.value
+                                    )
+
+                                    dialogMessage = "Perfil actualizado correctamente."
+                                    showDialog = true
+                                } else {
+                                    dialogMessage = "Error: $message"
+                                    showDialog = true
+                                }
                             }
 
-                            imageToUpload = compressed
                         }
 
-                        perfilViewModel.updateUser(
-                            token,
-                            profileName.value,
-                            email.value,
-                            profileImageUrl,
-                            cloudinarypublicid,
-                            imageToUpload//selectedImage
-                        ) { success, message ->
 
-                            if (success) {
-                                loginViewModel.updateUserData(
-                                    username = profileName.value,
-                                    userEmail = email.value
-                                )
-
-                                dialogMessage = "Perfil actualizado correctamente."
-                                showDialog = true
-                            } else {
-                                dialogMessage = "Error: $message"
-                                showDialog = true
-                            }
-                        }
                     }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3E4D2E)),

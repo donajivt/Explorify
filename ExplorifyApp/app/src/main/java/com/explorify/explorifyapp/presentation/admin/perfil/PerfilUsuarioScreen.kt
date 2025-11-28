@@ -134,7 +134,7 @@ fun PerfilUsuarioScreen( userId: String?,navController: NavController,
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Perfil de ${user!!.name}") },
+                title = { Text("Perfil de ") },//${user!!.name}
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
@@ -148,7 +148,7 @@ fun PerfilUsuarioScreen( userId: String?,navController: NavController,
                     icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
                     label = { Text("Inicio") },
                     selected = false,
-                    onClick = { navController.navigate("adminDashboard") }
+                    onClick = { navController.navigate("publicaciones") } //navController.navigate("adminDashboard")
                 )
                 /* NavigationBarItem(
                      icon = { Icon(Icons.Default.BarChart, contentDescription = "Buscar") },

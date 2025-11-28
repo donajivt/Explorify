@@ -65,6 +65,8 @@ import com.explorify.explorifyapp.data.remote.publications.RetrofitComentariosIn
 import android.Manifest
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.ui.platform.LocalFocusManager
+import android.widget.Toast
+import androidx.compose.foundation.border
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,7 +92,6 @@ fun PublicationListScreen(
             com.datadog.android.rum.GlobalRumMonitor.get().stopView("publication_list")
         }
     }
-
 
     val context = LocalContext.current
     val state = vm.uiState
@@ -135,6 +136,7 @@ fun PublicationListScreen(
     }
 
     LaunchedEffect(Unit) {
+        viewModel.getUserData()
         val isLoggedIn = viewModel.isLoggedIn()
         if (!isLoggedIn) {
             navController.navigate("login") {
@@ -143,6 +145,56 @@ fun PublicationListScreen(
         }
     }
 
+    val userData by viewModel.userData.collectAsState()
+
+    val isAdmin = userData?.role == "ADMIN"
+    Log.d("rol: ","${userData?.role}")
+
+    val bottomBarContent: @Composable () -> Unit = {
+        if (isAdmin) {
+            NavigationBar {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Dashboard") },
+                    label = { Text("Inicio") },
+                    selected = true,
+                    onClick = { navController.navigate("publicaciones") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.BorderColor, contentDescription = "Reportes") },
+                    label = { Text("Reportes") },
+                    selected = false,
+                    onClick = { navController.navigate("reportes") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil Admin") },
+                    label = { Text("Perfil") },
+                    selected = false,
+                    onClick = { navController.navigate("perfilAdmin") }
+                )
+            }
+        } else {
+            NavigationBar {
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
+                    label = { Text("Inicio") },
+                    selected = false,
+                    onClick = { navController.navigate("publicaciones") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Search, contentDescription = "Buscar") },
+                    label = { Text("Buscar") },
+                    selected = false,
+                    onClick = { navController.navigate("buscar") }
+                )
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
+                    label = { Text("Perfil") },
+                    selected = true,
+                    onClick = {navController.navigate("perfil")}
+                )
+            }
+        }
+    }
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
             val dao = AppDatabase.getInstance(context).authTokenDao()
@@ -272,7 +324,8 @@ fun PublicationListScreen(
                 title = { Text("Lista de Aventuras") },
             )
         },
-        bottomBar = {
+        bottomBar = bottomBarContent,
+        /*{
             NavigationBar {
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
@@ -293,7 +346,7 @@ fun PublicationListScreen(
                     onClick = { navController.navigate("perfil") }
                 )
             }
-        },
+        } */
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
@@ -496,7 +549,8 @@ fun PublicationListScreen(
                                     },
                                             user = userMap[pub.userId],
                                     navController = navController,
-                                    commentsMap = commentsMap
+                                    commentsMap = commentsMap,
+                                   vm = vm
                                 )
                             }
                         }
@@ -528,6 +582,7 @@ fun PublicationListScreen(
 @Composable
 fun PublicationCard(
     publication: Publication,
+    vm: PublicationsListModel,
     onOpen: () -> Unit,
     onViewMap: () -> Unit,
     onViewProfile: () -> Unit,
@@ -546,6 +601,7 @@ fun PublicationCard(
     val locationText = if (isDark) Color(0xFFC8FACC) else Color(0xFF1B5E20)
     var showFullScreen by remember { mutableStateOf(false) }
     var imageAspectRatio by remember { mutableStateOf(1f) }
+    var showReportDialog by remember { mutableStateOf(false) }
 
     Card(
         modifier = Modifier
@@ -610,11 +666,34 @@ fun PublicationCard(
                 }
 
                 // Botón más opciones (futuro menú)
-                IconButton(onClick = { /* TODO: Menú */ }) {
-                    Icon(
-                        imageVector = Icons.Default.MoreVert,
-                        contentDescription = "Más opciones",
-                        tint = textSecondary
+                IconButton(onClick = { showReportDialog = true /* TODO: Menú */ }) {
+                    Box(
+                        modifier = Modifier
+                            .size(44.dp) //(0xFF3C9D6D)
+                            .border(
+                                width = 2.dp,                  // grosor del borde
+                                color = Color(0xFF3C9D6D),     // color del borde (verde)
+                                shape = CircleShape
+                            )
+                            .background(Color.White, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                        imageVector = //Icons.Default.Warning,
+                                Icons.Default.Flag,
+                                //Icons.Default.Report,
+                                //Icons.Default.MoreVert,
+                        contentDescription = "Reportar",
+                        tint = Color(0xFF3C9D6D)//Color.Red
+                        )
+                    }
+                }
+                if (showReportDialog) {
+                    ReportDialog(
+                        publication = publication,
+                        onDismiss = { showReportDialog = false },
+                        vm = vm,                       // ⬅️ Asegúrate de pasar el ViewModel
+                        //navController = navController
                     )
                 }
             }
@@ -906,6 +985,340 @@ fun PublicationCard(
         }
         }
     }
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ReportDialog(
+    publication: Publication,
+    vm: PublicationsListModel,
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    var selectedReason by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+
+    var expanded by remember { mutableStateOf(false) }
+    var loading by remember { mutableStateOf(false) }
+
+    val reasons = listOf(
+        "Contenido inapropiado",
+        "Spam",
+        "Información falsa",
+        "Violencia",
+        "Lenguaje ofensivo",
+        "Otro"
+    )
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {},
+        dismissButton = {},
+        text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+
+                Text(
+                    "Reportar publicación",
+                    style = MaterialTheme.typography.titleLarge
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                // 🔽 Dropdown para seleccionar motivo
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = { expanded = !expanded }
+                ) {
+                    OutlinedTextField(
+                        value = selectedReason,
+                        onValueChange = {},
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth(),
+                        readOnly = true,
+                        label = { Text("Motivo") },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                        }
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        reasons.forEach { reason ->
+                            DropdownMenuItem(
+                                text = { Text(reason) },
+                                onClick = {
+                                    selectedReason = reason
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+
+                // 🔤 Descripción solo si selecciona “Otro”
+                if (selectedReason == "Otro") {
+                    OutlinedTextField(
+                        value = description,
+                        onValueChange = { description = it },
+                        label = { Text("Descripción detallada") },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 3
+                    )
+                }
+
+                Spacer(Modifier.height(20.dp))
+
+                Button(
+                    enabled = !loading && selectedReason.isNotEmpty(),
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = {
+                        loading = true
+
+                        scope.launch {
+                            val dao = AppDatabase.getInstance(context).authTokenDao()
+                            val token = dao.getToken()?.token
+                            val userId = dao.getToken()?.userId
+
+                            if (token == null || userId == null) {
+                                Toast.makeText(context, "Error: usuario no autenticado", Toast.LENGTH_SHORT).show()
+                                loading = false
+                                return@launch
+                            }
+
+                            val reasonToSend =
+                                if (selectedReason == "Otro") description else selectedReason
+
+                            vm.reportPublication(
+                                publicationId = publication.id,
+                                userId = userId,
+                                reason = reasonToSend,
+                                description = description,
+                                token = token
+                            ) { success, msg ->
+                                loading = false
+                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                onDismiss()
+                            }
+                        }
+                    }
+                ) {
+                    Text(if (loading) "Enviando…" else "Reportar")
+                }
+            }
+        }
+    )
+}
+
+
+/*
+@Composable
+fun ReportDialog(
+    publication: Publication,
+    onDismiss: () -> Unit,
+    vm: PublicationsListModel,
+    navController: NavController
+) {
+    val context = LocalContext.current
+    var reason by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var loading by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            tonalElevation = 6.dp
+        ) {
+            Column(Modifier.padding(20.dp)) {
+
+                Text(
+                    "Reportar publicación",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = reason,
+                    onValueChange = { reason = it },
+                    label = { Text("Motivo") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Descripción") },
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 3
+                )
+
+                Spacer(Modifier.height(20.dp))
+
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                    TextButton(onClick = onDismiss) { Text("Cancelar") }
+
+                    Button(
+                        enabled = !loading,
+                        onClick = {
+                            loading = true
+
+                            scope.launch {
+                                val dao = AppDatabase.getInstance(context).authTokenDao()
+
+                                val token = dao.getToken()?.token
+                                val userId = dao.getToken()?.userId
+
+                                if (token == null || userId == null) {
+                                    Toast.makeText(context, "Error: usuario no autenticado", Toast.LENGTH_SHORT).show()
+                                    loading = false
+                                    return@launch
+                                }
+
+                                vm.reportPublication(
+                                    publicationId = publication.id,
+                                    userId = userId,
+                                    reason = reason,
+                                    description = description,
+                                    token = token
+                                ) { success, msg ->
+                                    loading = false
+                                    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                    onDismiss()
+                                }
+                            }
+                        }
+                    ) {
+                        /*onClick = {
+                            loading = true
+
+                            val dao = AppDatabase.getInstance(context).authTokenDao()
+
+                            val token = dao.getToken()?.token
+                            val userId = dao.getToken()?.userId
+
+                            if (token == null || userId == null) {
+                                Toast.makeText(context, "Error: usuario no autenticado", Toast.LENGTH_SHORT).show()
+                                loading = false
+                                return@Button
+                            }
+
+                            vm.reportPublication(
+                                publicationId = publication.id,
+                                userId = userId,
+                                reason = reason,
+                                description = description,
+                                token = token
+                            ) { success, msg ->
+                                loading = false
+                                Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
+                                onDismiss()
+                            }
+                        }
+                    ) {*/
+                        Text(if (loading) "Enviando..." else "Reportar")
+                    }
+                }
+            }
+        }
+    }
+}
+*/
+
+/*
+@Composable
+fun ReportDialog(
+    publicationId: String,
+    onDismiss: () -> Unit
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    var reason by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var loading by remember { mutableStateOf(false) }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = RoundedCornerShape(16.dp),
+            tonalElevation = 6.dp,
+            modifier = Modifier.padding(20.dp)
+        ) {
+            Column(
+                Modifier.padding(20.dp)
+            ) {
+                Text(
+                    "Reportar publicación",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(Modifier.height(16.dp))
+
+                OutlinedTextField(
+                    value = reason,
+                    onValueChange = { reason = it },
+                    label = { Text("Motivo") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(Modifier.height(10.dp))
+
+                OutlinedTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = { Text("Descripción (opcional)") },
+                    modifier = Modifier.fillMaxWidth(),
+                    maxLines = 4
+                )
+
+                Spacer(Modifier.height(20.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text("Cancelar")
+                    }
+
+                    Spacer(Modifier.width(8.dp))
+
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                loading = true
+                                sendReport(
+                                    context = context,
+                                    publicationId = publicationId,
+                                    reason = reason,
+                                    description = description,
+                                    onDone = {
+                                        loading = false
+                                        onDismiss()
+                                    }
+                                )
+                            }
+                        },
+                        enabled = !loading
+                    ) {
+                        Text(if (loading) "Enviando..." else "Reportar")
+                    }
+                }
+            }
+        }
+    }
+}
+*/
 
 private fun String.formatAsDate(): String = try {
     val odt = OffsetDateTime.parse(this)

@@ -4,6 +4,10 @@ data class ReportResponse(
     val data: List<Report>
 )
 
+data class SimpleReportResponse(
+    val message: String
+)
+
 data class  Report(
     val id: String,
     val publicationId: String,

@@ -19,16 +19,18 @@ import retrofit2.http.PUT
 import retrofit2.http.Path
 import com.explorify.explorifyapp.data.remote.dto.publications.ReportResponse
 import com.explorify.explorifyapp.data.remote.dto.publications.Report
+import com.explorify.explorifyapp.data.remote.dto.publications.SimpleReportResponse
+import com.explorify.explorifyapp.data.remote.dto.publications.CreateReportRequest
 
 interface ReportApi {
 
     // 🔹 Crear publicación
-    /*@POST("api/Publication/report")
-    suspend fun create(
-        @Body body: CreatePublicationRequest,
+    @POST("api/Publication/report")
+    suspend fun createReport(
+        @Body body: CreateReportRequest,
         @Header("Authorization") token: String
-    ): Response<PublicationsResponse>
-    */
+    ): Response<SimpleReportResponse>
+
 
     // 🔹 Obtener todas los reportes
     @GET("api/Publication/report")
