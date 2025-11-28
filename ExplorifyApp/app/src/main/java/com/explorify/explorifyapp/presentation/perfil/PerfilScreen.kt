@@ -374,11 +374,28 @@ fun PerfilScreen(navController: NavController,
                 Column {
                     Text("Para confirmar la eliminación, ingresa tu contraseña:")
                     Spacer(modifier = Modifier.height(8.dp))
+                    var passwordVisible by remember { mutableStateOf(false) }
+
                     OutlinedTextField(
                         value = passwordInput,
                         onValueChange = { passwordInput = it },
                         label = { Text("Contraseña") },
-                        visualTransformation = PasswordVisualTransformation(),
+
+                        visualTransformation =
+                            if (passwordVisible) VisualTransformation.None
+                            else PasswordVisualTransformation(),
+
+                        trailingIcon = {
+                            IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                Icon(
+                                    imageVector =
+                                        if (passwordVisible) Icons.Default.Visibility
+                                        else Icons.Default.VisibilityOff,
+                                    contentDescription = "Mostrar u ocultar contraseña"
+                                )
+                            }
+                        },
+
                         singleLine = true
                     )
                     if (deleteMessage.isNotEmpty()) {
