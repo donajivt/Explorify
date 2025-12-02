@@ -42,9 +42,8 @@ namespace Explorify.Api.Publications.Infraestructure.Services
                     .Quality("auto")
                     .FetchFormat("auto"),
                 UniqueFilename = true,
-                Overwrite = false
-                //  MODERACIÓN TEMPORALMENTE DESACTIVADA
-                // Moderation = "aws_rek"
+                Overwrite = false,
+                Moderation = "aws_rek"
             };
 
             var result = await _cloudinary.UploadAsync(uploadParams);
@@ -52,7 +51,6 @@ namespace Explorify.Api.Publications.Infraestructure.Services
             if (result.Error != null)
                 throw new Exception($"Error al subir imagen: {result.Error.Message}");
 
-            /*  COMENTADO TEMPORALMENTE - MODERACIÓN DE REKOGNITION
             if (result.Moderation != null && result.Moderation.Count > 0)
             {
                 var moderationResult = result.Moderation.FirstOrDefault(m => m.Kind == "aws_rek");
@@ -64,7 +62,6 @@ namespace Explorify.Api.Publications.Infraestructure.Services
                     throw new Exception("La imagen fue rechazada por contener contenido inapropiado.");
                 }
             }
-            */
 
             return new MediaResponseDto
             {
@@ -88,9 +85,8 @@ namespace Explorify.Api.Publications.Infraestructure.Services
                 Transformation = new Transformation()
                     .Quality("auto"),
                 UniqueFilename = true,
-                Overwrite = false
-                //  MODERACIÓN TEMPORALMENTE DESACTIVADA
-                // Moderation = "aws_rek"
+                Overwrite = false,
+                Moderation = "aws_rek"
             };
 
             var result = await _cloudinary.UploadAsync(uploadParams);
@@ -98,7 +94,6 @@ namespace Explorify.Api.Publications.Infraestructure.Services
             if (result.Error != null)
                 throw new Exception($"Error al subir video: {result.Error.Message}");
 
-            /*  COMENTADO TEMPORALMENTE - MODERACIÓN DE REKOGNITION
             if (result.Moderation != null && result.Moderation.Count > 0)
             {
                 var moderationResult = result.Moderation.FirstOrDefault(m => m.Kind == "aws_rek");
@@ -110,7 +105,6 @@ namespace Explorify.Api.Publications.Infraestructure.Services
                     throw new Exception("El video fue rechazado por contener contenido inapropiado.");
                 }
             }
-            */
 
             return new MediaResponseDto
             {
@@ -149,9 +143,8 @@ namespace Explorify.Api.Publications.Infraestructure.Services
                 File = new FileDescription(newFile.FileName, newFile.OpenReadStream()),
                 PublicId = publicId,
                 Overwrite = true,
-                Invalidate = true
-                //  MODERACIÓN TEMPORALMENTE DESACTIVADA
-                // Moderation = "aws_rek"
+                Invalidate = true,
+                Moderation = "aws_rek"
             };
 
             var result = await _cloudinary.UploadAsync(uploadParams);
@@ -159,7 +152,6 @@ namespace Explorify.Api.Publications.Infraestructure.Services
             if (result.Error != null)
                 throw new Exception($"Error al actualizar imagen: {result.Error.Message}");
 
-            /*  COMENTADO TEMPORALMENTE - MODERACIÓN DE REKOGNITION
             if (result.Moderation != null && result.Moderation.Count > 0)
             {
                 var moderationResult = result.Moderation.FirstOrDefault(m => m.Kind == "aws_rek");
@@ -170,7 +162,6 @@ namespace Explorify.Api.Publications.Infraestructure.Services
                     throw new Exception("La nueva imagen fue rechazada por contener contenido inapropiado.");
                 }
             }
-            */
 
             return new MediaResponseDto
             {
