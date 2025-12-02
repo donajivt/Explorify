@@ -31,6 +31,10 @@ namespace Logueo.Infrastructure.Repositories
             var u = await GetByEmailAsync(email);
             return u?.Roles ?? new List<string>();
         }
+        public async Task UpdateAsync(Domain.Entities.User user)
+        {
+            await _col.ReplaceOneAsync(u => u.Id == user.Id, user);
+        }
 
         public async Task<IEnumerable<User>> GetAllUsers()
         {

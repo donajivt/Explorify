@@ -1,8 +1,10 @@
 ﻿using Api.Login.Contract;
 using Logueo.Application.Dtos;
 using Logueo.Application.Interfaces;
+using Logueo.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Api.Login.Controllers
 {
@@ -59,8 +61,21 @@ namespace Api.Login.Controllers
         }
 
         [HttpPost("logout")]
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
+            // 🟢 Obtener el ID del token JWT
+            var userId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                         ?? User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+
+            if (string.IsNullOrEmpty(userId))
+            {
+                _response.IsSuccess = false;
+                _response.Message = "No se pudo obtener el usuario del token.";
+                return Unauthorized(_response);
+            }
+
+            var response = await _authService.UpdateDeviceTokenAsync(userId);
+
             _response.IsSuccess = true;
             _response.Message = "Sesión cerrada correctamente";
             return Ok(_response);

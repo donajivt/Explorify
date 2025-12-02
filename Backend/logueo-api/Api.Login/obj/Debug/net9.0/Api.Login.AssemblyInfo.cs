@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Api.Login")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a8310e8eb0b19081bb366bb4a36986563c3f1c93")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+876da5a099209b7a3d62452a866b4429839f2479")]
 [assembly: System.Reflection.AssemblyProductAttribute("Api.Login")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Api.Login")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

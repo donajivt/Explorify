@@ -1,4 +1,5 @@
-﻿using Logueo.Domain.Entities;
+﻿using Logueo.Application.Dtos;
+using Logueo.Domain.Entities;
 
 namespace Logueo.Application.Interfaces
 {
@@ -10,5 +11,6 @@ namespace Logueo.Application.Interfaces
         Task<bool> AddRoleAsync(string email, string roleName);
         Task<IReadOnlyList<string>> GetRolesAsync(string email);
         Task<IEnumerable<User>> GetAllUsers();
+        Task UpdateAsync(User user);
     }
 }

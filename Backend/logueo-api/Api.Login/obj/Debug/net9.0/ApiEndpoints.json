@@ -11,6 +11,22 @@
   },
   {
     "ContainingType": "Api.Login.Controllers.AuthApiController",
+    "Method": "GetUserById",
+    "RelativePath": "api/AuthApi/{userId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "userId",
+        "Type": "System.String",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "Api.Login.Controllers.AuthApiController",
     "Method": "AssignRole",
     "RelativePath": "api/AuthApi/assign-role",
     "HttpMethod": "POST",

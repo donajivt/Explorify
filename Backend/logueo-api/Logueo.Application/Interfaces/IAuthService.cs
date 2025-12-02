@@ -10,5 +10,6 @@ namespace Logueo.Application.Interfaces
         Task<bool> AssignRole(string email, string roleName);
         Task<IEnumerable<UserDto>> GetUsers();
         Task<UserDto?> GetUserById(string userId);
+        Task<ResponseDto> UpdateDeviceTokenAsync(string userId);
     }
 }

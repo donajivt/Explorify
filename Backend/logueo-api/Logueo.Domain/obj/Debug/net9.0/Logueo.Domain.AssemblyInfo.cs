@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Logueo.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+32f712d53a56f6def584e984ba5936d15c1f5a76")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+876da5a099209b7a3d62452a866b4429839f2479")]
 [assembly: System.Reflection.AssemblyProductAttribute("Logueo.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Logueo.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

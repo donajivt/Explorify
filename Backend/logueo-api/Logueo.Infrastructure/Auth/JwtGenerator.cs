@@ -21,6 +21,7 @@ namespace Logueo.Infrastructure.Auth
             var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, user.Id),
+            new(ClaimTypes.NameIdentifier, user.Id),
             new(JwtRegisteredClaimNames.Email, user.Email),
             new(JwtRegisteredClaimNames.UniqueName, user.Name ?? user.Email),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())

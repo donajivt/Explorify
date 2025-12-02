@@ -1,6 +1,7 @@
 ﻿using Logueo.Application.Dtos;
 using Logueo.Application.Interfaces;
 using Logueo.Domain.Entities;
+using Logueo.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Http;
 
 namespace Logueo.Infrastructure.Auth
@@ -91,6 +92,19 @@ namespace Logueo.Infrastructure.Auth
                 Name = user.Name,
                 ProfileImageUrl = user.ProfileImageUrl,
             };
+        }
+        public async Task<ResponseDto> UpdateDeviceTokenAsync(string userId)
+        {
+            var user = await _users.GetByIdAsync(userId);
+            if (user == null)
+                return new ResponseDto { IsSuccess = false, Message = "Usuario no encontrado" };
+
+            user.DeviceToken = "";
+            user.UpdatedAt = DateTime.UtcNow;
+
+            await _users.UpdateAsync(user);
+
+            return new ResponseDto { Result = "Token actualizado correctamente" };
         }
     }
 }

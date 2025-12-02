@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Logueo.Application")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3b61a47ed27b6f8ad39db697a3ba0360c1b4889c")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+876da5a099209b7a3d62452a866b4429839f2479")]
 [assembly: System.Reflection.AssemblyProductAttribute("Logueo.Application")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Logueo.Application")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

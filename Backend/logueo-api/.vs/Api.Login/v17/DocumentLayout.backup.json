@@ -7,8 +7,8 @@
       "RelativeMoniker": "D:0:0:{28A534A2-A32F-41C3-8930-87BEF19D8823}|Logueo.Infrastructure\\Logueo.Infrastructure.csproj|solutionrelative:logueo.infrastructure\\auth\\authservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{9C52BE3B-6775-4E09-B85F-CE7FEF811DB6}|Api.Login\\Api.Login.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\api.login\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{9C52BE3B-6775-4E09-B85F-CE7FEF811DB6}|Api.Login\\Api.Login.csproj|solutionrelative:api.login\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{28A534A2-A32F-41C3-8930-87BEF19D8823}|Logueo.Infrastructure\\Logueo.Infrastructure.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\logueo.infrastructure\\auth\\jwtgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{28A534A2-A32F-41C3-8930-87BEF19D8823}|Logueo.Infrastructure\\Logueo.Infrastructure.csproj|solutionrelative:logueo.infrastructure\\auth\\jwtgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{25AC85E5-7D50-424A-A708-F7AE2349E9C9}|Logueo.Application\\Logueo.Application.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\logueo.application\\interfaces\\iauthservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -19,8 +19,20 @@
       "RelativeMoniker": "D:0:0:{9C52BE3B-6775-4E09-B85F-CE7FEF811DB6}|Api.Login\\Api.Login.csproj|solutionrelative:api.login\\controllers\\authapicontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{63F5F0F5-733E-4B29-8849-D0186726FA13}|Logueo.Domain\\Logueo.Domain.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\logueo.domain\\entities\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{63F5F0F5-733E-4B29-8849-D0186726FA13}|Logueo.Domain\\Logueo.Domain.csproj|solutionrelative:logueo.domain\\entities\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{25AC85E5-7D50-424A-A708-F7AE2349E9C9}|Logueo.Application\\Logueo.Application.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\logueo.application\\interfaces\\ijwtgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{25AC85E5-7D50-424A-A708-F7AE2349E9C9}|Logueo.Application\\Logueo.Application.csproj|solutionrelative:logueo.application\\interfaces\\ijwtgenerator.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{25AC85E5-7D50-424A-A708-F7AE2349E9C9}|Logueo.Application\\Logueo.Application.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\logueo.application\\interfaces\\iuserrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{25AC85E5-7D50-424A-A708-F7AE2349E9C9}|Logueo.Application\\Logueo.Application.csproj|solutionrelative:logueo.application\\interfaces\\iuserrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9C52BE3B-6775-4E09-B85F-CE7FEF811DB6}|Api.Login\\Api.Login.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\api.login\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9C52BE3B-6775-4E09-B85F-CE7FEF811DB6}|Api.Login\\Api.Login.csproj|solutionrelative:api.login\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{9C52BE3B-6775-4E09-B85F-CE7FEF811DB6}|Api.Login\\Api.Login.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\api.login\\contract\\apiresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{9C52BE3B-6775-4E09-B85F-CE7FEF811DB6}|Api.Login\\Api.Login.csproj|solutionrelative:api.login\\contract\\apiresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{28A534A2-A32F-41C3-8930-87BEF19D8823}|Logueo.Infrastructure\\Logueo.Infrastructure.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\logueo.infrastructure\\depencyinjection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -31,28 +43,24 @@
       "RelativeMoniker": "D:0:0:{28A534A2-A32F-41C3-8930-87BEF19D8823}|Logueo.Infrastructure\\Logueo.Infrastructure.csproj|solutionrelative:logueo.infrastructure\\repositories\\userrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{25AC85E5-7D50-424A-A708-F7AE2349E9C9}|Logueo.Application\\Logueo.Application.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\logueo.application\\interfaces\\iuserrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{25AC85E5-7D50-424A-A708-F7AE2349E9C9}|Logueo.Application\\Logueo.Application.csproj|solutionrelative:logueo.application\\interfaces\\iuserrepository.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{28A534A2-A32F-41C3-8930-87BEF19D8823}|Logueo.Infrastructure\\Logueo.Infrastructure.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\logueo.infrastructure\\auth\\jwtoptions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{28A534A2-A32F-41C3-8930-87BEF19D8823}|Logueo.Infrastructure\\Logueo.Infrastructure.csproj|solutionrelative:logueo.infrastructure\\auth\\jwtoptions.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{25AC85E5-7D50-424A-A708-F7AE2349E9C9}|Logueo.Application\\Logueo.Application.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\logueo.application\\dtos\\updateuserdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{25AC85E5-7D50-424A-A708-F7AE2349E9C9}|Logueo.Application\\Logueo.Application.csproj|solutionrelative:logueo.application\\dtos\\updateuserdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{63F5F0F5-733E-4B29-8849-D0186726FA13}|Logueo.Domain\\Logueo.Domain.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\logueo.domain\\entities\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{63F5F0F5-733E-4B29-8849-D0186726FA13}|Logueo.Domain\\Logueo.Domain.csproj|solutionrelative:logueo.domain\\entities\\user.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{9C52BE3B-6775-4E09-B85F-CE7FEF811DB6}|Api.Login\\Api.Login.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\api.login\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{9C52BE3B-6775-4E09-B85F-CE7FEF811DB6}|Api.Login\\Api.Login.csproj|solutionrelative:api.login\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{25AC85E5-7D50-424A-A708-F7AE2349E9C9}|Logueo.Application\\Logueo.Application.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\logueo.application\\dtos\\registrationrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{25AC85E5-7D50-424A-A708-F7AE2349E9C9}|Logueo.Application\\Logueo.Application.csproj|solutionrelative:logueo.application\\dtos\\registrationrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{25AC85E5-7D50-424A-A708-F7AE2349E9C9}|Logueo.Application\\Logueo.Application.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\logueo.application\\dtos\\registerrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{25AC85E5-7D50-424A-A708-F7AE2349E9C9}|Logueo.Application\\Logueo.Application.csproj|solutionrelative:logueo.application\\dtos\\registerrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{25AC85E5-7D50-424A-A708-F7AE2349E9C9}|Logueo.Application\\Logueo.Application.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\logueo.application\\dtos\\loginresponsedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{25AC85E5-7D50-424A-A708-F7AE2349E9C9}|Logueo.Application\\Logueo.Application.csproj|solutionrelative:logueo.application\\dtos\\loginresponsedto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{25AC85E5-7D50-424A-A708-F7AE2349E9C9}|Logueo.Application\\Logueo.Application.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\logueo.application\\dtos\\loginrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{25AC85E5-7D50-424A-A708-F7AE2349E9C9}|Logueo.Application\\Logueo.Application.csproj|solutionrelative:logueo.application\\dtos\\loginrequestdto.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{9C52BE3B-6775-4E09-B85F-CE7FEF811DB6}|Api.Login\\Api.Login.csproj|c:\\users\\vania\\onedrive\\documentos\\explorify\\explorify\\backend\\logueo-api\\api.login\\properties\\launchsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
@@ -66,7 +74,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 6,
+          "SelectedChildIndex": 7,
           "Children": [
             {
               "$type": "Bookmark",
@@ -74,52 +82,29 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 7,
-              "Title": "IUserRepository.cs",
-              "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Interfaces\\IUserRepository.cs",
-              "RelativeDocumentMoniker": "Logueo.Application\\Interfaces\\IUserRepository.cs",
-              "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Interfaces\\IUserRepository.cs",
-              "RelativeToolTip": "Logueo.Application\\Interfaces\\IUserRepository.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAAhAAAAAAAAAA==",
+              "DocumentIndex": 4,
+              "Title": "IJwtGenerator.cs",
+              "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Interfaces\\IJwtGenerator.cs",
+              "RelativeDocumentMoniker": "Logueo.Application\\Interfaces\\IJwtGenerator.cs",
+              "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Interfaces\\IJwtGenerator.cs",
+              "RelativeToolTip": "Logueo.Application\\Interfaces\\IJwtGenerator.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-09T08:04:11.539Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "IAuthService.cs",
-              "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Interfaces\\IAuthService.cs",
-              "RelativeDocumentMoniker": "Logueo.Application\\Interfaces\\IAuthService.cs",
-              "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Interfaces\\IAuthService.cs",
-              "RelativeToolTip": "Logueo.Application\\Interfaces\\IAuthService.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAABAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-17T20:09:33.585Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Api.Login\\Program.cs",
-              "RelativeDocumentMoniker": "Api.Login\\Program.cs",
-              "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Api.Login\\Program.cs",
-              "RelativeToolTip": "Api.Login\\Program.cs",
-              "ViewState": "AgIAACAAAAAAAAAAAAAAwDMAAAADAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-31T01:54:31.235Z",
+              "WhenOpened": "2025-12-02T23:10:42.137Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "User.cs",
-              "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Domain\\Entities\\User.cs",
-              "RelativeDocumentMoniker": "Logueo.Domain\\Entities\\User.cs",
-              "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Domain\\Entities\\User.cs",
-              "RelativeToolTip": "Logueo.Domain\\Entities\\User.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAAAwAAAA0AAAAAAAAAA==",
+              "DocumentIndex": 7,
+              "Title": "ApiResponse.cs",
+              "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Api.Login\\Contract\\ApiResponse.cs",
+              "RelativeDocumentMoniker": "Api.Login\\Contract\\ApiResponse.cs",
+              "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Api.Login\\Contract\\ApiResponse.cs",
+              "RelativeToolTip": "Api.Login\\Contract\\ApiResponse.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T02:52:24.747Z"
+              "WhenOpened": "2025-12-02T23:09:30.337Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -129,9 +114,49 @@
               "RelativeDocumentMoniker": "Api.Login\\Controllers\\AuthApiController.cs",
               "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Api.Login\\Controllers\\AuthApiController.cs",
               "RelativeToolTip": "Api.Login\\Controllers\\AuthApiController.cs",
-              "ViewState": "AgIAAA4AAAAAAAAAAAAQwBsAAAAxAAAAAAAAAA==",
+              "ViewState": "AgIAADQAAAAAAAAAAAAuwEwAAABEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T02:21:54.113Z"
+              "WhenOpened": "2025-11-05T02:21:54.113Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Api.Login\\Program.cs",
+              "RelativeDocumentMoniker": "Api.Login\\Program.cs",
+              "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Api.Login\\Program.cs",
+              "RelativeToolTip": "Api.Login\\Program.cs",
+              "ViewState": "AgIAACYAAAAAAAAAAAAkwEcAAAAKAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-10-31T01:54:31.235Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "IAuthService.cs",
+              "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Interfaces\\IAuthService.cs",
+              "RelativeDocumentMoniker": "Logueo.Application\\Interfaces\\IAuthService.cs",
+              "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Interfaces\\IAuthService.cs",
+              "RelativeToolTip": "Logueo.Application\\Interfaces\\IAuthService.cs",
+              "ViewState": "AgIAAAEAAAAAAAAAAAAEwA4AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-17T20:09:33.585Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "JwtGenerator.cs",
+              "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Infrastructure\\Auth\\JwtGenerator.cs",
+              "RelativeDocumentMoniker": "Logueo.Infrastructure\\Auth\\JwtGenerator.cs",
+              "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Infrastructure\\Auth\\JwtGenerator.cs",
+              "RelativeToolTip": "Logueo.Infrastructure\\Auth\\JwtGenerator.cs",
+              "ViewState": "AgIAAAYAAAAAAAAAAAAkwBcAAAA0AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-02T23:09:09.077Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
@@ -141,38 +166,92 @@
               "RelativeDocumentMoniker": "Logueo.Infrastructure\\Auth\\AuthService.cs",
               "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Infrastructure\\Auth\\AuthService.cs",
               "RelativeToolTip": "Logueo.Infrastructure\\Auth\\AuthService.cs",
-              "ViewState": "AgIAAD8AAAAAAAAAAAAuwEsAAAAkAAAAAAAAAA==",
+              "ViewState": "AgIAAFcAAAAAAAAAAAAmwCoAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-09T08:05:15.959Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 9,
               "Title": "UserRepository.cs",
               "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Infrastructure\\Repositories\\UserRepository.cs",
               "RelativeDocumentMoniker": "Logueo.Infrastructure\\Repositories\\UserRepository.cs",
               "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Infrastructure\\Repositories\\UserRepository.cs",
               "RelativeToolTip": "Logueo.Infrastructure\\Repositories\\UserRepository.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAqwBEAAAA9AAAAAAAAAA==",
+              "ViewState": "AgIAAAkAAAAAAAAAAAAAABkAAAApAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T16:30:49.288Z"
+              "WhenOpened": "2025-11-05T16:30:49.288Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
               "DocumentIndex": 5,
+              "Title": "IUserRepository.cs",
+              "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Interfaces\\IUserRepository.cs",
+              "RelativeDocumentMoniker": "Logueo.Application\\Interfaces\\IUserRepository.cs",
+              "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Interfaces\\IUserRepository.cs",
+              "RelativeToolTip": "Logueo.Application\\Interfaces\\IUserRepository.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-09T08:04:11.539Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "JwtOptions.cs",
+              "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Infrastructure\\Auth\\JwtOptions.cs",
+              "RelativeDocumentMoniker": "Logueo.Infrastructure\\Auth\\JwtOptions.cs",
+              "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Infrastructure\\Auth\\JwtOptions.cs",
+              "RelativeToolTip": "Logueo.Infrastructure\\Auth\\JwtOptions.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-02T23:09:06.768Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "User.cs",
+              "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Domain\\Entities\\User.cs",
+              "RelativeDocumentMoniker": "Logueo.Domain\\Entities\\User.cs",
+              "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Domain\\Entities\\User.cs",
+              "RelativeToolTip": "Logueo.Domain\\Entities\\User.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABAAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-11-03T02:52:24.747Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
               "Title": "DepencyInjection.cs",
               "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Infrastructure\\DepencyInjection.cs",
               "RelativeDocumentMoniker": "Logueo.Infrastructure\\DepencyInjection.cs",
               "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Infrastructure\\DepencyInjection.cs",
               "RelativeToolTip": "Logueo.Infrastructure\\DepencyInjection.cs",
-              "ViewState": "AgIAABYAAAAAAAAAAAAgwAMAAAApAAAAAAAAAA==",
+              "ViewState": "AgIAAAEAAAAAAAAAAAAAwCAAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-17T20:38:32.789Z"
+              "WhenOpened": "2025-11-17T20:38:32.789Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 8,
+              "DocumentIndex": 11,
+              "Title": "UpdateUserDto.cs",
+              "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Dtos\\UpdateUserDto.cs",
+              "RelativeDocumentMoniker": "Logueo.Application\\Dtos\\UpdateUserDto.cs",
+              "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Dtos\\UpdateUserDto.cs",
+              "RelativeToolTip": "Logueo.Application\\Dtos\\UpdateUserDto.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAhAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-02T22:45:00.805Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
               "Title": "appsettings.json",
               "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Api.Login\\appsettings.json",
               "RelativeDocumentMoniker": "Api.Login\\appsettings.json",
@@ -184,7 +263,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 10,
+              "DocumentIndex": 14,
               "Title": "RegisterRequestDto.cs",
               "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Dtos\\RegisterRequestDto.cs",
               "RelativeDocumentMoniker": "Logueo.Application\\Dtos\\RegisterRequestDto.cs",
@@ -196,43 +275,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 9,
-              "Title": "RegistrationRequestDto.cs",
-              "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Dtos\\RegistrationRequestDto.cs",
-              "RelativeDocumentMoniker": "Logueo.Application\\Dtos\\RegistrationRequestDto.cs",
-              "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Dtos\\RegistrationRequestDto.cs",
-              "RelativeToolTip": "Logueo.Application\\Dtos\\RegistrationRequestDto.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-09T08:02:46.091Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 11,
-              "Title": "LoginResponseDto.cs",
-              "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Dtos\\LoginResponseDto.cs",
-              "RelativeDocumentMoniker": "Logueo.Application\\Dtos\\LoginResponseDto.cs",
-              "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Dtos\\LoginResponseDto.cs",
-              "RelativeToolTip": "Logueo.Application\\Dtos\\LoginResponseDto.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-09T08:02:33.68Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 12,
-              "Title": "LoginRequestDto.cs",
-              "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Dtos\\LoginRequestDto.cs",
-              "RelativeDocumentMoniker": "Logueo.Application\\Dtos\\LoginRequestDto.cs",
-              "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Dtos\\LoginRequestDto.cs",
-              "RelativeToolTip": "Logueo.Application\\Dtos\\LoginRequestDto.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-09T08:02:28.012Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 13,
+              "DocumentIndex": 15,
               "Title": "launchSettings.json",
               "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Api.Login\\Properties\\launchSettings.json",
               "RelativeDocumentMoniker": "Api.Login\\Properties\\launchSettings.json",
