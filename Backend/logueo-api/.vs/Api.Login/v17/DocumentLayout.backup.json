@@ -74,25 +74,8 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 7,
+          "SelectedChildIndex": 5,
           "Children": [
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "IJwtGenerator.cs",
-              "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Interfaces\\IJwtGenerator.cs",
-              "RelativeDocumentMoniker": "Logueo.Application\\Interfaces\\IJwtGenerator.cs",
-              "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Interfaces\\IJwtGenerator.cs",
-              "RelativeToolTip": "Logueo.Application\\Interfaces\\IJwtGenerator.cs",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-02T23:10:42.137Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Document",
               "DocumentIndex": 7,
@@ -103,8 +86,7 @@
               "RelativeToolTip": "Api.Login\\Contract\\ApiResponse.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-02T23:09:30.337Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-02T23:09:30.337Z"
             },
             {
               "$type": "Document",
@@ -116,8 +98,7 @@
               "RelativeToolTip": "Api.Login\\Controllers\\AuthApiController.cs",
               "ViewState": "AgIAADQAAAAAAAAAAAAuwEwAAABEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T02:21:54.113Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-05T02:21:54.113Z"
             },
             {
               "$type": "Document",
@@ -129,8 +110,7 @@
               "RelativeToolTip": "Api.Login\\Program.cs",
               "ViewState": "AgIAACYAAAAAAAAAAAAkwEcAAAAKAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-10-31T01:54:31.235Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-10-31T01:54:31.235Z"
             },
             {
               "$type": "Document",
@@ -142,8 +122,7 @@
               "RelativeToolTip": "Logueo.Application\\Interfaces\\IAuthService.cs",
               "ViewState": "AgIAAAEAAAAAAAAAAAAEwA4AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-17T20:09:33.585Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-17T20:09:33.585Z"
             },
             {
               "$type": "Document",
@@ -155,8 +134,7 @@
               "RelativeToolTip": "Logueo.Infrastructure\\Auth\\JwtGenerator.cs",
               "ViewState": "AgIAAAYAAAAAAAAAAAAkwBcAAAA0AAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-02T23:09:09.077Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-02T23:09:09.077Z"
             },
             {
               "$type": "Document",
@@ -166,10 +144,22 @@
               "RelativeDocumentMoniker": "Logueo.Infrastructure\\Auth\\AuthService.cs",
               "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Infrastructure\\Auth\\AuthService.cs",
               "RelativeToolTip": "Logueo.Infrastructure\\Auth\\AuthService.cs",
-              "ViewState": "AgIAAFcAAAAAAAAAAAAmwCoAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAAFQAAAAAAAAAAAAmwGUAAAAiAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-11-09T08:05:15.959Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "IJwtGenerator.cs",
+              "DocumentMoniker": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Interfaces\\IJwtGenerator.cs",
+              "RelativeDocumentMoniker": "Logueo.Application\\Interfaces\\IJwtGenerator.cs",
+              "ToolTip": "C:\\Users\\vania\\OneDrive\\Documentos\\Explorify\\Explorify\\Backend\\logueo-api\\Logueo.Application\\Interfaces\\IJwtGenerator.cs",
+              "RelativeToolTip": "Logueo.Application\\Interfaces\\IJwtGenerator.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA4AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-02T23:10:42.137Z"
             },
             {
               "$type": "Document",
@@ -181,8 +171,7 @@
               "RelativeToolTip": "Logueo.Infrastructure\\Repositories\\UserRepository.cs",
               "ViewState": "AgIAAAkAAAAAAAAAAAAAABkAAAApAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-05T16:30:49.288Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-05T16:30:49.288Z"
             },
             {
               "$type": "Document",
@@ -194,8 +183,7 @@
               "RelativeToolTip": "Logueo.Application\\Interfaces\\IUserRepository.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-09T08:04:11.539Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-09T08:04:11.539Z"
             },
             {
               "$type": "Document",
@@ -207,8 +195,7 @@
               "RelativeToolTip": "Logueo.Infrastructure\\Auth\\JwtOptions.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-02T23:09:06.768Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-02T23:09:06.768Z"
             },
             {
               "$type": "Document",
@@ -220,8 +207,7 @@
               "RelativeToolTip": "Logueo.Domain\\Entities\\User.cs",
               "ViewState": "AgIAAAMAAAAAAAAAAAAAABAAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-03T02:52:24.747Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-03T02:52:24.747Z"
             },
             {
               "$type": "Document",
@@ -233,8 +219,7 @@
               "RelativeToolTip": "Logueo.Infrastructure\\DepencyInjection.cs",
               "ViewState": "AgIAAAEAAAAAAAAAAAAAwCAAAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-11-17T20:38:32.789Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-11-17T20:38:32.789Z"
             },
             {
               "$type": "Document",
@@ -246,8 +231,7 @@
               "RelativeToolTip": "Logueo.Application\\Dtos\\UpdateUserDto.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-02T22:45:00.805Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-02T22:45:00.805Z"
             },
             {
               "$type": "Document",
@@ -284,6 +268,14 @@
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAA8AAAAbAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2025-10-31T01:50:34.393Z"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{cce594b6-0c39-4442-ba28-10c64ac7e89f}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
             }
           ]
         }
